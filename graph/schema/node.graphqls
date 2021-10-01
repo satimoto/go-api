@@ -1,0 +1,10 @@
+type Node {
+    id: ID!
+    pubkey: String!
+    address: String!
+}
+
+input NodeInput {
+    pubkey: String!
+    address: String!
+}

@@ -1,0 +1,18 @@
+type User {
+    id: ID!
+    deviceToken: String!
+    node: Node!
+}
+
+input UserInput {
+    deviceToken: String!
+    node: NodeInput!
+}
+
+extend type Query {
+  users: [User!]!
+}
+
+extend type Mutation {
+    registerUser(input: UserInput!): User!
+}
