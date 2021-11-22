@@ -38,7 +38,7 @@ func init() {
 	}
 	database = d
 
-	repo := db.NewRepository(database)
+	repo := db.NewRepositoryService(database)
 
 	chiLambda = chiproxy.New(router.Initialize(repo))
 }
