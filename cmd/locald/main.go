@@ -38,7 +38,7 @@ func init() {
 
 func main() {
 	defer database.Close()
-	repo := db.NewRepository(database)
+	repo := db.NewRepositoryService(database)
 	handler := router.Initialize(repo)
 
 	err := http.ListenAndServe(":8080", handler)
