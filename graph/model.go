@@ -2,6 +2,10 @@
 
 package graph
 
+type CreateEmailSubscriptionInput struct {
+	Email string `json:"email"`
+}
+
 type NodeInput struct {
 	Pubkey  string `json:"pubkey"`
 	Address string `json:"address"`
@@ -10,4 +14,9 @@ type NodeInput struct {
 type UserInput struct {
 	DeviceToken string     `json:"deviceToken"`
 	Node        *NodeInput `json:"node"`
+}
+
+type VerifyEmailSubscriptionInput struct {
+	Email string `json:"email"`
+	Code  string `json:"code"`
 }
