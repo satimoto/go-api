@@ -6,14 +6,14 @@ type CreateEmailSubscriptionInput struct {
 	Email string `json:"email"`
 }
 
-type NodeInput struct {
+type RegisterNodeInput struct {
 	Pubkey  string `json:"pubkey"`
 	Address string `json:"address"`
 }
 
-type UserInput struct {
-	DeviceToken string     `json:"deviceToken"`
-	Node        *NodeInput `json:"node"`
+type RegisterUserInput struct {
+	DeviceToken string             `json:"deviceToken"`
+	Node        *RegisterNodeInput `json:"node"`
 }
 
 type VerifyEmailSubscriptionInput struct {

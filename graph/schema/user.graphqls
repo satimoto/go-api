@@ -4,15 +4,15 @@ type User {
     node: Node!
 }
 
-input UserInput {
+input RegisterUserInput {
     deviceToken: String!
-    node: NodeInput!
+    node: RegisterNodeInput!
 }
 
 extend type Query {
-  users: [User!]!
+    nodes: [Node!]!
 }
 
 extend type Mutation {
-    registerUser(input: UserInput!): User!
+    registerUser(input: RegisterUserInput!): User!
 }
