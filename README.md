@@ -9,3 +9,10 @@ Generates the GraphQL models and resolvers from schema files
 ```bash
 gqlgen
 ```
+
+## Development
+
+### Run
+```bash
+go run ./cmd/locald
+```

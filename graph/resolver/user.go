@@ -5,19 +5,21 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-datastore/db"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *mutationResolver) RegisterUser(ctx context.Context, input graph.UserInput) (*db.User, error) {
+func (r *mutationResolver) RegisterUser(ctx context.Context, input graph.RegisterUserInput) (*db.User, error) {
 	node, err := r.NodeResolver.Repository.CreateNode(ctx, db.CreateNodeParams{
 		Pubkey:  input.Node.Pubkey,
 		Address: input.Node.Address,
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, gqlerror.Errorf("Node already exists")
 	}
 
 	user, err := r.UserResolver.Repository.CreateUser(ctx, db.CreateUserParams{
@@ -25,17 +27,25 @@ func (r *mutationResolver) RegisterUser(ctx context.Context, input graph.UserInp
 		NodeID:      node.ID,
 	})
 
-	return &user, err
+	if err != nil {
+		return nil, gqlerror.Errorf("User already exists")
+	}
+
+	return &user, nil
 }
 
-func (r *queryResolver) Users(ctx context.Context) ([]db.User, error) {
-	return r.UserResolver.Repository.ListUsers(ctx)
+func (r *queryResolver) Nodes(ctx context.Context) ([]db.Node, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *userResolver) Node(ctx context.Context, obj *db.User) (*db.Node, error) {
 	node, err := r.NodeResolver.Repository.GetNode(ctx, obj.NodeID)
 
-	return &node, err
+	if err != nil {
+		return nil, gqlerror.Errorf("Node not found")
+	}
+
+	return &node, nil
 }
 
 // Query returns graph.QueryResolver implementation.

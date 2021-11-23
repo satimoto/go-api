@@ -52,7 +52,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateEmailSubscription func(childComplexity int, input CreateEmailSubscriptionInput) int
-		RegisterUser            func(childComplexity int, input UserInput) int
+		RegisterUser            func(childComplexity int, input RegisterUserInput) int
 		VerifyEmailSubscription func(childComplexity int, input VerifyEmailSubscriptionInput) int
 	}
 
@@ -63,7 +63,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Users func(childComplexity int) int
+		Nodes func(childComplexity int) int
 	}
 
 	User struct {
@@ -76,10 +76,10 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateEmailSubscription(ctx context.Context, input CreateEmailSubscriptionInput) (*db.EmailSubscription, error)
 	VerifyEmailSubscription(ctx context.Context, input VerifyEmailSubscriptionInput) (*db.EmailSubscription, error)
-	RegisterUser(ctx context.Context, input UserInput) (*db.User, error)
+	RegisterUser(ctx context.Context, input RegisterUserInput) (*db.User, error)
 }
 type QueryResolver interface {
-	Users(ctx context.Context) ([]db.User, error)
+	Nodes(ctx context.Context) ([]db.Node, error)
 }
 type UserResolver interface {
 	Node(ctx context.Context, obj *db.User) (*db.Node, error)
@@ -143,7 +143,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RegisterUser(childComplexity, args["input"].(UserInput)), true
+		return e.complexity.Mutation.RegisterUser(childComplexity, args["input"].(RegisterUserInput)), true
 
 	case "Mutation.verifyEmailSubscription":
 		if e.complexity.Mutation.VerifyEmailSubscription == nil {
@@ -178,12 +178,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Node.Pubkey(childComplexity), true
 
-	case "Query.users":
-		if e.complexity.Query.Users == nil {
+	case "Query.nodes":
+		if e.complexity.Query.Nodes == nil {
 			break
 		}
 
-		return e.complexity.Query.Users(childComplexity), true
+		return e.complexity.Query.Nodes(childComplexity), true
 
 	case "User.deviceToken":
 		if e.complexity.User.DeviceToken == nil {
@@ -296,7 +296,7 @@ extend type Mutation {
     address: String!
 }
 
-input NodeInput {
+input RegisterNodeInput {
     pubkey: String!
     address: String!
 }
@@ -307,17 +307,17 @@ input NodeInput {
     node: Node!
 }
 
-input UserInput {
+input RegisterUserInput {
     deviceToken: String!
-    node: NodeInput!
+    node: RegisterNodeInput!
 }
 
 extend type Query {
-  users: [User!]!
+    nodes: [Node!]!
 }
 
 extend type Mutation {
-    registerUser(input: UserInput!): User!
+    registerUser(input: RegisterUserInput!): User!
 }
 `, BuiltIn: false},
 }
@@ -345,10 +345,10 @@ func (ec *executionContext) field_Mutation_createEmailSubscription_args(ctx cont
 func (ec *executionContext) field_Mutation_registerUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 UserInput
+	var arg0 RegisterUserInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUserInput(ctx, tmp)
+		arg0, err = ec.unmarshalNRegisterUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRegisterUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -639,7 +639,7 @@ func (ec *executionContext) _Mutation_registerUser(ctx context.Context, field gr
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RegisterUser(rctx, args["input"].(UserInput))
+		return ec.resolvers.Mutation().RegisterUser(rctx, args["input"].(RegisterUserInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -761,7 +761,7 @@ func (ec *executionContext) _Node_address(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_nodes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -779,7 +779,7 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Users(rctx)
+		return ec.resolvers.Query().Nodes(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -791,9 +791,9 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]db.User)
+	res := resTmp.([]db.Node)
 	fc.Result = res
-	return ec.marshalNUser2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNNode2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNodeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2117,8 +2117,8 @@ func (ec *executionContext) unmarshalInputCreateEmailSubscriptionInput(ctx conte
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputNodeInput(ctx context.Context, obj interface{}) (NodeInput, error) {
-	var it NodeInput
+func (ec *executionContext) unmarshalInputRegisterNodeInput(ctx context.Context, obj interface{}) (RegisterNodeInput, error) {
+	var it RegisterNodeInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -2148,8 +2148,8 @@ func (ec *executionContext) unmarshalInputNodeInput(ctx context.Context, obj int
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj interface{}) (UserInput, error) {
-	var it UserInput
+func (ec *executionContext) unmarshalInputRegisterUserInput(ctx context.Context, obj interface{}) (RegisterUserInput, error) {
+	var it RegisterUserInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -2169,7 +2169,7 @@ func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("node"))
-			it.Node, err = ec.unmarshalNNodeInput2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐNodeInput(ctx, v)
+			it.Node, err = ec.unmarshalNRegisterNodeInput2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRegisterNodeInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2348,7 +2348,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "users":
+		case "nodes":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -2356,7 +2356,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_users(ctx, field)
+				res = ec._Query_nodes(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -2726,41 +2726,7 @@ func (ec *executionContext) marshalNNode2githubᚗcomᚋsatimotoᚋgoᚑdatastor
 	return ec._Node(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNode(ctx context.Context, sel ast.SelectionSet, v *db.Node) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Node(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNNodeInput2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐNodeInput(ctx context.Context, v interface{}) (*NodeInput, error) {
-	res, err := ec.unmarshalInputNodeInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) marshalNUser2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx context.Context, sel ast.SelectionSet, v db.User) graphql.Marshaler {
-	return ec._User(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUser2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []db.User) graphql.Marshaler {
+func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNodeᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Node) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -2784,7 +2750,7 @@ func (ec *executionContext) marshalNUser2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatas
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNNode2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNode(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2804,6 +2770,45 @@ func (ec *executionContext) marshalNUser2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatas
 	return ret
 }
 
+func (ec *executionContext) marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNode(ctx context.Context, sel ast.SelectionSet, v *db.Node) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Node(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNRegisterNodeInput2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRegisterNodeInput(ctx context.Context, v interface{}) (*RegisterNodeInput, error) {
+	res, err := ec.unmarshalInputRegisterNodeInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNRegisterUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRegisterUserInput(ctx context.Context, v interface{}) (RegisterUserInput, error) {
+	res, err := ec.unmarshalInputRegisterUserInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx context.Context, sel ast.SelectionSet, v db.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx context.Context, sel ast.SelectionSet, v *db.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -2812,11 +2817,6 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatas
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUserInput(ctx context.Context, v interface{}) (UserInput, error) {
-	res, err := ec.unmarshalInputUserInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNVerifyEmailSubscriptionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐVerifyEmailSubscriptionInput(ctx context.Context, v interface{}) (VerifyEmailSubscriptionInput, error) {
