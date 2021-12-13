@@ -2,7 +2,9 @@ package emailsubscription
 
 import (
 	"context"
+	"os"
 
+	"github.com/satimoto/go-api/aws/email"
 	"github.com/satimoto/go-datastore/db"
 )
 
@@ -14,9 +16,15 @@ type EmailSubscriptionRepository interface {
 
 type EmailSubscriptionResolver struct {
 	Repository EmailSubscriptionRepository
+	Emailer email.Emailer
 }
 
 func NewResolver(repositoryService *db.RepositoryService) *EmailSubscriptionResolver {
 	repo := EmailSubscriptionRepository(repositoryService)
-	return &EmailSubscriptionResolver{repo}
+	emailer := email.New(os.Getenv("REPLY_TO_EMAIL"))
+
+	return &EmailSubscriptionResolver{
+		Repository: repo,
+		Emailer: emailer,
+	}
 }

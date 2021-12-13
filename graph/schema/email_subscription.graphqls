@@ -1,16 +1,18 @@
 type EmailSubscription {
     id: ID!
     email: String!
+    locale: String!
     isVerified: Boolean!
 }
 
 input CreateEmailSubscriptionInput {
     email: String!
+    locale: String
 }
 
 input VerifyEmailSubscriptionInput {
     email: String!
-    code: String!
+    verificationCode: String!
 }
 
 extend type Mutation {

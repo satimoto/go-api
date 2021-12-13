@@ -3,7 +3,8 @@
 package graph
 
 type CreateEmailSubscriptionInput struct {
-	Email string `json:"email"`
+	Email  string  `json:"email"`
+	Locale *string `json:"locale"`
 }
 
 type RegisterNodeInput struct {
@@ -17,6 +18,6 @@ type RegisterUserInput struct {
 }
 
 type VerifyEmailSubscriptionInput struct {
-	Email string `json:"email"`
-	Code  string `json:"code"`
+	Email            string `json:"email"`
+	VerificationCode string `json:"verificationCode"`
 }
