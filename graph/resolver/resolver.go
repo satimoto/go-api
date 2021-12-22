@@ -1,8 +1,8 @@
 package resolver
 
 import (
+	"github.com/satimoto/go-api/authentication"
 	"github.com/satimoto/go-api/emailsubscription"
-	"github.com/satimoto/go-api/node"
 	"github.com/satimoto/go-api/user"
 	"github.com/satimoto/go-datastore/db"
 )
@@ -15,8 +15,8 @@ type Repository interface{}
 
 type Resolver struct {
 	Repository
+	*authentication.AuthenticationResolver
 	*emailsubscription.EmailSubscriptionResolver
-	*node.NodeResolver
 	*user.UserResolver
 }
 
@@ -24,8 +24,8 @@ func NewResolver(repositoryService *db.RepositoryService) *Resolver {
 	repo := Repository(repositoryService)
 	return &Resolver{
 		Repository:                repo,
+		AuthenticationResolver:    authentication.NewResolver(repositoryService),
 		EmailSubscriptionResolver: emailsubscription.NewResolver(repositoryService),
-		NodeResolver:              node.NewResolver(repositoryService),
 		UserResolver:              user.NewResolver(repositoryService),
 	}
 }

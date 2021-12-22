@@ -83,8 +83,3 @@ func (r *mutationResolver) VerifyEmailSubscription(ctx context.Context, input gr
 
 	return nil, gqlerror.Errorf("Invalid verification code")
 }
-
-// Mutation returns graph.MutationResolver implementation.
-func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
-
-type mutationResolver struct{ *Resolver }
