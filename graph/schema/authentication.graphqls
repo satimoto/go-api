@@ -1,0 +1,36 @@
+enum AuthenticationAction {
+  register
+  login
+  link
+  auth
+}
+
+type CreateAuthentication {
+    code: String!
+    lnUrl: String!
+}
+
+type ExchangeAuthentication {
+    token: String!
+}
+
+type VerifyAuthentication {
+    verified: Boolean!
+}
+
+input CreateAuthenticationInput {
+    code: String!
+    linkingKey: String!
+    nodeKey: String!
+    nodeAddress: String!
+    deviceToken: String!
+}
+
+extend type Query {
+    verifyAuthentication(code: String!): VerifyAuthentication!
+}
+
+extend type Mutation {
+    createAuthentication(action: AuthenticationAction!): CreateAuthentication!
+    exchangeAuthentication(code: String!): ExchangeAuthentication!
+}

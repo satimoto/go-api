@@ -5,48 +5,37 @@ package resolver
 
 import (
 	"context"
+	"log"
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-datastore/db"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *mutationResolver) RegisterUser(ctx context.Context, input graph.UserInput) (*db.User, error) {
-	node, err := r.Repository.CreateNode(ctx, db.CreateNodeParams{
-		Pubkey:  input.Node.Pubkey,
-		Address: input.Node.Address,
+func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUserInput) (*db.User, error) {
+	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, input.Code)
+
+	if err != nil {
+		log.Printf("Authentication not found: code %s: %s", input.Code, err.Error())
+		return nil, gqlerror.Errorf("Authentication not found")
+	}
+
+	if !auth.Signature.Valid {
+		log.Printf("Authentication not yet verified: %s", auth.Challenge)
+		return nil, gqlerror.Errorf("Authentication not yet verified")
+	}
+
+	user, err := r.UserResolver.Repository.CreateUser(ctx, db.CreateUserParams{
+		LinkingKey:  auth.LinkingKey.String,
+		NodeKey:     input.NodeKey,
+		NodeAddress: input.NodeAddress,
+		DeviceToken: input.DeviceToken,
 	})
 
 	if err != nil {
-		return nil, err
+		log.Printf("User already exists: %s", err.Error())
+		return nil, gqlerror.Errorf("User already exists")
 	}
 
-	user, err := r.Repository.CreateUser(ctx, db.CreateUserParams{
-		DeviceToken: input.DeviceToken,
-		NodeID:      node.ID,
-	})
-
-	return &user, err
+	return &user, nil
 }
-
-func (r *queryResolver) Users(ctx context.Context) ([]db.User, error) {
-	return r.Repository.ListUsers(ctx)
-}
-
-func (r *userResolver) Node(ctx context.Context, obj *db.User) (*db.Node, error) {
-	node, err := r.Repository.GetNode(ctx, obj.NodeID)
-
-	return &node, err
-}
-
-// Mutation returns graph.MutationResolver implementation.
-func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
-
-// Query returns graph.QueryResolver implementation.
-func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
-
-// User returns graph.UserResolver implementation.
-func (r *Resolver) User() graph.UserResolver { return &userResolver{r} }
-
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }
-type userResolver struct{ *Resolver }
