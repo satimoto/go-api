@@ -1,0 +1,21 @@
+type EmailSubscription {
+    id: ID!
+    email: String!
+    locale: String!
+    isVerified: Boolean!
+}
+
+input CreateEmailSubscriptionInput {
+    email: String!
+    locale: String
+}
+
+input VerifyEmailSubscriptionInput {
+    email: String!
+    verificationCode: String!
+}
+
+extend type Mutation {
+    createEmailSubscription(input: CreateEmailSubscriptionInput!): EmailSubscription!
+    verifyEmailSubscription(input: VerifyEmailSubscriptionInput!): EmailSubscription!
+}
