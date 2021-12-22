@@ -38,7 +38,9 @@ func init() {
 	}
 
 	database = d
-	chiLambda = chiproxy.New(router.Initialize(database))
+	routerService := router.NewRouter(database)
+	handler := routerService.Handler()
+	chiLambda = chiproxy.New(handler)
 }
 
 func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {

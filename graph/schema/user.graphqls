@@ -1,18 +1,17 @@
 type User {
     id: ID!
+    nodeKey: String!
+    nodeAddress: String!
     deviceToken: String!
-    node: Node!
 }
 
-input RegisterUserInput {
+input CreateUserInput {
+    code: String!
+    nodeKey: String!
+    nodeAddress: String!
     deviceToken: String!
-    node: RegisterNodeInput!
-}
-
-extend type Query {
-    nodes: [Node!]!
 }
 
 extend type Mutation {
-    registerUser(input: RegisterUserInput!): User!
+    createUser(input: CreateUserInput!): User!
 }

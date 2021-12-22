@@ -40,7 +40,9 @@ func init() {
 func main() {
 	defer database.Close()
 
-	handler := router.Initialize(database)
+	routerService := router.NewRouter(database)
+	handler := routerService.Handler()
+	
 	err := http.ListenAndServe(":8080", handler)
 
 	if err != nil {
