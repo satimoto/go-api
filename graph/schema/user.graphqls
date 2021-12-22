@@ -1,0 +1,17 @@
+type User {
+    id: ID!
+    nodeKey: String!
+    nodeAddress: String!
+    deviceToken: String!
+}
+
+input CreateUserInput {
+    code: String!
+    nodeKey: String!
+    nodeAddress: String!
+    deviceToken: String!
+}
+
+extend type Mutation {
+    createUser(input: CreateUserInput!): User!
+}
