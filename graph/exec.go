@@ -35,6 +35,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	ChannelRequest() ChannelRequestResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -43,6 +44,14 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	ChannelRequest struct {
+		AmountMsat  func(childComplexity int) int
+		ID          func(childComplexity int) int
+		PaymentAddr func(childComplexity int) int
+		PaymentHash func(childComplexity int) int
+		Pubkey      func(childComplexity int) int
+	}
+
 	CreateAuthentication struct {
 		Code  func(childComplexity int) int
 		LnURL func(childComplexity int) int
@@ -61,9 +70,11 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateAuthentication    func(childComplexity int, action AuthenticationAction) int
+		CreateChannelRequest    func(childComplexity int, input CreateChannelRequestInput) int
 		CreateEmailSubscription func(childComplexity int, input CreateEmailSubscriptionInput) int
 		CreateUser              func(childComplexity int, input CreateUserInput) int
 		ExchangeAuthentication  func(childComplexity int, code string) int
+		UpdateUser              func(childComplexity int, input UpdateUserInput) int
 		VerifyEmailSubscription func(childComplexity int, input VerifyEmailSubscriptionInput) int
 	}
 
@@ -74,8 +85,7 @@ type ComplexityRoot struct {
 	User struct {
 		DeviceToken func(childComplexity int) int
 		ID          func(childComplexity int) int
-		NodeAddress func(childComplexity int) int
-		NodeKey     func(childComplexity int) int
+		NodePubkey  func(childComplexity int) int
 	}
 
 	VerifyAuthentication struct {
@@ -83,12 +93,19 @@ type ComplexityRoot struct {
 	}
 }
 
+type ChannelRequestResolver interface {
+	Pubkey(ctx context.Context, obj *db.ChannelRequest) (string, error)
+	PaymentHash(ctx context.Context, obj *db.ChannelRequest) (string, error)
+	PaymentAddr(ctx context.Context, obj *db.ChannelRequest) (string, error)
+}
 type MutationResolver interface {
 	CreateAuthentication(ctx context.Context, action AuthenticationAction) (*CreateAuthentication, error)
 	ExchangeAuthentication(ctx context.Context, code string) (*ExchangeAuthentication, error)
+	CreateChannelRequest(ctx context.Context, input CreateChannelRequestInput) (*db.ChannelRequest, error)
 	CreateEmailSubscription(ctx context.Context, input CreateEmailSubscriptionInput) (*db.EmailSubscription, error)
 	VerifyEmailSubscription(ctx context.Context, input VerifyEmailSubscriptionInput) (*db.EmailSubscription, error)
 	CreateUser(ctx context.Context, input CreateUserInput) (*db.User, error)
+	UpdateUser(ctx context.Context, input UpdateUserInput) (*db.User, error)
 }
 type QueryResolver interface {
 	VerifyAuthentication(ctx context.Context, code string) (*VerifyAuthentication, error)
@@ -108,6 +125,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "ChannelRequest.amountMsat":
+		if e.complexity.ChannelRequest.AmountMsat == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.AmountMsat(childComplexity), true
+
+	case "ChannelRequest.id":
+		if e.complexity.ChannelRequest.ID == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.ID(childComplexity), true
+
+	case "ChannelRequest.paymentAddr":
+		if e.complexity.ChannelRequest.PaymentAddr == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.PaymentAddr(childComplexity), true
+
+	case "ChannelRequest.paymentHash":
+		if e.complexity.ChannelRequest.PaymentHash == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.PaymentHash(childComplexity), true
+
+	case "ChannelRequest.pubkey":
+		if e.complexity.ChannelRequest.Pubkey == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.Pubkey(childComplexity), true
 
 	case "CreateAuthentication.code":
 		if e.complexity.CreateAuthentication.Code == nil {
@@ -170,6 +222,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateAuthentication(childComplexity, args["action"].(AuthenticationAction)), true
 
+	case "Mutation.createChannelRequest":
+		if e.complexity.Mutation.CreateChannelRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createChannelRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateChannelRequest(childComplexity, args["input"].(CreateChannelRequestInput)), true
+
 	case "Mutation.createEmailSubscription":
 		if e.complexity.Mutation.CreateEmailSubscription == nil {
 			break
@@ -205,6 +269,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ExchangeAuthentication(childComplexity, args["code"].(string)), true
+
+	case "Mutation.updateUser":
+		if e.complexity.Mutation.UpdateUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["input"].(UpdateUserInput)), true
 
 	case "Mutation.verifyEmailSubscription":
 		if e.complexity.Mutation.VerifyEmailSubscription == nil {
@@ -244,19 +320,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.ID(childComplexity), true
 
-	case "User.nodeAddress":
-		if e.complexity.User.NodeAddress == nil {
+	case "User.nodePubkey":
+		if e.complexity.User.NodePubkey == nil {
 			break
 		}
 
-		return e.complexity.User.NodeAddress(childComplexity), true
-
-	case "User.nodeKey":
-		if e.complexity.User.NodeKey == nil {
-			break
-		}
-
-		return e.complexity.User.NodeKey(childComplexity), true
+		return e.complexity.User.NodePubkey(childComplexity), true
 
 	case "VerifyAuthentication.verified":
 		if e.complexity.VerifyAuthentication.Verified == nil {
@@ -349,14 +418,6 @@ type VerifyAuthentication {
     verified: Boolean!
 }
 
-input CreateAuthenticationInput {
-    code: String!
-    linkingKey: String!
-    nodeKey: String!
-    nodeAddress: String!
-    deviceToken: String!
-}
-
 extend type Query {
     verifyAuthentication(code: String!): VerifyAuthentication!
 }
@@ -364,6 +425,43 @@ extend type Query {
 extend type Mutation {
     createAuthentication(action: AuthenticationAction!): CreateAuthentication!
     exchangeAuthentication(code: String!): ExchangeAuthentication!
+}
+`, BuiltIn: false},
+	{Name: "graph/schema/channel_request.graphqls", Input: `type ChannelRequest {
+    id: ID!
+    """
+    This field is base64 encoded.
+    """
+    pubkey: String!
+    """
+    This field is base64 encoded.
+    """
+    paymentHash: String!
+    """
+    This field is base64 encoded.
+    """
+    paymentAddr: String!
+    amountMsat: Int!
+}
+
+input CreateChannelRequestInput {
+    """
+    This field must be encoded as base64.
+    """
+    pubkey: String!
+    """
+    This field must be encoded as base64.
+    """
+    preimage: String!
+    """
+    This field must be encoded as base64.
+    """
+    paymentAddr: String!
+    amountMsat: Int!
+}
+
+extend type Mutation {
+    createChannelRequest(input: CreateChannelRequestInput!): ChannelRequest!
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/email_subscription.graphqls", Input: `type EmailSubscription {
@@ -390,20 +488,23 @@ extend type Mutation {
 `, BuiltIn: false},
 	{Name: "graph/schema/user.graphqls", Input: `type User {
     id: ID!
-    nodeKey: String!
-    nodeAddress: String!
+    nodePubkey: String!
     deviceToken: String!
 }
 
 input CreateUserInput {
     code: String!
-    nodeKey: String!
-    nodeAddress: String!
+    nodePubkey: String!
+    deviceToken: String!
+}
+
+input UpdateUserInput {
     deviceToken: String!
 }
 
 extend type Mutation {
     createUser(input: CreateUserInput!): User!
+    updateUser(input: UpdateUserInput!): User!
 }
 `, BuiltIn: false},
 }
@@ -425,6 +526,21 @@ func (ec *executionContext) field_Mutation_createAuthentication_args(ctx context
 		}
 	}
 	args["action"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createChannelRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 CreateChannelRequestInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateChannelRequestInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateChannelRequestInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -470,6 +586,21 @@ func (ec *executionContext) field_Mutation_exchangeAuthentication_args(ctx conte
 		}
 	}
 	args["code"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 UpdateUserInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateUserInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -555,6 +686,181 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _ChannelRequest_id(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelRequest_pubkey(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ChannelRequest().Pubkey(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelRequest_paymentHash(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ChannelRequest().PaymentHash(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelRequest_paymentAddr(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ChannelRequest().PaymentAddr(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelRequest_amountMsat(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AmountMsat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _CreateAuthentication_code(ctx context.Context, field graphql.CollectedField, obj *CreateAuthentication) (ret graphql.Marshaler) {
 	defer func() {
@@ -885,6 +1191,48 @@ func (ec *executionContext) _Mutation_exchangeAuthentication(ctx context.Context
 	return ec.marshalNExchangeAuthentication2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐExchangeAuthentication(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createChannelRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createChannelRequest_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateChannelRequest(rctx, args["input"].(CreateChannelRequestInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.ChannelRequest)
+	fc.Result = res
+	return ec.marshalNChannelRequest2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐChannelRequest(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createEmailSubscription(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -995,6 +1343,48 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateUser(rctx, args["input"].(CreateUserInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateUser_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateUser(rctx, args["input"].(UpdateUserInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1159,7 +1549,7 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2int64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_nodeKey(ctx context.Context, field graphql.CollectedField, obj *db.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_nodePubkey(ctx context.Context, field graphql.CollectedField, obj *db.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1177,42 +1567,7 @@ func (ec *executionContext) _User_nodeKey(ctx context.Context, field graphql.Col
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.NodeKey, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _User_nodeAddress(ctx context.Context, field graphql.CollectedField, obj *db.User) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.NodeAddress, nil
+		return obj.NodePubkey, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2421,8 +2776,8 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputCreateAuthenticationInput(ctx context.Context, obj interface{}) (CreateAuthenticationInput, error) {
-	var it CreateAuthenticationInput
+func (ec *executionContext) unmarshalInputCreateChannelRequestInput(ctx context.Context, obj interface{}) (CreateChannelRequestInput, error) {
+	var it CreateChannelRequestInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -2430,43 +2785,35 @@ func (ec *executionContext) unmarshalInputCreateAuthenticationInput(ctx context.
 
 	for k, v := range asMap {
 		switch k {
-		case "code":
+		case "pubkey":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
-			it.Code, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubkey"))
+			it.Pubkey, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "linkingKey":
+		case "preimage":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("linkingKey"))
-			it.LinkingKey, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("preimage"))
+			it.Preimage, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "nodeKey":
+		case "paymentAddr":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nodeKey"))
-			it.NodeKey, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paymentAddr"))
+			it.PaymentAddr, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "nodeAddress":
+		case "amountMsat":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nodeAddress"))
-			it.NodeAddress, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "deviceToken":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deviceToken"))
-			it.DeviceToken, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountMsat"))
+			it.AmountMsat, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2524,22 +2871,37 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
-		case "nodeKey":
+		case "nodePubkey":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nodeKey"))
-			it.NodeKey, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nodePubkey"))
+			it.NodePubkey, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "nodeAddress":
+		case "deviceToken":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nodeAddress"))
-			it.NodeAddress, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deviceToken"))
+			it.DeviceToken, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, obj interface{}) (UpdateUserInput, error) {
+	var it UpdateUserInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
 		case "deviceToken":
 			var err error
 
@@ -2592,6 +2954,80 @@ func (ec *executionContext) unmarshalInputVerifyEmailSubscriptionInput(ctx conte
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var channelRequestImplementors = []string{"ChannelRequest"}
+
+func (ec *executionContext) _ChannelRequest(ctx context.Context, sel ast.SelectionSet, obj *db.ChannelRequest) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, channelRequestImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ChannelRequest")
+		case "id":
+			out.Values[i] = ec._ChannelRequest_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "pubkey":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelRequest_pubkey(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "paymentHash":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelRequest_paymentHash(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "paymentAddr":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelRequest_paymentAddr(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "amountMsat":
+			out.Values[i] = ec._ChannelRequest_amountMsat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
 
 var createAuthenticationImplementors = []string{"CreateAuthentication"}
 
@@ -2719,6 +3155,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createChannelRequest":
+			out.Values[i] = ec._Mutation_createChannelRequest(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createEmailSubscription":
 			out.Values[i] = ec._Mutation_createEmailSubscription(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -2731,6 +3172,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "createUser":
 			out.Values[i] = ec._Mutation_createUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateUser":
+			out.Values[i] = ec._Mutation_updateUser(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2805,13 +3251,8 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "nodeKey":
-			out.Values[i] = ec._User_nodeKey(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "nodeAddress":
-			out.Values[i] = ec._User_nodeAddress(ctx, field, obj)
+		case "nodePubkey":
+			out.Values[i] = ec._User_nodePubkey(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3133,6 +3574,20 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNChannelRequest2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐChannelRequest(ctx context.Context, sel ast.SelectionSet, v db.ChannelRequest) graphql.Marshaler {
+	return ec._ChannelRequest(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNChannelRequest2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐChannelRequest(ctx context.Context, sel ast.SelectionSet, v *db.ChannelRequest) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._ChannelRequest(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNCreateAuthentication2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateAuthentication(ctx context.Context, sel ast.SelectionSet, v CreateAuthentication) graphql.Marshaler {
 	return ec._CreateAuthentication(ctx, sel, &v)
 }
@@ -3145,6 +3600,11 @@ func (ec *executionContext) marshalNCreateAuthentication2ᚖgithubᚗcomᚋsatim
 		return graphql.Null
 	}
 	return ec._CreateAuthentication(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNCreateChannelRequestInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateChannelRequestInput(ctx context.Context, v interface{}) (CreateChannelRequestInput, error) {
+	res, err := ec.unmarshalInputCreateChannelRequestInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNCreateEmailSubscriptionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateEmailSubscriptionInput(ctx context.Context, v interface{}) (CreateEmailSubscriptionInput, error) {
@@ -3200,6 +3660,36 @@ func (ec *executionContext) marshalNID2int64(ctx context.Context, sel ast.Select
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int64(ctx context.Context, v interface{}) (int64, error) {
+	res, err := graphql.UnmarshalInt64(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
+	res := graphql.MarshalInt64(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3213,6 +3703,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUpdateUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateUserInput(ctx context.Context, v interface{}) (UpdateUserInput, error) {
+	res, err := ec.unmarshalInputUpdateUserInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx context.Context, sel ast.SelectionSet, v db.User) graphql.Marshaler {

@@ -31,9 +31,9 @@ func (r *LnUrlAuthResolver) GetHandler(rw http.ResponseWriter, request *http.Req
 	}
 
 	r.AuthenticationResolver.Repository.UpdateAuthentication(ctx, db.UpdateAuthenticationParams{
-		ID: auth.ID,
-		Signature:  util.SqlNullString(sig),
-		LinkingKey: util.SqlNullString(key),
+		ID:            auth.ID,
+		Signature:     util.SqlNullString(sig),
+		LinkingPubkey: util.SqlNullString(key),
 	})
 
 	render.JSON(rw, request, lnurl.OkResponse())

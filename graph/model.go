@@ -13,12 +13,14 @@ type CreateAuthentication struct {
 	LnURL string `json:"lnUrl"`
 }
 
-type CreateAuthenticationInput struct {
-	Code        string `json:"code"`
-	LinkingKey  string `json:"linkingKey"`
-	NodeKey     string `json:"nodeKey"`
-	NodeAddress string `json:"nodeAddress"`
-	DeviceToken string `json:"deviceToken"`
+type CreateChannelRequestInput struct {
+	// This field must be encoded as base64.
+	Pubkey string `json:"pubkey"`
+	// This field must be encoded as base64.
+	Preimage string `json:"preimage"`
+	// This field must be encoded as base64.
+	PaymentAddr string `json:"paymentAddr"`
+	AmountMsat  int    `json:"amountMsat"`
 }
 
 type CreateEmailSubscriptionInput struct {
@@ -28,13 +30,16 @@ type CreateEmailSubscriptionInput struct {
 
 type CreateUserInput struct {
 	Code        string `json:"code"`
-	NodeKey     string `json:"nodeKey"`
-	NodeAddress string `json:"nodeAddress"`
+	NodePubkey  string `json:"nodePubkey"`
 	DeviceToken string `json:"deviceToken"`
 }
 
 type ExchangeAuthentication struct {
 	Token string `json:"token"`
+}
+
+type UpdateUserInput struct {
+	DeviceToken string `json:"deviceToken"`
 }
 
 type VerifyAuthentication struct {
