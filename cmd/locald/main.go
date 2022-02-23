@@ -43,7 +43,7 @@ func main() {
 	routerService := router.NewRouter(database)
 	handler := routerService.Handler()
 	
-	err := http.ListenAndServe(":8080", handler)
+	err := http.ListenAndServe(":9000", handler)
 
 	if err != nil {
 		log.Println("Error serving")

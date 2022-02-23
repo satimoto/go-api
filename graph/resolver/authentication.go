@@ -59,7 +59,7 @@ func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code stri
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
-	user, err := r.UserResolver.Repository.GetUserByLinkingKey(ctx, auth.LinkingKey.String)
+	user, err := r.UserResolver.Repository.GetUserByLinkingPubkey(ctx, auth.LinkingPubkey.String)
 
 	if err != nil {
 		log.Printf("No linked user: %s", err.Error())

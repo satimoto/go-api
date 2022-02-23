@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 
+	"github.com/satimoto/go-api/authentication"
 	"github.com/satimoto/go-api/graph/resolver"
 	"github.com/satimoto/go-api/lnurl/auth"
 	"github.com/satimoto/go-datastore/db"
@@ -33,7 +34,8 @@ func (rs *RouterService) Handler() *chi.Mux {
 
 	// Set middleware
 	router.Use(render.SetContentType(render.ContentTypeJSON), middleware.Logger, middleware.RedirectSlashes, middleware.Recoverer)
-	router.Use(middleware.Timeout(30 * time.Second))
+	router.Use(middleware.Timeout(120 * time.Second))
+	router.Use(authentication.Middleware())
 
 	router.Use(cors.Handler(cors.Options{
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},

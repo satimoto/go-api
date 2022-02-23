@@ -8,8 +8,10 @@ import (
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error)
-	GetUserByLinkingKey(ctx context.Context, linkingKey string) (db.User, error)
+	GetUserByLinkingPubkey(ctx context.Context, linkingPubkey string) (db.User, error)
+	UpdateUser(ctx context.Context, arg db.UpdateUserParams) (db.User, error)
 }
+
 type UserResolver struct {
 	Repository UserRepository
 }

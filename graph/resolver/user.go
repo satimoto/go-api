@@ -7,6 +7,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/satimoto/go-api/authentication"
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-datastore/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -26,10 +27,9 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 	}
 
 	user, err := r.UserResolver.Repository.CreateUser(ctx, db.CreateUserParams{
-		LinkingKey:  auth.LinkingKey.String,
-		NodeKey:     input.NodeKey,
-		NodeAddress: input.NodeAddress,
-		DeviceToken: input.DeviceToken,
+		LinkingPubkey: auth.LinkingPubkey.String,
+		NodePubkey:    input.NodePubkey,
+		DeviceToken:   input.DeviceToken,
 	})
 
 	if err != nil {
@@ -38,4 +38,22 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 	}
 
 	return &user, nil
+}
+
+func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUserInput) (*db.User, error) {
+	if userId := authentication.GetUserId(ctx); userId != nil {
+		user, err := r.UserResolver.Repository.UpdateUser(ctx, db.UpdateUserParams{
+			ID:          *userId,
+			DeviceToken: input.DeviceToken,
+		})
+
+		if err != nil {
+			log.Printf("Error updating user: %s", err.Error())
+			return nil, gqlerror.Errorf("Error updating user")
+		}
+
+		return &user, nil
+	}
+
+	return nil, gqlerror.Errorf("Not Authenticated")
 }
