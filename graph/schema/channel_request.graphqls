@@ -16,9 +16,6 @@ type ChannelRequest {
 }
 
 input CreateChannelRequestInput {
-    """
-    This field must be encoded as base64.
-    """
     pubkey: String!
     """
     This field must be encoded as base64.

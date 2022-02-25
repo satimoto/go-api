@@ -85,7 +85,7 @@ type ComplexityRoot struct {
 	User struct {
 		DeviceToken func(childComplexity int) int
 		ID          func(childComplexity int) int
-		NodePubkey  func(childComplexity int) int
+		Pubkey      func(childComplexity int) int
 	}
 
 	VerifyAuthentication struct {
@@ -94,7 +94,6 @@ type ComplexityRoot struct {
 }
 
 type ChannelRequestResolver interface {
-	Pubkey(ctx context.Context, obj *db.ChannelRequest) (string, error)
 	PaymentHash(ctx context.Context, obj *db.ChannelRequest) (string, error)
 	PaymentAddr(ctx context.Context, obj *db.ChannelRequest) (string, error)
 }
@@ -320,12 +319,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.ID(childComplexity), true
 
-	case "User.nodePubkey":
-		if e.complexity.User.NodePubkey == nil {
+	case "User.pubkey":
+		if e.complexity.User.Pubkey == nil {
 			break
 		}
 
-		return e.complexity.User.NodePubkey(childComplexity), true
+		return e.complexity.User.Pubkey(childComplexity), true
 
 	case "VerifyAuthentication.verified":
 		if e.complexity.VerifyAuthentication.Verified == nil {
@@ -445,9 +444,6 @@ extend type Mutation {
 }
 
 input CreateChannelRequestInput {
-    """
-    This field must be encoded as base64.
-    """
     pubkey: String!
     """
     This field must be encoded as base64.
@@ -488,13 +484,13 @@ extend type Mutation {
 `, BuiltIn: false},
 	{Name: "graph/schema/user.graphqls", Input: `type User {
     id: ID!
-    nodePubkey: String!
+    pubkey: String!
     deviceToken: String!
 }
 
 input CreateUserInput {
     code: String!
-    nodePubkey: String!
+    pubkey: String!
     deviceToken: String!
 }
 
@@ -733,14 +729,14 @@ func (ec *executionContext) _ChannelRequest_pubkey(ctx context.Context, field gr
 		Object:     "ChannelRequest",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ChannelRequest().Pubkey(rctx, obj)
+		return obj.Pubkey, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1549,7 +1545,7 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2int64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_nodePubkey(ctx context.Context, field graphql.CollectedField, obj *db.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_pubkey(ctx context.Context, field graphql.CollectedField, obj *db.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1567,7 +1563,7 @@ func (ec *executionContext) _User_nodePubkey(ctx context.Context, field graphql.
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.NodePubkey, nil
+		return obj.Pubkey, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2871,11 +2867,11 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
-		case "nodePubkey":
+		case "pubkey":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nodePubkey"))
-			it.NodePubkey, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubkey"))
+			it.Pubkey, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2972,19 +2968,10 @@ func (ec *executionContext) _ChannelRequest(ctx context.Context, sel ast.Selecti
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "pubkey":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ChannelRequest_pubkey(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._ChannelRequest_pubkey(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "paymentHash":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -3251,8 +3238,8 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "nodePubkey":
-			out.Values[i] = ec._User_nodePubkey(ctx, field, obj)
+		case "pubkey":
+			out.Values[i] = ec._User_pubkey(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
