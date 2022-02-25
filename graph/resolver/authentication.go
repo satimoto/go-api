@@ -31,7 +31,7 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, action grap
 
 	params := url.Values{}
 	params.Add("k1", authentication.Challenge)
-	params.Add("tag", "login")
+	params.Add("tag", action.String())
 
 	callbackUrl, err := auth.GenerateLnUrl("v1", authentication.Challenge)
 
