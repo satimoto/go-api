@@ -1,12 +1,12 @@
 type User {
     id: ID!
-    nodePubkey: String!
+    pubkey: String!
     deviceToken: String!
 }
 
 input CreateUserInput {
     code: String!
-    nodePubkey: String!
+    pubkey: String!
     deviceToken: String!
 }
 

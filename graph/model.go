@@ -14,7 +14,6 @@ type CreateAuthentication struct {
 }
 
 type CreateChannelRequestInput struct {
-	// This field must be encoded as base64.
 	Pubkey string `json:"pubkey"`
 	// This field must be encoded as base64.
 	Preimage string `json:"preimage"`
@@ -30,7 +29,7 @@ type CreateEmailSubscriptionInput struct {
 
 type CreateUserInput struct {
 	Code        string `json:"code"`
-	NodePubkey  string `json:"nodePubkey"`
+	Pubkey      string `json:"pubkey"`
 	DeviceToken string `json:"deviceToken"`
 }
 

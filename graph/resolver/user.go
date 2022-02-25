@@ -28,7 +28,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 
 	user, err := r.UserResolver.Repository.CreateUser(ctx, db.CreateUserParams{
 		LinkingPubkey: auth.LinkingPubkey.String,
-		NodePubkey:    input.NodePubkey,
+		Pubkey:        input.Pubkey,
 		DeviceToken:   input.DeviceToken,
 	})
 
