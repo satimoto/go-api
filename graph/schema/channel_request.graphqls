@@ -3,24 +3,20 @@ type ChannelRequest {
     """
     This field is base64 encoded.
     """
-    pubkey: String!
-    """
-    This field is base64 encoded.
-    """
     paymentHash: String!
     """
     This field is base64 encoded.
     """
     paymentAddr: String!
     amountMsat: Int!
+    node: Node!
 }
 
 input CreateChannelRequestInput {
-    pubkey: String!
     """
     This field must be encoded as base64.
     """
-    preimage: String!
+    paymentHash: String!
     """
     This field must be encoded as base64.
     """

@@ -47,9 +47,9 @@ type ComplexityRoot struct {
 	ChannelRequest struct {
 		AmountMsat  func(childComplexity int) int
 		ID          func(childComplexity int) int
+		Node        func(childComplexity int) int
 		PaymentAddr func(childComplexity int) int
 		PaymentHash func(childComplexity int) int
-		Pubkey      func(childComplexity int) int
 	}
 
 	CreateAuthentication struct {
@@ -78,6 +78,12 @@ type ComplexityRoot struct {
 		VerifyEmailSubscription func(childComplexity int, input VerifyEmailSubscriptionInput) int
 	}
 
+	Node struct {
+		Addr   func(childComplexity int) int
+		Alias  func(childComplexity int) int
+		Pubkey func(childComplexity int) int
+	}
+
 	Query struct {
 		VerifyAuthentication func(childComplexity int, code string) int
 	}
@@ -96,6 +102,8 @@ type ComplexityRoot struct {
 type ChannelRequestResolver interface {
 	PaymentHash(ctx context.Context, obj *db.ChannelRequest) (string, error)
 	PaymentAddr(ctx context.Context, obj *db.ChannelRequest) (string, error)
+
+	Node(ctx context.Context, obj *db.ChannelRequest) (*db.Node, error)
 }
 type MutationResolver interface {
 	CreateAuthentication(ctx context.Context, action AuthenticationAction) (*CreateAuthentication, error)
@@ -139,6 +147,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ChannelRequest.ID(childComplexity), true
 
+	case "ChannelRequest.node":
+		if e.complexity.ChannelRequest.Node == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.Node(childComplexity), true
+
 	case "ChannelRequest.paymentAddr":
 		if e.complexity.ChannelRequest.PaymentAddr == nil {
 			break
@@ -152,13 +167,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ChannelRequest.PaymentHash(childComplexity), true
-
-	case "ChannelRequest.pubkey":
-		if e.complexity.ChannelRequest.Pubkey == nil {
-			break
-		}
-
-		return e.complexity.ChannelRequest.Pubkey(childComplexity), true
 
 	case "CreateAuthentication.code":
 		if e.complexity.CreateAuthentication.Code == nil {
@@ -292,6 +300,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.VerifyEmailSubscription(childComplexity, args["input"].(VerifyEmailSubscriptionInput)), true
+
+	case "Node.addr":
+		if e.complexity.Node.Addr == nil {
+			break
+		}
+
+		return e.complexity.Node.Addr(childComplexity), true
+
+	case "Node.alias":
+		if e.complexity.Node.Alias == nil {
+			break
+		}
+
+		return e.complexity.Node.Alias(childComplexity), true
+
+	case "Node.pubkey":
+		if e.complexity.Node.Pubkey == nil {
+			break
+		}
+
+		return e.complexity.Node.Pubkey(childComplexity), true
 
 	case "Query.verifyAuthentication":
 		if e.complexity.Query.VerifyAuthentication == nil {
@@ -431,24 +460,20 @@ extend type Mutation {
     """
     This field is base64 encoded.
     """
-    pubkey: String!
-    """
-    This field is base64 encoded.
-    """
     paymentHash: String!
     """
     This field is base64 encoded.
     """
     paymentAddr: String!
     amountMsat: Int!
+    node: Node!
 }
 
 input CreateChannelRequestInput {
-    pubkey: String!
     """
     This field must be encoded as base64.
     """
-    preimage: String!
+    paymentHash: String!
     """
     This field must be encoded as base64.
     """
@@ -480,6 +505,12 @@ input VerifyEmailSubscriptionInput {
 extend type Mutation {
     createEmailSubscription(input: CreateEmailSubscriptionInput!): EmailSubscription!
     verifyEmailSubscription(input: VerifyEmailSubscriptionInput!): EmailSubscription!
+}
+`, BuiltIn: false},
+	{Name: "graph/schema/node.graphqls", Input: `type Node {
+    pubkey: String!
+    addr: String!
+    alias: String!
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/user.graphqls", Input: `type User {
@@ -718,41 +749,6 @@ func (ec *executionContext) _ChannelRequest_id(ctx context.Context, field graphq
 	return ec.marshalNID2int64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ChannelRequest_pubkey(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "ChannelRequest",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Pubkey, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _ChannelRequest_paymentHash(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -856,6 +852,41 @@ func (ec *executionContext) _ChannelRequest_amountMsat(ctx context.Context, fiel
 	res := resTmp.(int64)
 	fc.Result = res
 	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelRequest_node(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ChannelRequest().Node(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Node)
+	fc.Result = res
+	return ec.marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNode(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CreateAuthentication_code(ctx context.Context, field graphql.CollectedField, obj *CreateAuthentication) (ret graphql.Marshaler) {
@@ -1395,6 +1426,111 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	res := resTmp.(*db.User)
 	fc.Result = res
 	return ec.marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Node_pubkey(ctx context.Context, field graphql.CollectedField, obj *db.Node) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Node",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pubkey, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Node_addr(ctx context.Context, field graphql.CollectedField, obj *db.Node) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Node",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Addr, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Node_alias(ctx context.Context, field graphql.CollectedField, obj *db.Node) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Node",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Alias, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_verifyAuthentication(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2781,19 +2917,11 @@ func (ec *executionContext) unmarshalInputCreateChannelRequestInput(ctx context.
 
 	for k, v := range asMap {
 		switch k {
-		case "pubkey":
+		case "paymentHash":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pubkey"))
-			it.Pubkey, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "preimage":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("preimage"))
-			it.Preimage, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paymentHash"))
+			it.PaymentHash, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2967,11 +3095,6 @@ func (ec *executionContext) _ChannelRequest(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "pubkey":
-			out.Values[i] = ec._ChannelRequest_pubkey(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "paymentHash":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -3005,6 +3128,20 @@ func (ec *executionContext) _ChannelRequest(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "node":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelRequest_node(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3164,6 +3301,43 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "updateUser":
 			out.Values[i] = ec._Mutation_updateUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var nodeImplementors = []string{"Node"}
+
+func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj *db.Node) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, nodeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Node")
+		case "pubkey":
+			out.Values[i] = ec._Node_pubkey(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "addr":
+			out.Values[i] = ec._Node_addr(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "alias":
+			out.Values[i] = ec._Node_alias(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3675,6 +3849,20 @@ func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.Selec
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNNode2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNode(ctx context.Context, sel ast.SelectionSet, v db.Node) graphql.Marshaler {
+	return ec._Node(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNode(ctx context.Context, sel ast.SelectionSet, v *db.Node) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Node(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

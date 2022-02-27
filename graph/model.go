@@ -14,9 +14,8 @@ type CreateAuthentication struct {
 }
 
 type CreateChannelRequestInput struct {
-	Pubkey string `json:"pubkey"`
 	// This field must be encoded as base64.
-	Preimage string `json:"preimage"`
+	PaymentHash string `json:"paymentHash"`
 	// This field must be encoded as base64.
 	PaymentAddr string `json:"paymentAddr"`
 	AmountMsat  int    `json:"amountMsat"`
