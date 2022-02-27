@@ -4,6 +4,7 @@ import (
 	"github.com/satimoto/go-api/authentication"
 	"github.com/satimoto/go-api/channelrequest"
 	"github.com/satimoto/go-api/emailsubscription"
+	"github.com/satimoto/go-api/node"
 	"github.com/satimoto/go-api/user"
 	"github.com/satimoto/go-datastore/db"
 )
@@ -19,6 +20,7 @@ type Resolver struct {
 	*authentication.AuthenticationResolver
 	*channelrequest.ChannelRequestResolver
 	*emailsubscription.EmailSubscriptionResolver
+	*node.NodeResolver
 	*user.UserResolver
 }
 
@@ -29,6 +31,7 @@ func NewResolver(repositoryService *db.RepositoryService) *Resolver {
 		ChannelRequestResolver:    channelrequest.NewResolver(repositoryService),
 		AuthenticationResolver:    authentication.NewResolver(repositoryService),
 		EmailSubscriptionResolver: emailsubscription.NewResolver(repositoryService),
+		NodeResolver:              node.NewResolver(repositoryService),
 		UserResolver:              user.NewResolver(repositoryService),
 	}
 }

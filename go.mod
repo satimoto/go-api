@@ -15,8 +15,8 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
-	github.com/lightningnetwork/lnd v0.14.2-beta.rc1
-	github.com/satimoto/go-datastore v0.1.2-0.20220225120214-8dbd0f39cdb9
+	github.com/lightningnetwork/lnd v0.14.2-beta.rc1 // indirect
+	github.com/satimoto/go-datastore v0.1.2-0.20220227213435-8892a1bafe38
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.2.0
 )
