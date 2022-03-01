@@ -18,7 +18,7 @@ type CreateChannelRequestInput struct {
 	PaymentHash string `json:"paymentHash"`
 	// This field must be encoded as base64.
 	PaymentAddr string `json:"paymentAddr"`
-	AmountMsat  int    `json:"amountMsat"`
+	AmountMsat  string `json:"amountMsat"`
 }
 
 type CreateEmailSubscriptionInput struct {

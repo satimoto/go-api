@@ -6,6 +6,8 @@ package resolver
 import (
 	"context"
 	"encoding/base64"
+	"log"
+	"strconv"
 
 	"github.com/satimoto/go-api/authentication"
 	"github.com/satimoto/go-api/graph"
@@ -21,6 +23,10 @@ func (r *channelRequestResolver) PaymentHash(ctx context.Context, obj *db.Channe
 
 func (r *channelRequestResolver) PaymentAddr(ctx context.Context, obj *db.ChannelRequest) (string, error) {
 	return base64.StdEncoding.EncodeToString(obj.PaymentAddr), nil
+}
+
+func (r *channelRequestResolver) AmountMsat(ctx context.Context, obj *db.ChannelRequest) (string, error) {
+	return strconv.FormatInt(obj.AmountMsat, 10), nil
 }
 
 func (r *channelRequestResolver) Node(ctx context.Context, obj *db.ChannelRequest) (*db.Node, error) {
@@ -46,36 +52,51 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 				return nil, gqlerror.Errorf("Error decoding paymentAddr")
 			}
 
+			amountMsat, err := strconv.ParseInt(input.AmountMsat, 10, 64)
+
+			if err != nil {
+				return nil, gqlerror.Errorf("Error decoding amountMsat")
+			}
+
 			// TODO: Improve node selection
 			// Could be by number of peers or available liquidity
-			nodeId := u.NodeID.Int64
+			var node *db.Node
 
-			if !u.NodeID.Valid {
+			if u.NodeID.Valid {
+				if n, err := r.NodeResolver.Repository.GetNode(ctx, u.NodeID.Int64); err == nil {
+					node = &n
+				}
+			} else {
 				if nodes, err := r.NodeResolver.Repository.ListNodes(ctx); err == nil && len(nodes) > 0 {
-					for _, node := range nodes {
-						nodeId = node.ID
+					for _, n := range nodes {
+						node = &n
 						break
 					}
-
-					userUpdateParams := user.NewUpdateUserParams(u)
-					userUpdateParams.NodeID = util.SqlNullInt64(nodeId)
-
-					r.UserResolver.Repository.UpdateUser(ctx, userUpdateParams)
 				}
+			}
+
+			if node == nil {
+				return nil, gqlerror.Errorf("No node available")
+			} else if !u.NodeID.Valid || u.NodeID.Int64 != node.ID {
+				userUpdateParams := user.NewUpdateUserParams(u)
+				userUpdateParams.NodeID = util.SqlNullInt64(node.ID)
+
+				r.UserResolver.Repository.UpdateUser(ctx, userUpdateParams)
 			}
 
 			channelRequest, err := r.ChannelRequestResolver.Repository.CreateChannelRequest(ctx, db.CreateChannelRequestParams{
 				UserID:      u.ID,
-				NodeID:      nodeId,
+				NodeID:      node.ID,
 				Status:      db.ChannelRequestStatusREQUESTED,
 				Pubkey:      u.Pubkey,
 				PaymentHash: paymentHashBytes[:],
 				PaymentAddr: paymentAddrBytes,
-				AmountMsat:  int64(input.AmountMsat),
+				AmountMsat:  amountMsat,
 				SettledMsat: 0,
 			})
 
 			if err != nil {
+				log.Printf("CreateChannelRequest error: %v", err)
 				return nil, gqlerror.Errorf("Channel request already exists")
 			}
 

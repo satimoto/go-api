@@ -102,7 +102,7 @@ type ComplexityRoot struct {
 type ChannelRequestResolver interface {
 	PaymentHash(ctx context.Context, obj *db.ChannelRequest) (string, error)
 	PaymentAddr(ctx context.Context, obj *db.ChannelRequest) (string, error)
-
+	AmountMsat(ctx context.Context, obj *db.ChannelRequest) (string, error)
 	Node(ctx context.Context, obj *db.ChannelRequest) (*db.Node, error)
 }
 type MutationResolver interface {
@@ -465,7 +465,7 @@ extend type Mutation {
     This field is base64 encoded.
     """
     paymentAddr: String!
-    amountMsat: Int!
+    amountMsat: String!
     node: Node!
 }
 
@@ -478,7 +478,7 @@ input CreateChannelRequestInput {
     This field must be encoded as base64.
     """
     paymentAddr: String!
-    amountMsat: Int!
+    amountMsat: String!
 }
 
 extend type Mutation {
@@ -830,14 +830,14 @@ func (ec *executionContext) _ChannelRequest_amountMsat(ctx context.Context, fiel
 		Object:     "ChannelRequest",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AmountMsat, nil
+		return ec.resolvers.ChannelRequest().AmountMsat(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -849,9 +849,9 @@ func (ec *executionContext) _ChannelRequest_amountMsat(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int64(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ChannelRequest_node(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
@@ -2937,7 +2937,7 @@ func (ec *executionContext) unmarshalInputCreateChannelRequestInput(ctx context.
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountMsat"))
-			it.AmountMsat, err = ec.unmarshalNInt2int(ctx, v)
+			it.AmountMsat, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3124,10 +3124,19 @@ func (ec *executionContext) _ChannelRequest(ctx context.Context, sel ast.Selecti
 				return res
 			})
 		case "amountMsat":
-			out.Values[i] = ec._ChannelRequest_amountMsat(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelRequest_amountMsat(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "node":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -3812,36 +3821,6 @@ func (ec *executionContext) unmarshalNID2int64(ctx context.Context, v interface{
 }
 
 func (ec *executionContext) marshalNID2int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
-	res := graphql.MarshalInt64(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNInt2int64(ctx context.Context, v interface{}) (int64, error) {
-	res, err := graphql.UnmarshalInt64(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
 	res := graphql.MarshalInt64(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {

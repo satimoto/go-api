@@ -8,7 +8,7 @@ type ChannelRequest {
     This field is base64 encoded.
     """
     paymentAddr: String!
-    amountMsat: Int!
+    amountMsat: String!
     node: Node!
 }
 
@@ -21,7 +21,7 @@ input CreateChannelRequestInput {
     This field must be encoded as base64.
     """
     paymentAddr: String!
-    amountMsat: Int!
+    amountMsat: String!
 }
 
 extend type Mutation {
