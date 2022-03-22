@@ -8,7 +8,7 @@ import (
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/satimoto/go-api/router"
+	"github.com/satimoto/go-api/internal/api"
 	"github.com/satimoto/go-datastore/util"
 )
 
@@ -29,7 +29,7 @@ func init() {
 
 	dataSourceName := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s", dbUser, dbPass, dbHost, dbName, sslMode)
 	d, err := sql.Open("postgres", dataSourceName)
-	
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,9 +40,9 @@ func init() {
 func main() {
 	defer database.Close()
 
-	routerService := router.NewRouter(database)
+	routerService := api.NewRouter(database)
 	handler := routerService.Handler()
-	
+
 	err := http.ListenAndServe(":9000", handler)
 
 	if err != nil {

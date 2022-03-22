@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/satimoto/go-api/authentication"
+	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-datastore/db"
 )
 

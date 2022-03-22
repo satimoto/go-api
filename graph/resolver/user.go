@@ -7,8 +7,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/satimoto/go-api/authentication"
 	"github.com/satimoto/go-api/graph"
+	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-datastore/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )

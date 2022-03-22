@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/satimoto/go-api/aws/email"
+	"github.com/satimoto/go-api/internal/aws/email"
 	"github.com/satimoto/go-datastore/db"
 )
 
@@ -16,7 +16,7 @@ type EmailSubscriptionRepository interface {
 
 type EmailSubscriptionResolver struct {
 	Repository EmailSubscriptionRepository
-	Emailer email.Emailer
+	Emailer    email.Emailer
 }
 
 func NewResolver(repositoryService *db.RepositoryService) *EmailSubscriptionResolver {
@@ -25,6 +25,6 @@ func NewResolver(repositoryService *db.RepositoryService) *EmailSubscriptionReso
 
 	return &EmailSubscriptionResolver{
 		Repository: repo,
-		Emailer: emailer,
+		Emailer:    emailer,
 	}
 }

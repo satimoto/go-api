@@ -9,10 +9,10 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/satimoto/go-api/authentication"
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/user"
-	"github.com/satimoto/go-api/util"
+	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/user"
+	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )

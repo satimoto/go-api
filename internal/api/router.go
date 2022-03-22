@@ -1,4 +1,4 @@
-package router
+package api
 
 import (
 	"database/sql"
@@ -9,9 +9,9 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 
-	"github.com/satimoto/go-api/authentication"
 	"github.com/satimoto/go-api/graph/resolver"
-	"github.com/satimoto/go-api/lnurl/auth"
+	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/lnurl/auth"
 	"github.com/satimoto/go-datastore/db"
 )
 
