@@ -9,10 +9,10 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
-	"github.com/satimoto/go-api/authentication"
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/lnurl"
-	"github.com/satimoto/go-api/lnurl/auth"
+	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/lnurl"
+	"github.com/satimoto/go-api/internal/lnurl/auth"
 	"github.com/satimoto/go-datastore/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )

@@ -14,8 +14,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/template"
-	"github.com/satimoto/go-api/util"
+	"github.com/satimoto/go-api/internal/template"
+	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )

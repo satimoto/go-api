@@ -1,11 +1,11 @@
 package resolver
 
 import (
-	"github.com/satimoto/go-api/authentication"
-	"github.com/satimoto/go-api/channelrequest"
-	"github.com/satimoto/go-api/emailsubscription"
-	"github.com/satimoto/go-api/node"
-	"github.com/satimoto/go-api/user"
+	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/channelrequest"
+	"github.com/satimoto/go-api/internal/emailsubscription"
+	"github.com/satimoto/go-api/internal/node"
+	"github.com/satimoto/go-api/internal/user"
 	"github.com/satimoto/go-datastore/db"
 )
 

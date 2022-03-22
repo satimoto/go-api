@@ -6,7 +6,7 @@ import (
 
 	"github.com/fiatjaf/go-lnurl"
 	"github.com/go-chi/render"
-	"github.com/satimoto/go-api/util"
+	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/db"
 )
 
