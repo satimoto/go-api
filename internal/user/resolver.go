@@ -25,7 +25,8 @@ func NewResolver(repositoryService *db.RepositoryService) *UserResolver {
 func NewUpdateUserParams(user db.User) db.UpdateUserParams {
 	return db.UpdateUserParams{
 		ID:          user.ID,
-		NodeID:      user.NodeID,
 		DeviceToken: user.DeviceToken,
+		NodeID:      user.NodeID,
+		TokenID:     user.TokenID,
 	}
 }
