@@ -6,11 +6,19 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/satimoto/go-datastore/postgis"
 )
 
 type CreateAuthentication struct {
 	Code  string `json:"code"`
 	LnURL string `json:"lnUrl"`
+}
+
+type CreateBusinessDetailInput struct {
+	Name    string            `json:"name"`
+	Website *string           `json:"website"`
+	Logo    *CreateImageInput `json:"logo"`
 }
 
 type CreateChannelRequestInput struct {
@@ -21,9 +29,27 @@ type CreateChannelRequestInput struct {
 	AmountMsat  string `json:"amountMsat"`
 }
 
+type CreateCredentialInput struct {
+	ClientToken    *string                    `json:"clientToken"`
+	URL            string                     `json:"url"`
+	BusinessDetail *CreateBusinessDetailInput `json:"businessDetail"`
+	CountryCode    string                     `json:"countryCode"`
+	PartyID        string                     `json:"partyId"`
+	IsHub          bool                       `json:"isHub"`
+}
+
 type CreateEmailSubscriptionInput struct {
 	Email  string  `json:"email"`
 	Locale *string `json:"locale"`
+}
+
+type CreateImageInput struct {
+	URL       string  `json:"url"`
+	Thumbnail *string `json:"thumbnail"`
+	Category  string  `json:"category"`
+	Type      string  `json:"type"`
+	Width     *int    `json:"width"`
+	Height    *int    `json:"height"`
 }
 
 type CreateUserInput struct {
@@ -34,6 +60,34 @@ type CreateUserInput struct {
 
 type ExchangeAuthentication struct {
 	Token string `json:"token"`
+}
+
+type Geolocation struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	Name      *string `json:"name"`
+}
+
+type ListLocation struct {
+	UID             string               `json:"uid"`
+	Name            string               `json:"name"`
+	Geom            postgis.Geometry4326 `json:"geom"`
+	AvailableEvses  int                  `json:"availableEvses"`
+	TotalEvses      int                  `json:"totalEvses"`
+	IsRemoteCapable bool                 `json:"isRemoteCapable"`
+	IsRfidCapable   bool                 `json:"isRfidCapable"`
+}
+
+type ListLocationsInput struct {
+	XMin float64 `json:"xMin"`
+	YMin float64 `json:"yMin"`
+	XMax float64 `json:"xMax"`
+	YMax float64 `json:"yMax"`
+}
+
+type TextDescription struct {
+	Text        string `json:"text"`
+	Description string `json:"description"`
 }
 
 type UpdateUserInput struct {

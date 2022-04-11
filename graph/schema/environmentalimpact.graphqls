@@ -1,0 +1,4 @@
+type EnvironmentalImpact {
+    source: String!
+    amount: Float!
+}

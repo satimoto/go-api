@@ -1,0 +1,11 @@
+type BusinessDetail {
+    name: String!
+    website: String
+    logo: Image
+}
+
+input CreateBusinessDetailInput {
+    name: String!
+    website: String
+    logo: CreateImageInput
+}

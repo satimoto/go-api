@@ -1,0 +1,11 @@
+type Connector {
+    uid: String!
+    standard: String!
+    format: String!
+    powerType: String!
+    voltage: Int!
+    amperage: Int!
+    tariffId: String
+    termsAndConditions: String
+    lastUpdated: String!
+}
