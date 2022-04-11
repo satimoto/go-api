@@ -21,12 +21,3 @@ func NewResolver(repositoryService *db.RepositoryService) *UserResolver {
 	repo := UserRepository(repositoryService)
 	return &UserResolver{repo}
 }
-
-func NewUpdateUserParams(user db.User) db.UpdateUserParams {
-	return db.UpdateUserParams{
-		ID:          user.ID,
-		DeviceToken: user.DeviceToken,
-		NodeID:      user.NodeID,
-		TokenID:     user.TokenID,
-	}
-}

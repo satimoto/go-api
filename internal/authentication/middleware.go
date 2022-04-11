@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func Middleware() func(http.Handler) http.Handler {
+func AuthorizationContext() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, request *http.Request) {
 			ctx := request.Context()

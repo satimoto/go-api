@@ -10,7 +10,7 @@ import (
 	"github.com/satimoto/go-datastore/db"
 )
 
-func (r *LnUrlAuthResolver) GetHandler(rw http.ResponseWriter, request *http.Request) {
+func (r *LnUrlAuthResolver) GetLnUrlAuth(rw http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	k1 := request.URL.Query().Get("k1")
 	sig := request.URL.Query().Get("sig")

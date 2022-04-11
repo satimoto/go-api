@@ -1,0 +1,5 @@
+type StatusSchedule {
+    periodBegin: String!
+    periodEnd: String
+    status: String!
+}
