@@ -5,46 +5,36 @@ package resolver
 
 import (
 	"context"
+	"os"
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/credential"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-ocpi-api/ocpirpc/credentialrpc"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"google.golang.org/grpc"
 )
 
-func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.CreateCredentialInput) (*db.Credential, error) {
+func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.CreateCredentialInput) (*graph.CreateCredential, error) {
 	if userId := authentication.GetUserId(ctx); userId != nil {
-		params := credential.NewCreateCredentialParams(input)
-		businessDetail, err := r.CreateBusinessDetail(ctx, *input.BusinessDetail)
+		ocpiRpcAddress := os.Getenv("OCPI_RPC_ADDRESS")
+		conn, err := grpc.Dial(ocpiRpcAddress, grpc.WithInsecure())
 
 		if err != nil {
 			return nil, err
 		}
 
-		params.BusinessDetailID = businessDetail.ID
-
-		c, err := r.CredentialResolver.Repository.CreateCredential(ctx, params)
+		defer conn.Close()
+		credentialClient := credentialrpc.NewCredentialServiceClient(conn)
+		credentialRequest := r.CredentialResolver.CreateCredentialRequest(input)
+		credentialResponse, err := credentialClient.CreateCredential(ctx, credentialRequest)
 
 		if err != nil {
-			return nil, gqlerror.Errorf("Error creating credential")
+			return nil, err
 		}
 
-		return &c, nil
+		return credential.NewCreateCredential(*credentialResponse), nil
 	}
 
 	return nil, gqlerror.Errorf("Not Authenticated")
 }
-
-func (r *credentialResolver) BusinessDetail(ctx context.Context, obj *db.Credential) (*db.BusinessDetail, error) {
-	if businessDetail, err := r.BusinessDetailResolver.Repository.GetBusinessDetail(ctx, obj.BusinessDetailID); err == nil {
-		return &businessDetail, nil
-	}
-
-	return nil, nil
-}
-
-// Credential returns graph.CredentialResolver implementation.
-func (r *Resolver) Credential() graph.CredentialResolver { return &credentialResolver{r} }
-
-type credentialResolver struct{ *Resolver }

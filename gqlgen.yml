@@ -45,4 +45,4 @@ models:
   ID:
     model: github.com/99designs/gqlgen/graphql.Int64
   Geometry:
-    model: github.com/satimoto/go-datastore/postgis.Geometry4326
+    model: github.com/satimoto/go-datastore/geom.Geometry4326

@@ -1,11 +1,11 @@
-package api
+package rest
 
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/satimoto/go-api/graph/resolver"
 )
 
-func (rs *RouterService) mountGraphql() *chi.Mux {
+func (rs *RestService) mountGraphql() *chi.Mux {
 	r := resolver.NewResolver(rs.RepositoryService)
 	router := chi.NewRouter()
 

@@ -3,10 +3,10 @@ package util
 import (
 	"database/sql"
 
-	"github.com/satimoto/go-datastore/postgis"
+	"github.com/satimoto/go-datastore/geom"
 )
 
-func NullGeometry(value postgis.NullGeometry4326) (*postgis.Geometry4326, error) {
+func NullGeometry(value geom.NullGeometry4326) (*geom.Geometry4326, error) {
 	if value.Valid {
 		return &value.Geometry4326, nil
 	}

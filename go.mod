@@ -15,14 +15,14 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
-	github.com/satimoto/go-datastore v0.1.2-0.20220411085853-c65bfb895e2b
+	github.com/satimoto/go-datastore v0.1.2-0.20220414182856-66e1cfcf96e4
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.4.0
 )
 
 require (
 	github.com/aead/siphash v1.0.1 // indirect
-	github.com/agnivade/levenshtein v1.1.0 // indirect
+	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/btcsuite/btcd v0.22.0-beta.0.20211005184431-e3449998be39 // indirect
 	github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20210527170813-e2ba6805a890 // indirect
@@ -40,7 +40,7 @@ require (
 	github.com/fiatjaf/ln-decodepay v1.1.0 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
-	github.com/hashicorp/golang-lru v0.5.1 // indirect
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kkdai/bstream v1.0.0 // indirect
 	github.com/lib/pq v1.10.3 // indirect
@@ -53,6 +53,7 @@ require (
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/paulmach/orb v0.5.1-0.20220406232948-69ee7e81c712 // indirect
+	github.com/satimoto/go-ocpi-api v0.0.3-0.20220414183247-a347cb081151
 	github.com/tidwall/gjson v1.6.1 // indirect
 	github.com/tidwall/match v1.0.1 // indirect
 	github.com/tidwall/pretty v1.0.2 // indirect
@@ -60,6 +61,14 @@ require (
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
+	google.golang.org/grpc v1.45.0
+)
+
+require (
+	github.com/golang/protobuf v1.5.2 // indirect
+	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 )
 
 replace git.schwanenlied.me/yawning/bsaes.git => github.com/Yawning/bsaes v0.0.0-20180720073208-c0276d75487e

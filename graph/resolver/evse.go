@@ -10,7 +10,7 @@ import (
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/db"
-	"github.com/satimoto/go-datastore/postgis"
+	"github.com/satimoto/go-datastore/geom"
 )
 
 func (r *evseResolver) EvseID(ctx context.Context, obj *db.Evse) (*string, error) {
@@ -48,7 +48,7 @@ func (r *evseResolver) FloorLevel(ctx context.Context, obj *db.Evse) (*string, e
 	return util.NullString(obj.FloorLevel)
 }
 
-func (r *evseResolver) Geom(ctx context.Context, obj *db.Evse) (*postgis.Geometry4326, error) {
+func (r *evseResolver) Geom(ctx context.Context, obj *db.Evse) (*geom.Geometry4326, error) {
 	return util.NullGeometry(obj.Geom)
 }
 
