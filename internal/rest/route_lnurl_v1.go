@@ -1,4 +1,4 @@
-package api
+package rest
 
 import (
 	"github.com/go-chi/chi/v5"
@@ -6,14 +6,14 @@ import (
 	"github.com/satimoto/go-api/internal/lnurl/auth"
 )
 
-func (rs *RouterService) mountLnUrl() *chi.Mux {
+func (rs *RestService) mountLnUrl() *chi.Mux {
 	router := chi.NewRouter()
 	router.Mount("/auth", rs.mountLnUrlAuth())
 
 	return router
 }
 
-func (rs *RouterService) mountLnUrlAuth() *chi.Mux {
+func (rs *RestService) mountLnUrlAuth() *chi.Mux {
 	r := auth.NewResolver(rs.RepositoryService)
 
 	router := chi.NewRouter()

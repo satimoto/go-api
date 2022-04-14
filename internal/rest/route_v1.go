@@ -1,9 +1,8 @@
-package api
+package rest
 
 import "github.com/go-chi/chi/v5"
 
-
-func (rs *RouterService) mountV1() *chi.Mux {
+func (rs *RestService) mountV1() *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Mount("/", rs.mountGraphql())

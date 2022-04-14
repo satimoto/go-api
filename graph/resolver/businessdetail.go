@@ -10,6 +10,7 @@ import (
 	"github.com/satimoto/go-api/internal/businessdetail"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/db"
+	dbUtil "github.com/satimoto/go-datastore/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -18,7 +19,7 @@ func (r *mutationResolver) CreateBusinessDetail(ctx context.Context, input graph
 
 	if input.Logo != nil {
 		if logo, err := r.CreateImage(ctx, *input.Logo); err == nil {
-			params.LogoID = util.SqlNullInt64(logo.ID)
+			params.LogoID = dbUtil.SqlNullInt64(logo.ID)
 		}
 	}
 

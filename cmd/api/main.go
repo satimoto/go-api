@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/satimoto/go-api/internal/api"
+	"github.com/satimoto/go-api/internal/rest"
 	"github.com/satimoto/go-datastore/util"
 )
 
@@ -40,12 +43,22 @@ func init() {
 func main() {
 	defer database.Close()
 
-	routerService := api.NewRouter(database)
-	handler := routerService.Handler()
+	log.Printf("Starting up API server")
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	waitGroup := &sync.WaitGroup{}
 
-	err := http.ListenAndServe(":9000", handler)
+	restService := rest.NewRest(database)
+	restService.StartRest(ctx, waitGroup)
 
-	if err != nil {
-		log.Println("Error serving")
-	}
+	sigtermChan := make(chan os.Signal)
+	signal.Notify(sigtermChan, syscall.SIGINT, syscall.SIGTERM)
+
+	<-sigtermChan
+
+	log.Printf("Shutting down API server")
+
+	cancelFunc()
+	waitGroup.Wait()
+
+	log.Printf("API server shut down")
 }

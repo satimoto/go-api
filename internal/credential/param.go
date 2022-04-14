@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/util"
 )
 
 func NewCreateCredentialParams(input graph.CreateCredentialInput) db.CreateCredentialParams {

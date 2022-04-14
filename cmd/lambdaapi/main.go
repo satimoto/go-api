@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	chiproxy "github.com/awslabs/aws-lambda-go-api-proxy/chi"
-	"github.com/satimoto/go-api/internal/api"
+	"github.com/satimoto/go-api/internal/rest"
 	"github.com/satimoto/go-datastore/util"
 )
 
@@ -38,8 +38,8 @@ func init() {
 	}
 
 	database = d
-	routerService := api.NewRouter(database)
-	handler := routerService.Handler()
+	restService := rest.NewRest(database)
+	handler := restService.Handler()
 	chiLambda = chiproxy.New(handler)
 }
 

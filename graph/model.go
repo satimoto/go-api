@@ -7,7 +7,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/satimoto/go-datastore/postgis"
+	"github.com/satimoto/go-datastore/geom"
 )
 
 type CreateAuthentication struct {
@@ -27,6 +27,14 @@ type CreateChannelRequestInput struct {
 	// This field must be encoded as base64.
 	PaymentAddr string `json:"paymentAddr"`
 	AmountMsat  string `json:"amountMsat"`
+}
+
+type CreateCredential struct {
+	ID          int64  `json:"id"`
+	URL         string `json:"url"`
+	CountryCode string `json:"countryCode"`
+	PartyID     string `json:"partyId"`
+	IsHub       bool   `json:"isHub"`
 }
 
 type CreateCredentialInput struct {
@@ -69,13 +77,13 @@ type Geolocation struct {
 }
 
 type ListLocation struct {
-	UID             string               `json:"uid"`
-	Name            string               `json:"name"`
-	Geom            postgis.Geometry4326 `json:"geom"`
-	AvailableEvses  int                  `json:"availableEvses"`
-	TotalEvses      int                  `json:"totalEvses"`
-	IsRemoteCapable bool                 `json:"isRemoteCapable"`
-	IsRfidCapable   bool                 `json:"isRfidCapable"`
+	UID             string            `json:"uid"`
+	Name            string            `json:"name"`
+	Geom            geom.Geometry4326 `json:"geom"`
+	AvailableEvses  int               `json:"availableEvses"`
+	TotalEvses      int               `json:"totalEvses"`
+	IsRemoteCapable bool              `json:"isRemoteCapable"`
+	IsRfidCapable   bool              `json:"isRfidCapable"`
 }
 
 type ListLocationsInput struct {
