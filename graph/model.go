@@ -93,6 +93,29 @@ type ListLocationsInput struct {
 	YMax float64 `json:"yMax"`
 }
 
+type StartSession struct {
+	ID              int64   `json:"id"`
+	Status          string  `json:"status"`
+	AuthorizationID string  `json:"authorizationId"`
+	LocationUID     string  `json:"locationUid"`
+	EvseUID         *string `json:"evseUid"`
+}
+
+type StartSessionInput struct {
+	LocationUID string  `json:"locationUid"`
+	EvseUID     *string `json:"evseUid"`
+}
+
+type StopSession struct {
+	ID         int64  `json:"id"`
+	Status     string `json:"status"`
+	SessionUID string `json:"sessionUid"`
+}
+
+type StopSessionInput struct {
+	SessionUID string `json:"sessionUid"`
+}
+
 type TextDescription struct {
 	Text        string `json:"text"`
 	Description string `json:"description"`

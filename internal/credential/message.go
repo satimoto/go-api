@@ -34,23 +34,3 @@ func NewCreateImageRequest(input graph.CreateImageInput) *ocpirpc.CreateImageReq
 		Height:    int32(util.DefaultInt(input.Height, 0)),
 	}
 }
-
-func (r *CredentialResolver) CreateCredentialRequest(input graph.CreateCredentialInput) *credentialrpc.CreateCredentialRequest {
-	response := NewCreateCredentialRequest(input)
-
-	if input.BusinessDetail != nil {
-		response.BusinessDetail = r.createBusinessDetailRequest(*input.BusinessDetail)
-	}
-
-	return response
-}
-
-func (r *CredentialResolver) createBusinessDetailRequest(input graph.CreateBusinessDetailInput) *ocpirpc.CreateBusinessDetailRequest {
-	response := NewCreateBusinessDetailRequest(input)
-
-	if input.Logo != nil {
-		response.Logo = NewCreateImageRequest(*input.Logo)
-	}
-
-	return response
-}

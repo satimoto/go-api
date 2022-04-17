@@ -5,6 +5,8 @@ package resolver
 
 import (
 	"context"
+	"errors"
+	"log"
 	"os"
 
 	"github.com/satimoto/go-api/graph"
@@ -21,16 +23,20 @@ func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.Cre
 		conn, err := grpc.Dial(ocpiRpcAddress, grpc.WithInsecure())
 
 		if err != nil {
-			return nil, err
+			log.Printf("Error CreateCredential Dial: %v", err)
+			log.Printf("OCPI_RPC_ADDRESS=%v", ocpiRpcAddress)
+			return nil, errors.New("Error creating credential")
 		}
 
 		defer conn.Close()
 		credentialClient := credentialrpc.NewCredentialServiceClient(conn)
-		credentialRequest := r.CredentialResolver.CreateCredentialRequest(input)
+		credentialRequest := credential.NewCreateCredentialRequest(input)
 		credentialResponse, err := credentialClient.CreateCredential(ctx, credentialRequest)
 
 		if err != nil {
-			return nil, err
+			log.Printf("Error CreateCredential CreateCredential: %v", err)
+			log.Printf("%#v", credentialRequest)
+			return nil, errors.New("Error creating credential")
 		}
 
 		return credential.NewCreateCredential(*credentialResponse), nil
