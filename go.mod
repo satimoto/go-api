@@ -15,7 +15,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
-	github.com/satimoto/go-datastore v0.1.2-0.20220414182856-66e1cfcf96e4
+	github.com/satimoto/go-datastore v0.1.2-0.20220417043815-c921233acfb6
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.4.0
 )
@@ -53,7 +53,7 @@ require (
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/paulmach/orb v0.5.1-0.20220406232948-69ee7e81c712 // indirect
-	github.com/satimoto/go-ocpi-api v0.0.3-0.20220414183247-a347cb081151
+	github.com/satimoto/go-ocpi-api v0.0.3-0.20220417040901-acfe6116612d
 	github.com/tidwall/gjson v1.6.1 // indirect
 	github.com/tidwall/match v1.0.1 // indirect
 	github.com/tidwall/pretty v1.0.2 // indirect

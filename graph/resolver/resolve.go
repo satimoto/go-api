@@ -4,7 +4,6 @@ import (
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/businessdetail"
 	"github.com/satimoto/go-api/internal/channelrequest"
-	"github.com/satimoto/go-api/internal/credential"
 	"github.com/satimoto/go-api/internal/emailsubscription"
 	"github.com/satimoto/go-api/internal/energymix"
 	"github.com/satimoto/go-api/internal/evse"
@@ -27,7 +26,6 @@ type Resolver struct {
 	*authentication.AuthenticationResolver
 	*businessdetail.BusinessDetailResolver
 	*channelrequest.ChannelRequestResolver
-	*credential.CredentialResolver
 	*emailsubscription.EmailSubscriptionResolver
 	*energymix.EnergyMixResolver
 	*evse.EvseResolver
@@ -45,7 +43,6 @@ func NewResolver(repositoryService *db.RepositoryService) *Resolver {
 		AuthenticationResolver:    authentication.NewResolver(repositoryService),
 		BusinessDetailResolver:    businessdetail.NewResolver(repositoryService),
 		ChannelRequestResolver:    channelrequest.NewResolver(repositoryService),
-		CredentialResolver:        credential.NewResolver(repositoryService),
 		EmailSubscriptionResolver: emailsubscription.NewResolver(repositoryService),
 		EnergyMixResolver:         energymix.NewResolver(repositoryService),
 		EvseResolver:              evse.NewResolver(repositoryService),

@@ -213,6 +213,8 @@ type ComplexityRoot struct {
 		CreateEmailSubscription func(childComplexity int, input CreateEmailSubscriptionInput) int
 		CreateUser              func(childComplexity int, input CreateUserInput) int
 		ExchangeAuthentication  func(childComplexity int, code string) int
+		StartSession            func(childComplexity int, input StartSessionInput) int
+		StopSession             func(childComplexity int, input StopSessionInput) int
 		UpdateUser              func(childComplexity int, input UpdateUserInput) int
 		VerifyEmailSubscription func(childComplexity int, input VerifyEmailSubscriptionInput) int
 	}
@@ -242,10 +244,24 @@ type ComplexityRoot struct {
 		Weekday     func(childComplexity int) int
 	}
 
+	StartSession struct {
+		AuthorizationID func(childComplexity int) int
+		EvseUID         func(childComplexity int) int
+		ID              func(childComplexity int) int
+		LocationUID     func(childComplexity int) int
+		Status          func(childComplexity int) int
+	}
+
 	StatusSchedule struct {
 		PeriodBegin func(childComplexity int) int
 		PeriodEnd   func(childComplexity int) int
 		Status      func(childComplexity int) int
+	}
+
+	StopSession struct {
+		ID         func(childComplexity int) int
+		SessionUID func(childComplexity int) int
+		Status     func(childComplexity int) int
 	}
 
 	TextDescription struct {
@@ -344,6 +360,8 @@ type MutationResolver interface {
 	CreateAuthentication(ctx context.Context, action AuthenticationAction) (*CreateAuthentication, error)
 	ExchangeAuthentication(ctx context.Context, code string) (*ExchangeAuthentication, error)
 	CreateChannelRequest(ctx context.Context, input CreateChannelRequestInput) (*db.ChannelRequest, error)
+	StartSession(ctx context.Context, input StartSessionInput) (*StartSession, error)
+	StopSession(ctx context.Context, input StopSessionInput) (*StopSession, error)
 	CreateCredential(ctx context.Context, input CreateCredentialInput) (*CreateCredential, error)
 	CreateEmailSubscription(ctx context.Context, input CreateEmailSubscriptionInput) (*db.EmailSubscription, error)
 	VerifyEmailSubscription(ctx context.Context, input VerifyEmailSubscriptionInput) (*db.EmailSubscription, error)
@@ -1143,6 +1161,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.ExchangeAuthentication(childComplexity, args["code"].(string)), true
 
+	case "Mutation.startSession":
+		if e.complexity.Mutation.StartSession == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_startSession_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.StartSession(childComplexity, args["input"].(StartSessionInput)), true
+
+	case "Mutation.stopSession":
+		if e.complexity.Mutation.StopSession == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_stopSession_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.StopSession(childComplexity, args["input"].(StopSessionInput)), true
+
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
 			break
@@ -1273,6 +1315,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RegularHour.Weekday(childComplexity), true
 
+	case "StartSession.authorizationId":
+		if e.complexity.StartSession.AuthorizationID == nil {
+			break
+		}
+
+		return e.complexity.StartSession.AuthorizationID(childComplexity), true
+
+	case "StartSession.evseUid":
+		if e.complexity.StartSession.EvseUID == nil {
+			break
+		}
+
+		return e.complexity.StartSession.EvseUID(childComplexity), true
+
+	case "StartSession.id":
+		if e.complexity.StartSession.ID == nil {
+			break
+		}
+
+		return e.complexity.StartSession.ID(childComplexity), true
+
+	case "StartSession.locationUid":
+		if e.complexity.StartSession.LocationUID == nil {
+			break
+		}
+
+		return e.complexity.StartSession.LocationUID(childComplexity), true
+
+	case "StartSession.status":
+		if e.complexity.StartSession.Status == nil {
+			break
+		}
+
+		return e.complexity.StartSession.Status(childComplexity), true
+
 	case "StatusSchedule.periodBegin":
 		if e.complexity.StatusSchedule.PeriodBegin == nil {
 			break
@@ -1293,6 +1370,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StatusSchedule.Status(childComplexity), true
+
+	case "StopSession.id":
+		if e.complexity.StopSession.ID == nil {
+			break
+		}
+
+		return e.complexity.StopSession.ID(childComplexity), true
+
+	case "StopSession.sessionUid":
+		if e.complexity.StopSession.SessionUID == nil {
+			break
+		}
+
+		return e.complexity.StopSession.SessionUID(childComplexity), true
+
+	case "StopSession.status":
+		if e.complexity.StopSession.Status == nil {
+			break
+		}
+
+		return e.complexity.StopSession.Status(childComplexity), true
 
 	case "TextDescription.description":
 		if e.complexity.TextDescription.Description == nil {
@@ -1469,6 +1567,34 @@ input CreateChannelRequestInput {
 
 extend type Mutation {
     createChannelRequest(input: CreateChannelRequestInput!): ChannelRequest!
+}
+`, BuiltIn: false},
+	{Name: "graph/schema/command.graphqls", Input: `type StartSession {
+    id: ID!
+    status: String!
+    authorizationId: String!
+    locationUid: String!
+    evseUid: String
+}
+
+input StartSessionInput {
+    locationUid: String!
+    evseUid: String
+}
+
+type StopSession {
+    id: ID!
+    status: String!
+    sessionUid: String!
+}
+
+input StopSessionInput {
+    sessionUid: String!
+}
+
+extend type Mutation {
+    startSession(input: StartSessionInput!): StartSession!
+    stopSession(input: StopSessionInput!): StopSession!
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/connector.graphqls", Input: `type Connector {
@@ -1787,6 +1913,36 @@ func (ec *executionContext) field_Mutation_exchangeAuthentication_args(ctx conte
 		}
 	}
 	args["code"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_startSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 StartSessionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNStartSessionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStartSessionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_stopSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 StopSessionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNStopSessionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStopSessionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -5411,6 +5567,90 @@ func (ec *executionContext) _Mutation_createChannelRequest(ctx context.Context, 
 	return ec.marshalNChannelRequest2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐChannelRequest(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_startSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_startSession_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().StartSession(rctx, args["input"].(StartSessionInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*StartSession)
+	fc.Result = res
+	return ec.marshalNStartSession2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStartSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_stopSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_stopSession_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().StopSession(rctx, args["input"].(StopSessionInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*StopSession)
+	fc.Result = res
+	return ec.marshalNStopSession2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStopSession(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createCredential(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6165,6 +6405,178 @@ func (ec *executionContext) _RegularHour_periodEnd(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _StartSession_id(ctx context.Context, field graphql.CollectedField, obj *StartSession) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StartSession",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StartSession_status(ctx context.Context, field graphql.CollectedField, obj *StartSession) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StartSession",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StartSession_authorizationId(ctx context.Context, field graphql.CollectedField, obj *StartSession) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StartSession",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AuthorizationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StartSession_locationUid(ctx context.Context, field graphql.CollectedField, obj *StartSession) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StartSession",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LocationUID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StartSession_evseUid(ctx context.Context, field graphql.CollectedField, obj *StartSession) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StartSession",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EvseUID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _StatusSchedule_periodBegin(ctx context.Context, field graphql.CollectedField, obj *db.StatusSchedule) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6251,6 +6663,111 @@ func (ec *executionContext) _StatusSchedule_status(ctx context.Context, field gr
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.StatusSchedule().Status(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StopSession_id(ctx context.Context, field graphql.CollectedField, obj *StopSession) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StopSession",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StopSession_status(ctx context.Context, field graphql.CollectedField, obj *StopSession) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StopSession",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StopSession_sessionUid(ctx context.Context, field graphql.CollectedField, obj *StopSession) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StopSession",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SessionUID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7920,6 +8437,60 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputStartSessionInput(ctx context.Context, obj interface{}) (StartSessionInput, error) {
+	var it StartSessionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "locationUid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("locationUid"))
+			it.LocationUID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "evseUid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evseUid"))
+			it.EvseUID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputStopSessionInput(ctx context.Context, obj interface{}) (StopSessionInput, error) {
+	var it StopSessionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "sessionUid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sessionUid"))
+			it.SessionUID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, obj interface{}) (UpdateUserInput, error) {
 	var it UpdateUserInput
 	asMap := map[string]interface{}{}
@@ -9263,6 +9834,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "startSession":
+			out.Values[i] = ec._Mutation_startSession(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "stopSession":
+			out.Values[i] = ec._Mutation_stopSession(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createCredential":
 			out.Values[i] = ec._Mutation_createCredential(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -9520,6 +10101,50 @@ func (ec *executionContext) _RegularHour(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
+var startSessionImplementors = []string{"StartSession"}
+
+func (ec *executionContext) _StartSession(ctx context.Context, sel ast.SelectionSet, obj *StartSession) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, startSessionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StartSession")
+		case "id":
+			out.Values[i] = ec._StartSession_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "status":
+			out.Values[i] = ec._StartSession_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "authorizationId":
+			out.Values[i] = ec._StartSession_authorizationId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "locationUid":
+			out.Values[i] = ec._StartSession_locationUid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "evseUid":
+			out.Values[i] = ec._StartSession_evseUid(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var statusScheduleImplementors = []string{"StatusSchedule"}
 
 func (ec *executionContext) _StatusSchedule(ctx context.Context, sel ast.SelectionSet, obj *db.StatusSchedule) graphql.Marshaler {
@@ -9570,6 +10195,43 @@ func (ec *executionContext) _StatusSchedule(ctx context.Context, sel ast.Selecti
 				}
 				return res
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var stopSessionImplementors = []string{"StopSession"}
+
+func (ec *executionContext) _StopSession(ctx context.Context, sel ast.SelectionSet, obj *StopSession) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, stopSessionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StopSession")
+		case "id":
+			out.Values[i] = ec._StopSession_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "status":
+			out.Values[i] = ec._StopSession_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sessionUid":
+			out.Values[i] = ec._StopSession_sessionUid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10621,6 +11283,25 @@ func (ec *executionContext) marshalNRegularHour2ᚕgithubᚗcomᚋsatimotoᚋgo�
 	return ret
 }
 
+func (ec *executionContext) marshalNStartSession2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStartSession(ctx context.Context, sel ast.SelectionSet, v StartSession) graphql.Marshaler {
+	return ec._StartSession(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStartSession2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStartSession(ctx context.Context, sel ast.SelectionSet, v *StartSession) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._StartSession(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNStartSessionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStartSessionInput(ctx context.Context, v interface{}) (StartSessionInput, error) {
+	res, err := ec.unmarshalInputStartSessionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNStatusSchedule2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐStatusSchedule(ctx context.Context, sel ast.SelectionSet, v db.StatusSchedule) graphql.Marshaler {
 	return ec._StatusSchedule(ctx, sel, &v)
 }
@@ -10667,6 +11348,25 @@ func (ec *executionContext) marshalNStatusSchedule2ᚕgithubᚗcomᚋsatimotoᚋ
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNStopSession2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStopSession(ctx context.Context, sel ast.SelectionSet, v StopSession) graphql.Marshaler {
+	return ec._StopSession(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStopSession2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStopSession(ctx context.Context, sel ast.SelectionSet, v *StopSession) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._StopSession(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNStopSessionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStopSessionInput(ctx context.Context, v interface{}) (StopSessionInput, error) {
+	res, err := ec.unmarshalInputStopSessionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
