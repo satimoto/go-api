@@ -11,6 +11,7 @@ import (
 	"github.com/satimoto/go-api/internal/location"
 	"github.com/satimoto/go-api/internal/node"
 	"github.com/satimoto/go-api/internal/openingtime"
+	"github.com/satimoto/go-api/internal/token"
 	"github.com/satimoto/go-api/internal/user"
 	"github.com/satimoto/go-datastore/db"
 )
@@ -33,6 +34,7 @@ type Resolver struct {
 	*location.LocationResolver
 	*node.NodeResolver
 	*openingtime.OpeningTimeResolver
+	*token.TokenResolver
 	*user.UserResolver
 }
 
@@ -50,6 +52,7 @@ func NewResolver(repositoryService *db.RepositoryService) *Resolver {
 		LocationResolver:          location.NewResolver(repositoryService),
 		NodeResolver:              node.NewResolver(repositoryService),
 		OpeningTimeResolver:       openingtime.NewResolver(repositoryService),
+		TokenResolver:             token.NewResolver(repositoryService),
 		UserResolver:              user.NewResolver(repositoryService),
 	}
 }

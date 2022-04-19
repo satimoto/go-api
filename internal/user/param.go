@@ -7,6 +7,5 @@ func NewUpdateUserParams(user db.User) db.UpdateUserParams {
 		ID:          user.ID,
 		DeviceToken: user.DeviceToken,
 		NodeID:      user.NodeID,
-		TokenID:     user.TokenID,
 	}
 }
