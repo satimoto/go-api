@@ -47,6 +47,7 @@ type ResolverRoot interface {
 	Image() ImageResolver
 	Location() LocationResolver
 	Mutation() MutationResolver
+	Node() NodeResolver
 	OpeningTime() OpeningTimeResolver
 	Query() QueryResolver
 	RegularHour() RegularHourResolver
@@ -367,6 +368,9 @@ type MutationResolver interface {
 	VerifyEmailSubscription(ctx context.Context, input VerifyEmailSubscriptionInput) (*db.EmailSubscription, error)
 	CreateUser(ctx context.Context, input CreateUserInput) (*db.User, error)
 	UpdateUser(ctx context.Context, input UpdateUserInput) (*db.User, error)
+}
+type NodeResolver interface {
+	Addr(ctx context.Context, obj *db.Node) (string, error)
 }
 type OpeningTimeResolver interface {
 	RegularHours(ctx context.Context, obj *db.OpeningTime) ([]db.RegularHour, error)
@@ -5907,14 +5911,14 @@ func (ec *executionContext) _Node_addr(ctx context.Context, field graphql.Collec
 		Object:     "Node",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Addr, nil
+		return ec.resolvers.Node().Addr(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9894,17 +9898,26 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 		case "pubkey":
 			out.Values[i] = ec._Node_pubkey(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "addr":
-			out.Values[i] = ec._Node_addr(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Node_addr(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "alias":
 			out.Values[i] = ec._Node_alias(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

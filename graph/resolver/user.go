@@ -37,6 +37,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		return nil, gqlerror.Errorf("User already exists")
 	}
 
+	_, err = r.TokenResolver.CreateToken(ctx, user.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &user, nil
 }
 
