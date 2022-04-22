@@ -18,6 +18,7 @@ require (
 	github.com/satimoto/go-datastore v0.1.2-0.20220419191955-0f9b8454a1a3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.4.0
+	google.golang.org/grpc v1.46.0
 )
 
 require (
@@ -61,7 +62,6 @@ require (
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
-	google.golang.org/grpc v1.45.0
 )
 
 require (
