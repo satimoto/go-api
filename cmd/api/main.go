@@ -44,11 +44,11 @@ func main() {
 	defer database.Close()
 
 	log.Printf("Starting up API server")
-	ctx, cancelFunc := context.WithCancel(context.Background())
+	shutdownCtx, cancelFunc := context.WithCancel(context.Background())
 	waitGroup := &sync.WaitGroup{}
 
 	restService := rest.NewRest(database)
-	restService.StartRest(ctx, waitGroup)
+	restService.StartRest(shutdownCtx, waitGroup)
 
 	sigtermChan := make(chan os.Signal)
 	signal.Notify(sigtermChan, syscall.SIGINT, syscall.SIGTERM)
