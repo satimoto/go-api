@@ -9,7 +9,9 @@ import (
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/user"
 	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -26,10 +28,11 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
-	user, err := r.UserResolver.Repository.CreateUser(ctx, db.CreateUserParams{
+	u, err := r.UserResolver.Repository.CreateUser(ctx, db.CreateUserParams{
+		CommissionPercent: util.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
+		DeviceToken:   input.DeviceToken,
 		LinkingPubkey: auth.LinkingPubkey.String,
 		Pubkey:        input.Pubkey,
-		DeviceToken:   input.DeviceToken,
 	})
 
 	if err != nil {
@@ -37,28 +40,35 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		return nil, gqlerror.Errorf("User already exists")
 	}
 
-	_, err = r.TokenResolver.CreateToken(ctx, user.ID)
+	_, err = r.TokenResolver.CreateToken(ctx, u.ID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return &u, nil
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUserInput) (*db.User, error) {
 	if userId := authentication.GetUserId(ctx); userId != nil {
-		user, err := r.UserResolver.Repository.UpdateUser(ctx, db.UpdateUserParams{
-			ID:          *userId,
-			DeviceToken: input.DeviceToken,
-		})
+		u, err := r.UserResolver.Repository.GetUser(ctx, *userId)
 
 		if err != nil {
 			log.Printf("Error updating user: %s", err.Error())
 			return nil, gqlerror.Errorf("Error updating user")
 		}
 
-		return &user, nil
+		updateUserParams := user.NewUpdateUserParams(u)
+		updateUserParams.DeviceToken = input.DeviceToken
+
+		u, err = r.UserResolver.Repository.UpdateUser(ctx, updateUserParams)
+
+		if err != nil {
+			log.Printf("Error updating user: %s", err.Error())
+			return nil, gqlerror.Errorf("Error updating user")
+		}
+
+		return &u, nil
 	}
 
 	return nil, gqlerror.Errorf("Not Authenticated")
