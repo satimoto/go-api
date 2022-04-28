@@ -4,8 +4,12 @@ import "github.com/satimoto/go-datastore/db"
 
 func NewUpdateUserParams(user db.User) db.UpdateUserParams {
 	return db.UpdateUserParams{
-		ID:          user.ID,
-		DeviceToken: user.DeviceToken,
-		NodeID:      user.NodeID,
+		ID:                user.ID,
+		CommissionPercent: user.CommissionPercent,
+		DeviceToken:       user.DeviceToken,
+		LinkingPubkey:     user.LinkingPubkey,
+		NodeID:            user.NodeID,
+		Pubkey:            user.Pubkey,
+		ReferrerID:        user.ReferrerID,
 	}
 }

@@ -15,7 +15,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
-	github.com/satimoto/go-datastore v0.1.2-0.20220419191955-0f9b8454a1a3
+	github.com/satimoto/go-datastore v0.1.2-0.20220428081257-ee5143c9fc62
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.4.0
 	google.golang.org/grpc v1.46.0
@@ -80,7 +80,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	github.com/satimoto/go-datastore-mocks v0.1.2-0.20220419191201-5cc6e4da30ab // indirect
+	github.com/satimoto/go-datastore-mocks v0.1.2-0.20220428080513-4e0e5e04de96 // indirect
 )
 
 replace git.schwanenlied.me/yawning/bsaes.git => github.com/Yawning/bsaes v0.0.0-20180720073208-c0276d75487e

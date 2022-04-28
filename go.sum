@@ -1037,8 +1037,14 @@ github.com/satimoto/go-datastore v0.1.2-0.20220419190942-754c9bb72748 h1:afmPc2t
 github.com/satimoto/go-datastore v0.1.2-0.20220419190942-754c9bb72748/go.mod h1:gz81qrvwGFlGiHKrIDcHSkEbmSEhpMZvFRuZaVj2AUw=
 github.com/satimoto/go-datastore v0.1.2-0.20220419191955-0f9b8454a1a3 h1:ZybsufpTo2BA9RHHmbQX/jswMcx06IYkO1C8NQJzVQU=
 github.com/satimoto/go-datastore v0.1.2-0.20220419191955-0f9b8454a1a3/go.mod h1:gz81qrvwGFlGiHKrIDcHSkEbmSEhpMZvFRuZaVj2AUw=
+github.com/satimoto/go-datastore v0.1.2-0.20220428080044-3ef793932f08 h1:0rf3DM3ptdPKAfnemQtFC0DzrZAF32tAQAVNDkH0nKw=
+github.com/satimoto/go-datastore v0.1.2-0.20220428080044-3ef793932f08/go.mod h1:gz81qrvwGFlGiHKrIDcHSkEbmSEhpMZvFRuZaVj2AUw=
+github.com/satimoto/go-datastore v0.1.2-0.20220428081257-ee5143c9fc62 h1:T1SPzOzMQFaPVD7BPvaCJX0aa9ZvGhz3pWd0Ah1hpp8=
+github.com/satimoto/go-datastore v0.1.2-0.20220428081257-ee5143c9fc62/go.mod h1:gz81qrvwGFlGiHKrIDcHSkEbmSEhpMZvFRuZaVj2AUw=
 github.com/satimoto/go-datastore-mocks v0.1.2-0.20220419191201-5cc6e4da30ab h1:3fmSQXnaTK32QUXR24IPBu9Ilesl3ORu6SbmqxLZvGU=
 github.com/satimoto/go-datastore-mocks v0.1.2-0.20220419191201-5cc6e4da30ab/go.mod h1:UP4V0PS8Njwbj/GKn/iIKKSyP4zCAYh8MDXbUG9a/og=
+github.com/satimoto/go-datastore-mocks v0.1.2-0.20220428080513-4e0e5e04de96 h1:ZQFRpou0XjMAqYsb7th1ue254grEAEbJXvrdgqgwWxs=
+github.com/satimoto/go-datastore-mocks v0.1.2-0.20220428080513-4e0e5e04de96/go.mod h1:rXE9WO0HCh3opN6J+R0aOH9ETqxHJCurAfWfuCwDt9g=
 github.com/satimoto/go-ocpi-api v0.0.3-0.20220413150858-bf866257a143 h1:fGpm7nsv2yPf92TQCeXsFV9iq2VD4MmNj/hLVZ3ggLM=
 github.com/satimoto/go-ocpi-api v0.0.3-0.20220413150858-bf866257a143/go.mod h1:+L0fokJuQD9tBAgpeLj2UIkyi2S8OMDkanDd+qzRFdk=
 github.com/satimoto/go-ocpi-api v0.0.3-0.20220414081517-0ef8dca7c329 h1:jm5GJyz/475LhAy3huKMl0e1DA9cjrW4YDXypggX3bo=
