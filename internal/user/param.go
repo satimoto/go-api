@@ -10,6 +10,7 @@ func NewUpdateUserParams(user db.User) db.UpdateUserParams {
 		LinkingPubkey:     user.LinkingPubkey,
 		NodeID:            user.NodeID,
 		Pubkey:            user.Pubkey,
+		IsRestricted:      user.IsRestricted,
 		ReferrerID:        user.ReferrerID,
 	}
 }
