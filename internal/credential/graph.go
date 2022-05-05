@@ -1,14 +1,14 @@
 package credential
 
 import (
-	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-ocpi-api/ocpirpc/credentialrpc"
+	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-ocpi-api/ocpirpc"
 )
 
-func NewCreateCredential(response credentialrpc.CredentialResponse) *graph.CreateCredential {
-	return &graph.CreateCredential{
+func NewCreateCredential(response ocpirpc.CreateCredentialResponse) *db.Credential {
+	return &db.Credential{
 		ID:          response.Id,
-		URL:         response.Url,
+		Url:         response.Url,
 		CountryCode: response.CountryCode,
 		PartyID:     response.PartyId,
 		IsHub:       response.IsHub,

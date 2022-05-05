@@ -1043,10 +1043,13 @@ github.com/satimoto/go-datastore v0.1.2-0.20220428081257-ee5143c9fc62 h1:T1SPzOz
 github.com/satimoto/go-datastore v0.1.2-0.20220428081257-ee5143c9fc62/go.mod h1:gz81qrvwGFlGiHKrIDcHSkEbmSEhpMZvFRuZaVj2AUw=
 github.com/satimoto/go-datastore v0.1.2-0.20220503081613-a512ca2c2fe1 h1:6jlSxvTqdtKtTe1w/K++JG8FVxzEYgCkq5uQXeIS06o=
 github.com/satimoto/go-datastore v0.1.2-0.20220503081613-a512ca2c2fe1/go.mod h1:gz81qrvwGFlGiHKrIDcHSkEbmSEhpMZvFRuZaVj2AUw=
+github.com/satimoto/go-datastore v0.1.2-0.20220504150421-789db4316b88 h1:JYXFgf7AjHTRwlcoRYrV+ywDK6JWYuoJHaoXW2MEk58=
+github.com/satimoto/go-datastore v0.1.2-0.20220504150421-789db4316b88/go.mod h1:gz81qrvwGFlGiHKrIDcHSkEbmSEhpMZvFRuZaVj2AUw=
 github.com/satimoto/go-datastore-mocks v0.1.2-0.20220419191201-5cc6e4da30ab h1:3fmSQXnaTK32QUXR24IPBu9Ilesl3ORu6SbmqxLZvGU=
 github.com/satimoto/go-datastore-mocks v0.1.2-0.20220419191201-5cc6e4da30ab/go.mod h1:UP4V0PS8Njwbj/GKn/iIKKSyP4zCAYh8MDXbUG9a/og=
 github.com/satimoto/go-datastore-mocks v0.1.2-0.20220428080513-4e0e5e04de96 h1:ZQFRpou0XjMAqYsb7th1ue254grEAEbJXvrdgqgwWxs=
 github.com/satimoto/go-datastore-mocks v0.1.2-0.20220428080513-4e0e5e04de96/go.mod h1:rXE9WO0HCh3opN6J+R0aOH9ETqxHJCurAfWfuCwDt9g=
+github.com/satimoto/go-datastore-mocks v0.1.2-0.20220429143239-03099fadb0a5/go.mod h1:dIGx61H6clTLVTmUQGQLwL12LCc4FOeiEKGryDBgoDg=
 github.com/satimoto/go-ocpi-api v0.0.3-0.20220413150858-bf866257a143 h1:fGpm7nsv2yPf92TQCeXsFV9iq2VD4MmNj/hLVZ3ggLM=
 github.com/satimoto/go-ocpi-api v0.0.3-0.20220413150858-bf866257a143/go.mod h1:+L0fokJuQD9tBAgpeLj2UIkyi2S8OMDkanDd+qzRFdk=
 github.com/satimoto/go-ocpi-api v0.0.3-0.20220414081517-0ef8dca7c329 h1:jm5GJyz/475LhAy3huKMl0e1DA9cjrW4YDXypggX3bo=
@@ -1059,6 +1062,10 @@ github.com/satimoto/go-ocpi-api v0.0.3-0.20220419130218-4bb30c7037e0 h1:mAoNszIS
 github.com/satimoto/go-ocpi-api v0.0.3-0.20220419130218-4bb30c7037e0/go.mod h1:Ep0OuYVflsnxXxMX5LjFtrttm4BH0xEfrfSqsWOR5tg=
 github.com/satimoto/go-ocpi-api v0.0.3-0.20220419130908-f96f7fd80e93 h1:v3FrdM3xjP965KYF7T18uESYuw/Jn8UUQ6I6gtk6zOg=
 github.com/satimoto/go-ocpi-api v0.0.3-0.20220419130908-f96f7fd80e93/go.mod h1:Ep0OuYVflsnxXxMX5LjFtrttm4BH0xEfrfSqsWOR5tg=
+github.com/satimoto/go-ocpi-api v0.0.3-0.20220505072337-749ac70c5158 h1:6Qw8cIumgtHyHEUF0O+/jdSv6twJSUSTcHPNUQ/0Iso=
+github.com/satimoto/go-ocpi-api v0.0.3-0.20220505072337-749ac70c5158/go.mod h1:HcjUyO6njEdoeioTwUWk55jiTrWCqmqJ3y4bk9VQQPQ=
+github.com/satimoto/go-ocpi-api v0.0.3-0.20220505075031-b256dd943feb h1:FpiJ9GOw5cLPksv05r9Dg5+IXQyLerZaLgAkyRbCkT0=
+github.com/satimoto/go-ocpi-api v0.0.3-0.20220505075031-b256dd943feb/go.mod h1:HcjUyO6njEdoeioTwUWk55jiTrWCqmqJ3y4bk9VQQPQ=
 github.com/satori/go.uuid v1.2.0/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdhQKdks0=
 github.com/schollz/closestmatch v2.1.0+incompatible/go.mod h1:RtP1ddjLong6gTkbtmuhtR2uUrrJOpYzYRvbcPAid+g=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=

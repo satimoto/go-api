@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-ocpi-api/pkg/ocpi"
 )
 
 type TokenRepository interface {
@@ -13,10 +14,15 @@ type TokenRepository interface {
 }
 
 type TokenResolver struct {
-	Repository TokenRepository
+	Repository  TokenRepository
+	OcpiService ocpi.Ocpi
 }
 
 func NewResolver(repositoryService *db.RepositoryService) *TokenResolver {
 	repo := TokenRepository(repositoryService)
-	return &TokenResolver{repo}
+
+	return &TokenResolver{
+		Repository:  repo,
+		OcpiService: ocpi.NewService(),
+	}
 }

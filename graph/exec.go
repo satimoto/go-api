@@ -89,12 +89,12 @@ type ComplexityRoot struct {
 		LnURL func(childComplexity int) int
 	}
 
-	CreateCredential struct {
+	Credential struct {
 		CountryCode func(childComplexity int) int
 		ID          func(childComplexity int) int
 		IsHub       func(childComplexity int) int
 		PartyID     func(childComplexity int) int
-		URL         func(childComplexity int) int
+		Url         func(childComplexity int) int
 	}
 
 	DisplayText struct {
@@ -214,8 +214,10 @@ type ComplexityRoot struct {
 		CreateEmailSubscription func(childComplexity int, input CreateEmailSubscriptionInput) int
 		CreateUser              func(childComplexity int, input CreateUserInput) int
 		ExchangeAuthentication  func(childComplexity int, code string) int
+		RegisterCredential      func(childComplexity int, input RegisterCredentialInput) int
 		StartSession            func(childComplexity int, input StartSessionInput) int
 		StopSession             func(childComplexity int, input StopSessionInput) int
+		UnregisterCredential    func(childComplexity int, input UnregisterCredentialInput) int
 		UpdateUser              func(childComplexity int, input UpdateUserInput) int
 		VerifyEmailSubscription func(childComplexity int, input VerifyEmailSubscriptionInput) int
 	}
@@ -243,6 +245,10 @@ type ComplexityRoot struct {
 		PeriodBegin func(childComplexity int) int
 		PeriodEnd   func(childComplexity int) int
 		Weekday     func(childComplexity int) int
+	}
+
+	Result struct {
+		ID func(childComplexity int) int
 	}
 
 	StartSession struct {
@@ -363,7 +369,9 @@ type MutationResolver interface {
 	CreateChannelRequest(ctx context.Context, input CreateChannelRequestInput) (*db.ChannelRequest, error)
 	StartSession(ctx context.Context, input StartSessionInput) (*StartSession, error)
 	StopSession(ctx context.Context, input StopSessionInput) (*StopSession, error)
-	CreateCredential(ctx context.Context, input CreateCredentialInput) (*CreateCredential, error)
+	CreateCredential(ctx context.Context, input CreateCredentialInput) (*db.Credential, error)
+	RegisterCredential(ctx context.Context, input RegisterCredentialInput) (*Result, error)
+	UnregisterCredential(ctx context.Context, input UnregisterCredentialInput) (*Result, error)
 	CreateEmailSubscription(ctx context.Context, input CreateEmailSubscriptionInput) (*db.EmailSubscription, error)
 	VerifyEmailSubscription(ctx context.Context, input VerifyEmailSubscriptionInput) (*db.EmailSubscription, error)
 	CreateUser(ctx context.Context, input CreateUserInput) (*db.User, error)
@@ -540,40 +548,40 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreateAuthentication.LnURL(childComplexity), true
 
-	case "CreateCredential.countryCode":
-		if e.complexity.CreateCredential.CountryCode == nil {
+	case "Credential.countryCode":
+		if e.complexity.Credential.CountryCode == nil {
 			break
 		}
 
-		return e.complexity.CreateCredential.CountryCode(childComplexity), true
+		return e.complexity.Credential.CountryCode(childComplexity), true
 
-	case "CreateCredential.id":
-		if e.complexity.CreateCredential.ID == nil {
+	case "Credential.id":
+		if e.complexity.Credential.ID == nil {
 			break
 		}
 
-		return e.complexity.CreateCredential.ID(childComplexity), true
+		return e.complexity.Credential.ID(childComplexity), true
 
-	case "CreateCredential.isHub":
-		if e.complexity.CreateCredential.IsHub == nil {
+	case "Credential.isHub":
+		if e.complexity.Credential.IsHub == nil {
 			break
 		}
 
-		return e.complexity.CreateCredential.IsHub(childComplexity), true
+		return e.complexity.Credential.IsHub(childComplexity), true
 
-	case "CreateCredential.partyId":
-		if e.complexity.CreateCredential.PartyID == nil {
+	case "Credential.partyId":
+		if e.complexity.Credential.PartyID == nil {
 			break
 		}
 
-		return e.complexity.CreateCredential.PartyID(childComplexity), true
+		return e.complexity.Credential.PartyID(childComplexity), true
 
-	case "CreateCredential.url":
-		if e.complexity.CreateCredential.URL == nil {
+	case "Credential.url":
+		if e.complexity.Credential.Url == nil {
 			break
 		}
 
-		return e.complexity.CreateCredential.URL(childComplexity), true
+		return e.complexity.Credential.Url(childComplexity), true
 
 	case "DisplayText.language":
 		if e.complexity.DisplayText.Language == nil {
@@ -1165,6 +1173,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.ExchangeAuthentication(childComplexity, args["code"].(string)), true
 
+	case "Mutation.registerCredential":
+		if e.complexity.Mutation.RegisterCredential == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_registerCredential_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RegisterCredential(childComplexity, args["input"].(RegisterCredentialInput)), true
+
 	case "Mutation.startSession":
 		if e.complexity.Mutation.StartSession == nil {
 			break
@@ -1188,6 +1208,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.StopSession(childComplexity, args["input"].(StopSessionInput)), true
+
+	case "Mutation.unregisterCredential":
+		if e.complexity.Mutation.UnregisterCredential == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_unregisterCredential_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UnregisterCredential(childComplexity, args["input"].(UnregisterCredentialInput)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -1318,6 +1350,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.RegularHour.Weekday(childComplexity), true
+
+	case "Result.id":
+		if e.complexity.Result.ID == nil {
+			break
+		}
+
+		return e.complexity.Result.ID(childComplexity), true
 
 	case "StartSession.authorizationId":
 		if e.complexity.StartSession.AuthorizationID == nil {
@@ -1612,7 +1651,7 @@ extend type Mutation {
     termsAndConditions: String
     lastUpdated: String!
 }`, BuiltIn: false},
-	{Name: "graph/schema/credential.graphqls", Input: `type CreateCredential {
+	{Name: "graph/schema/credential.graphqls", Input: `type Credential {
     id: ID!
     url: String!
     countryCode: String!
@@ -1629,8 +1668,19 @@ input CreateCredentialInput {
     isHub: Boolean!
 }
 
+input RegisterCredentialInput {
+    id: ID!
+    clientToken: String
+}
+
+input UnregisterCredentialInput {
+    id: ID!
+}
+
 extend type Mutation {
-    createCredential(input: CreateCredentialInput!): CreateCredential!
+    createCredential(input: CreateCredentialInput!): Credential!
+    registerCredential(input: RegisterCredentialInput!): Result!
+    unregisterCredential(input: UnregisterCredentialInput!): Result!
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/displaytext.graphqls", Input: `type DisplayText {
@@ -1793,6 +1843,9 @@ scalar Geometry`, BuiltIn: false},
     periodEnd: String!
 }
 `, BuiltIn: false},
+	{Name: "graph/schema/result.graphqls", Input: `type Result {
+    id: ID!
+}`, BuiltIn: false},
 	{Name: "graph/schema/statusschedule.graphqls", Input: `type StatusSchedule {
     periodBegin: String!
     periodEnd: String
@@ -1920,6 +1973,21 @@ func (ec *executionContext) field_Mutation_exchangeAuthentication_args(ctx conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_registerCredential_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 RegisterCredentialInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNRegisterCredentialInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRegisterCredentialInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_startSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1942,6 +2010,21 @@ func (ec *executionContext) field_Mutation_stopSession_args(ctx context.Context,
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNStopSessionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStopSessionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_unregisterCredential_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 UnregisterCredentialInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUnregisterCredentialInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUnregisterCredentialInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2731,7 +2814,7 @@ func (ec *executionContext) _CreateAuthentication_lnUrl(ctx context.Context, fie
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CreateCredential_id(ctx context.Context, field graphql.CollectedField, obj *CreateCredential) (ret graphql.Marshaler) {
+func (ec *executionContext) _Credential_id(ctx context.Context, field graphql.CollectedField, obj *db.Credential) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2739,7 +2822,7 @@ func (ec *executionContext) _CreateCredential_id(ctx context.Context, field grap
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "CreateCredential",
+		Object:     "Credential",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -2766,7 +2849,7 @@ func (ec *executionContext) _CreateCredential_id(ctx context.Context, field grap
 	return ec.marshalNID2int64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CreateCredential_url(ctx context.Context, field graphql.CollectedField, obj *CreateCredential) (ret graphql.Marshaler) {
+func (ec *executionContext) _Credential_url(ctx context.Context, field graphql.CollectedField, obj *db.Credential) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2774,7 +2857,7 @@ func (ec *executionContext) _CreateCredential_url(ctx context.Context, field gra
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "CreateCredential",
+		Object:     "Credential",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -2784,7 +2867,7 @@ func (ec *executionContext) _CreateCredential_url(ctx context.Context, field gra
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.URL, nil
+		return obj.Url, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2801,7 +2884,7 @@ func (ec *executionContext) _CreateCredential_url(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CreateCredential_countryCode(ctx context.Context, field graphql.CollectedField, obj *CreateCredential) (ret graphql.Marshaler) {
+func (ec *executionContext) _Credential_countryCode(ctx context.Context, field graphql.CollectedField, obj *db.Credential) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2809,7 +2892,7 @@ func (ec *executionContext) _CreateCredential_countryCode(ctx context.Context, f
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "CreateCredential",
+		Object:     "Credential",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -2836,7 +2919,7 @@ func (ec *executionContext) _CreateCredential_countryCode(ctx context.Context, f
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CreateCredential_partyId(ctx context.Context, field graphql.CollectedField, obj *CreateCredential) (ret graphql.Marshaler) {
+func (ec *executionContext) _Credential_partyId(ctx context.Context, field graphql.CollectedField, obj *db.Credential) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2844,7 +2927,7 @@ func (ec *executionContext) _CreateCredential_partyId(ctx context.Context, field
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "CreateCredential",
+		Object:     "Credential",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -2871,7 +2954,7 @@ func (ec *executionContext) _CreateCredential_partyId(ctx context.Context, field
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CreateCredential_isHub(ctx context.Context, field graphql.CollectedField, obj *CreateCredential) (ret graphql.Marshaler) {
+func (ec *executionContext) _Credential_isHub(ctx context.Context, field graphql.CollectedField, obj *db.Credential) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2879,7 +2962,7 @@ func (ec *executionContext) _CreateCredential_isHub(ctx context.Context, field g
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "CreateCredential",
+		Object:     "Credential",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -5692,9 +5775,93 @@ func (ec *executionContext) _Mutation_createCredential(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*CreateCredential)
+	res := resTmp.(*db.Credential)
 	fc.Result = res
-	return ec.marshalNCreateCredential2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateCredential(ctx, field.Selections, res)
+	return ec.marshalNCredential2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐCredential(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_registerCredential(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_registerCredential_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RegisterCredential(rctx, args["input"].(RegisterCredentialInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Result)
+	fc.Result = res
+	return ec.marshalNResult2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_unregisterCredential(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_unregisterCredential_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UnregisterCredential(rctx, args["input"].(UnregisterCredentialInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Result)
+	fc.Result = res
+	return ec.marshalNResult2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createEmailSubscription(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6407,6 +6574,41 @@ func (ec *executionContext) _RegularHour_periodEnd(ctx context.Context, field gr
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Result_id(ctx context.Context, field graphql.CollectedField, obj *Result) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Result",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _StartSession_id(ctx context.Context, field graphql.CollectedField, obj *StartSession) (ret graphql.Marshaler) {
@@ -8441,6 +8643,37 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputRegisterCredentialInput(ctx context.Context, obj interface{}) (RegisterCredentialInput, error) {
+	var it RegisterCredentialInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2int64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "clientToken":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clientToken"))
+			it.ClientToken, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputStartSessionInput(ctx context.Context, obj interface{}) (StartSessionInput, error) {
 	var it StartSessionInput
 	asMap := map[string]interface{}{}
@@ -8486,6 +8719,29 @@ func (ec *executionContext) unmarshalInputStopSessionInput(ctx context.Context, 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sessionUid"))
 			it.SessionUID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUnregisterCredentialInput(ctx context.Context, obj interface{}) (UnregisterCredentialInput, error) {
+	var it UnregisterCredentialInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2int64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8836,39 +9092,39 @@ func (ec *executionContext) _CreateAuthentication(ctx context.Context, sel ast.S
 	return out
 }
 
-var createCredentialImplementors = []string{"CreateCredential"}
+var credentialImplementors = []string{"Credential"}
 
-func (ec *executionContext) _CreateCredential(ctx context.Context, sel ast.SelectionSet, obj *CreateCredential) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, createCredentialImplementors)
+func (ec *executionContext) _Credential(ctx context.Context, sel ast.SelectionSet, obj *db.Credential) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, credentialImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("CreateCredential")
+			out.Values[i] = graphql.MarshalString("Credential")
 		case "id":
-			out.Values[i] = ec._CreateCredential_id(ctx, field, obj)
+			out.Values[i] = ec._Credential_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "url":
-			out.Values[i] = ec._CreateCredential_url(ctx, field, obj)
+			out.Values[i] = ec._Credential_url(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "countryCode":
-			out.Values[i] = ec._CreateCredential_countryCode(ctx, field, obj)
+			out.Values[i] = ec._Credential_countryCode(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "partyId":
-			out.Values[i] = ec._CreateCredential_partyId(ctx, field, obj)
+			out.Values[i] = ec._Credential_partyId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "isHub":
-			out.Values[i] = ec._CreateCredential_isHub(ctx, field, obj)
+			out.Values[i] = ec._Credential_isHub(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -9853,6 +10109,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "registerCredential":
+			out.Values[i] = ec._Mutation_registerCredential(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "unregisterCredential":
+			out.Values[i] = ec._Mutation_unregisterCredential(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createEmailSubscription":
 			out.Values[i] = ec._Mutation_createEmailSubscription(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -10102,6 +10368,33 @@ func (ec *executionContext) _RegularHour(ctx context.Context, sel ast.SelectionS
 			out.Values[i] = ec._RegularHour_periodEnd(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var resultImplementors = []string{"Result"}
+
+func (ec *executionContext) _Result(ctx context.Context, sel ast.SelectionSet, obj *Result) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, resultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Result")
+		case "id":
+			out.Values[i] = ec._Result_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -10713,20 +11006,6 @@ func (ec *executionContext) unmarshalNCreateChannelRequestInput2githubᚗcomᚋs
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNCreateCredential2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateCredential(ctx context.Context, sel ast.SelectionSet, v CreateCredential) graphql.Marshaler {
-	return ec._CreateCredential(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNCreateCredential2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateCredential(ctx context.Context, sel ast.SelectionSet, v *CreateCredential) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._CreateCredential(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNCreateCredentialInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateCredentialInput(ctx context.Context, v interface{}) (CreateCredentialInput, error) {
 	res, err := ec.unmarshalInputCreateCredentialInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -10740,6 +11019,20 @@ func (ec *executionContext) unmarshalNCreateEmailSubscriptionInput2githubᚗcom�
 func (ec *executionContext) unmarshalNCreateUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateUserInput(ctx context.Context, v interface{}) (CreateUserInput, error) {
 	res, err := ec.unmarshalInputCreateUserInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCredential2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐCredential(ctx context.Context, sel ast.SelectionSet, v db.Credential) graphql.Marshaler {
+	return ec._Credential(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCredential2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐCredential(ctx context.Context, sel ast.SelectionSet, v *db.Credential) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Credential(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNDisplayText2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐDisplayText(ctx context.Context, sel ast.SelectionSet, v db.DisplayText) graphql.Marshaler {
@@ -11248,6 +11541,11 @@ func (ec *executionContext) marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatas
 	return ec._Node(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNRegisterCredentialInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRegisterCredentialInput(ctx context.Context, v interface{}) (RegisterCredentialInput, error) {
+	res, err := ec.unmarshalInputRegisterCredentialInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNRegularHour2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐRegularHour(ctx context.Context, sel ast.SelectionSet, v db.RegularHour) graphql.Marshaler {
 	return ec._RegularHour(ctx, sel, &v)
 }
@@ -11294,6 +11592,20 @@ func (ec *executionContext) marshalNRegularHour2ᚕgithubᚗcomᚋsatimotoᚋgo�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNResult2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResult(ctx context.Context, sel ast.SelectionSet, v Result) graphql.Marshaler {
+	return ec._Result(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNResult2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResult(ctx context.Context, sel ast.SelectionSet, v *Result) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Result(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNStartSession2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStartSession(ctx context.Context, sel ast.SelectionSet, v StartSession) graphql.Marshaler {
@@ -11443,6 +11755,11 @@ func (ec *executionContext) marshalNTextDescription2ᚕgithubᚗcomᚋsatimoto�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNUnregisterCredentialInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUnregisterCredentialInput(ctx context.Context, v interface{}) (UnregisterCredentialInput, error) {
+	res, err := ec.unmarshalInputUnregisterCredentialInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNUpdateUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateUserInput(ctx context.Context, v interface{}) (UpdateUserInput, error) {

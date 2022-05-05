@@ -4,30 +4,18 @@ import (
 	"context"
 	"errors"
 	"log"
-	"os"
 
 	"github.com/satimoto/go-datastore/db"
-	"github.com/satimoto/go-ocpi-api/ocpirpc/tokenrpc"
-	"google.golang.org/grpc"
+	"github.com/satimoto/go-ocpi-api/ocpirpc"
 )
 
-func (r *TokenResolver) CreateToken(ctx context.Context, userID int64) (*tokenrpc.TokenResponse, error) {
-	ocpiRpcAddress := os.Getenv("OCPI_RPC_ADDRESS")
-	conn, err := grpc.Dial(ocpiRpcAddress, grpc.WithInsecure())
-
-	if err != nil {
-		log.Printf("Error CreateToken Dial: %v", err)
-		log.Printf("OCPI_RPC_ADDRESS=%v", ocpiRpcAddress)
-		return nil, errors.New("Error creating user")
-	}
-
-	defer conn.Close()
-	tokenClient := tokenrpc.NewTokenServiceClient(conn)
-	createTokenRequest := &tokenrpc.CreateTokenRequest{
+func (r *TokenResolver) CreateToken(ctx context.Context, userID int64) (*ocpirpc.CreateTokenResponse, error) {
+	createTokenRequest := &ocpirpc.CreateTokenRequest{
 		UserId: userID,
-		Type: string(db.TokenTypeOTHER),
+		Type:   string(db.TokenTypeOTHER),
 	}
-	createTokenResponse, err := tokenClient.CreateToken(ctx, createTokenRequest)
+
+	createTokenResponse, err := r.OcpiService.CreateToken(ctx, createTokenRequest)
 
 	if err != nil {
 		log.Printf("Error CreateToken CreateToken: %v", err)
