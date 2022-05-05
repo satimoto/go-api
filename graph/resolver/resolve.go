@@ -14,6 +14,7 @@ import (
 	"github.com/satimoto/go-api/internal/token"
 	"github.com/satimoto/go-api/internal/user"
 	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-ocpi-api/pkg/ocpi"
 )
 
 // This file will not be regenerated automatically.
@@ -24,6 +25,7 @@ type Repository interface{}
 
 type Resolver struct {
 	Repository
+	OcpiService ocpi.Ocpi
 	*authentication.AuthenticationResolver
 	*businessdetail.BusinessDetailResolver
 	*channelrequest.ChannelRequestResolver
@@ -42,6 +44,7 @@ func NewResolver(repositoryService *db.RepositoryService) *Resolver {
 	repo := Repository(repositoryService)
 	return &Resolver{
 		Repository:                repo,
+		OcpiService:               ocpi.NewService(),
 		AuthenticationResolver:    authentication.NewResolver(repositoryService),
 		BusinessDetailResolver:    businessdetail.NewResolver(repositoryService),
 		ChannelRequestResolver:    channelrequest.NewResolver(repositoryService),

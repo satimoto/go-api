@@ -3,10 +3,10 @@ package command
 import (
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-datastore/util"
-	"github.com/satimoto/go-ocpi-api/ocpirpc/commandrpc"
+	"github.com/satimoto/go-ocpi-api/ocpirpc"
 )
 
-func NewStartSession(response commandrpc.StartSessionResponse) *graph.StartSession {
+func NewStartSession(response ocpirpc.StartSessionResponse) *graph.StartSession {
 	return &graph.StartSession{
 		ID:              response.Id,
 		Status:          response.Status,
@@ -16,7 +16,7 @@ func NewStartSession(response commandrpc.StartSessionResponse) *graph.StartSessi
 	}
 }
 
-func NewStopSession(response commandrpc.StopSessionResponse) *graph.StopSession {
+func NewStopSession(response ocpirpc.StopSessionResponse) *graph.StopSession {
 	return &graph.StopSession{
 		ID:         response.Id,
 		Status:     response.Status,

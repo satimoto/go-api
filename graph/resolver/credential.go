@@ -7,31 +7,18 @@ import (
 	"context"
 	"errors"
 	"log"
-	"os"
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/credential"
-	"github.com/satimoto/go-ocpi-api/ocpirpc/credentialrpc"
+	"github.com/satimoto/go-datastore/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
-	"google.golang.org/grpc"
 )
 
-func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.CreateCredentialInput) (*graph.CreateCredential, error) {
+func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.CreateCredentialInput) (*db.Credential, error) {
 	if userId := authentication.GetUserId(ctx); userId != nil {
-		ocpiRpcAddress := os.Getenv("OCPI_RPC_ADDRESS")
-		conn, err := grpc.Dial(ocpiRpcAddress, grpc.WithInsecure())
-
-		if err != nil {
-			log.Printf("Error CreateCredential Dial: %v", err)
-			log.Printf("OCPI_RPC_ADDRESS=%v", ocpiRpcAddress)
-			return nil, errors.New("Error creating credential")
-		}
-
-		defer conn.Close()
-		credentialClient := credentialrpc.NewCredentialServiceClient(conn)
 		credentialRequest := credential.NewCreateCredentialRequest(input)
-		credentialResponse, err := credentialClient.CreateCredential(ctx, credentialRequest)
+		credentialResponse, err := r.OcpiService.CreateCredential(ctx, credentialRequest)
 
 		if err != nil {
 			log.Printf("Error CreateCredential CreateCredential: %v", err)
@@ -40,6 +27,40 @@ func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.Cre
 		}
 
 		return credential.NewCreateCredential(*credentialResponse), nil
+	}
+
+	return nil, gqlerror.Errorf("Not Authenticated")
+}
+
+func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.RegisterCredentialInput) (*graph.Result, error) {
+	if userId := authentication.GetUserId(ctx); userId != nil {
+		credentialRequest := credential.NewRegisterCredentialRequest(input)
+		credentialResponse, err := r.OcpiService.RegisterCredential(ctx, credentialRequest)
+
+		if err != nil {
+			log.Printf("Error RegisterCredential RegisterCredential: %v", err)
+			log.Printf("%#v", credentialRequest)
+			return nil, errors.New("Error registering credential")
+		}
+
+		return &graph.Result{ID: credentialResponse.Id}, nil
+	}
+
+	return nil, gqlerror.Errorf("Not Authenticated")
+}
+
+func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph.UnregisterCredentialInput) (*graph.Result, error) {
+	if userId := authentication.GetUserId(ctx); userId != nil {
+		credentialRequest := credential.NewUnregisterCredentialRequest(input)
+		credentialResponse, err := r.OcpiService.UnregisterCredential(ctx, credentialRequest)
+
+		if err != nil {
+			log.Printf("Error UnregisterCredential UnregisterCredential: %v", err)
+			log.Printf("%#v", credentialRequest)
+			return nil, errors.New("Error unregistering credential")
+		}
+
+		return &graph.Result{ID: credentialResponse.Id}, nil
 	}
 
 	return nil, gqlerror.Errorf("Not Authenticated")

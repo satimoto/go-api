@@ -29,14 +29,6 @@ type CreateChannelRequestInput struct {
 	AmountMsat  string `json:"amountMsat"`
 }
 
-type CreateCredential struct {
-	ID          int64  `json:"id"`
-	URL         string `json:"url"`
-	CountryCode string `json:"countryCode"`
-	PartyID     string `json:"partyId"`
-	IsHub       bool   `json:"isHub"`
-}
-
 type CreateCredentialInput struct {
 	ClientToken    *string                    `json:"clientToken"`
 	URL            string                     `json:"url"`
@@ -93,6 +85,15 @@ type ListLocationsInput struct {
 	YMax float64 `json:"yMax"`
 }
 
+type RegisterCredentialInput struct {
+	ID          int64   `json:"id"`
+	ClientToken *string `json:"clientToken"`
+}
+
+type Result struct {
+	ID int64 `json:"id"`
+}
+
 type StartSession struct {
 	ID              int64   `json:"id"`
 	Status          string  `json:"status"`
@@ -119,6 +120,10 @@ type StopSessionInput struct {
 type TextDescription struct {
 	Text        string `json:"text"`
 	Description string `json:"description"`
+}
+
+type UnregisterCredentialInput struct {
+	ID int64 `json:"id"`
 }
 
 type UpdateUserInput struct {
