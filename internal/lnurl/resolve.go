@@ -1,6 +1,6 @@
 package lnurl
 
-import "github.com/satimoto/go-datastore/db"
+import "github.com/satimoto/go-datastore/pkg/db"
 
 type LnUrlRepository interface {
 }

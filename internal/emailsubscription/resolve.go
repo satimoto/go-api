@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/satimoto/go-api/internal/aws/email"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 )
 
 type EmailSubscriptionRepository interface {

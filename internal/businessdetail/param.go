@@ -2,8 +2,8 @@ package businessdetail
 
 import (
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-datastore/db"
-	"github.com/satimoto/go-datastore/util"
+	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/util"
 )
 
 func NewCreateBusinessDetailParams(input graph.CreateBusinessDetailInput) db.CreateBusinessDetailParams {

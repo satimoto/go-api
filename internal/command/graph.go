@@ -2,7 +2,7 @@ package command
 
 import (
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-datastore/util"
+	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/satimoto/go-ocpi-api/ocpirpc"
 )
 

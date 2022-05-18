@@ -7,7 +7,7 @@ import (
 	"context"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 )
 
 func (r *openingTimeResolver) RegularHours(ctx context.Context, obj *db.OpeningTime) ([]db.RegularHour, error) {

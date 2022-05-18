@@ -12,8 +12,8 @@ import (
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/user"
-	"github.com/satimoto/go-datastore/db"
-	"github.com/satimoto/go-datastore/util"
+	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 

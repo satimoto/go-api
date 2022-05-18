@@ -2,7 +2,7 @@ package auth
 
 import (
 	"github.com/satimoto/go-api/internal/authentication"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 )
 
 type LnUrlAuthRepository interface {

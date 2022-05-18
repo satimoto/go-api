@@ -8,7 +8,7 @@ import (
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/util"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 )
 
 func (r *energyMixResolver) EnergySources(ctx context.Context, obj *db.EnergyMix) ([]db.EnergySource, error) {

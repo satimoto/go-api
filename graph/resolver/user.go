@@ -10,8 +10,8 @@ import (
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/user"
-	"github.com/satimoto/go-datastore/db"
-	"github.com/satimoto/go-datastore/util"
+	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -30,9 +30,9 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 
 	u, err := r.UserResolver.Repository.CreateUser(ctx, db.CreateUserParams{
 		CommissionPercent: util.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
-		DeviceToken:   input.DeviceToken,
-		LinkingPubkey: auth.LinkingPubkey.String,
-		Pubkey:        input.Pubkey,
+		DeviceToken:       input.DeviceToken,
+		LinkingPubkey:     auth.LinkingPubkey.String,
+		Pubkey:            input.Pubkey,
 	})
 
 	if err != nil {

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 )
 
 func (r *exceptionalPeriodResolver) PeriodBegin(ctx context.Context, obj *db.ExceptionalPeriod) (string, error) {

@@ -11,11 +11,11 @@ import (
 	"github.com/satimoto/go-api/internal/evse"
 	"github.com/satimoto/go-api/internal/image"
 	"github.com/satimoto/go-api/internal/location"
-	"github.com/satimoto/go-api/internal/node"
 	"github.com/satimoto/go-api/internal/openingtime"
 	"github.com/satimoto/go-api/internal/token"
 	"github.com/satimoto/go-api/internal/user"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/node"
 	"github.com/satimoto/go-ocpi-api/pkg/ocpi"
 )
 

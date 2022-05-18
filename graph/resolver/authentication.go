@@ -13,7 +13,7 @@ import (
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/lnurl"
 	"github.com/satimoto/go-api/internal/lnurl/auth"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
