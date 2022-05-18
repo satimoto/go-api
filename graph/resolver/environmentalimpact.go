@@ -7,7 +7,7 @@ import (
 	"context"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 )
 
 func (r *environmentalImpactResolver) Source(ctx context.Context, obj *db.EnvironmentalImpact) (string, error) {
@@ -15,6 +15,8 @@ func (r *environmentalImpactResolver) Source(ctx context.Context, obj *db.Enviro
 }
 
 // EnvironmentalImpact returns graph.EnvironmentalImpactResolver implementation.
-func (r *Resolver) EnvironmentalImpact() graph.EnvironmentalImpactResolver { return &environmentalImpactResolver{r} }
+func (r *Resolver) EnvironmentalImpact() graph.EnvironmentalImpactResolver {
+	return &environmentalImpactResolver{r}
+}
 
 type environmentalImpactResolver struct{ *Resolver }

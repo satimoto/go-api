@@ -12,7 +12,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/satimoto/go-api/internal/rest"
-	"github.com/satimoto/go-datastore/util"
+	"github.com/satimoto/go-datastore/pkg/util"
 )
 
 var (

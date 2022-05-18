@@ -2,7 +2,7 @@ package location
 
 import (
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 )
 
 func NewListLocationsByGeomParams(input graph.ListLocationsInput) db.ListLocationsByGeomParams {

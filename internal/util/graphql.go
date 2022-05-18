@@ -3,7 +3,7 @@ package util
 import (
 	"database/sql"
 
-	"github.com/satimoto/go-datastore/geom"
+	"github.com/satimoto/go-datastore/pkg/geom"
 )
 
 func NullGeometry(value geom.NullGeometry4326) (*geom.Geometry4326, error) {

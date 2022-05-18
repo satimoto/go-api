@@ -7,14 +7,14 @@ import (
 	"context"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 )
 
 func (r *nodeResolver) Addr(ctx context.Context, obj *db.Node) (string, error) {
 	return obj.NodeAddr, nil
 }
 
-// Node returns graph.NodeResolver implementation.    
+// Node returns graph.NodeResolver implementation.
 func (r *Resolver) Node() graph.NodeResolver { return &nodeResolver{r} }
 
 type nodeResolver struct{ *Resolver }

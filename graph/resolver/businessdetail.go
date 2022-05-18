@@ -9,8 +9,8 @@ import (
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/businessdetail"
 	"github.com/satimoto/go-api/internal/util"
-	"github.com/satimoto/go-datastore/db"
-	dbUtil "github.com/satimoto/go-datastore/util"
+	"github.com/satimoto/go-datastore/pkg/db"
+	dbUtil "github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 

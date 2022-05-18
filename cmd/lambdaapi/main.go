@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	chiproxy "github.com/awslabs/aws-lambda-go-api-proxy/chi"
 	"github.com/satimoto/go-api/internal/rest"
-	"github.com/satimoto/go-datastore/util"
+	"github.com/satimoto/go-datastore/pkg/util"
 )
 
 var (

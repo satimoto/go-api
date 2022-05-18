@@ -7,7 +7,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/satimoto/go-datastore/geom"
+	"github.com/satimoto/go-datastore/pkg/geom"
 )
 
 type CreateAuthentication struct {

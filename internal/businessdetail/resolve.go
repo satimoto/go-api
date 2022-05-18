@@ -3,7 +3,7 @@ package businessdetail
 import (
 	"context"
 
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 )
 
 type BusinessDetailRepository interface {

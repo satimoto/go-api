@@ -9,8 +9,8 @@ import (
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/util"
-	"github.com/satimoto/go-datastore/db"
-	"github.com/satimoto/go-datastore/geom"
+	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/geom"
 )
 
 func (r *evseResolver) EvseID(ctx context.Context, obj *db.Evse) (*string, error) {

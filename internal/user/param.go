@@ -1,6 +1,6 @@
 package user
 
-import "github.com/satimoto/go-datastore/db"
+import "github.com/satimoto/go-datastore/pkg/db"
 
 func NewUpdateUserParams(user db.User) db.UpdateUserParams {
 	return db.UpdateUserParams{

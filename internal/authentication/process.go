@@ -5,13 +5,13 @@ import (
 	"os"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-datastore/pkg/db"
 )
 
 func SignToken(user db.User) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["user_id"] = user.ID
-	
+
 	jwtWithClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	token, err := jwtWithClaims.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
@@ -37,7 +37,7 @@ func VerifyToken(tokenString string) (bool, jwt.MapClaims) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return true, claims
-	} 
+	}
 
 	return false, jwt.MapClaims{}
 }
