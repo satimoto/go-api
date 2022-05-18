@@ -15,10 +15,9 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
-	github.com/satimoto/go-datastore v0.1.2-0.20220504150421-789db4316b88
+	github.com/satimoto/go-datastore v0.1.2-0.20220506113557-5240743992e9
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.4.0
-	google.golang.org/grpc v1.46.0
 )
 
 require (
@@ -54,7 +53,7 @@ require (
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/paulmach/orb v0.5.1-0.20220406232948-69ee7e81c712 // indirect
-	github.com/satimoto/go-ocpi-api v0.0.3-0.20220505075031-b256dd943feb
+	github.com/satimoto/go-ocpi-api v0.0.3-0.20220518064509-629fe41bca23
 	github.com/tidwall/gjson v1.6.1 // indirect
 	github.com/tidwall/match v1.0.1 // indirect
 	github.com/tidwall/pretty v1.0.2 // indirect
@@ -81,6 +80,7 @@ require (
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/satimoto/go-datastore-mocks v0.1.2-0.20220429143239-03099fadb0a5 // indirect
+	google.golang.org/grpc v1.46.0 // indirect
 )
 
 replace git.schwanenlied.me/yawning/bsaes.git => github.com/Yawning/bsaes v0.0.0-20180720073208-c0276d75487e

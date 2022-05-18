@@ -1,6 +1,8 @@
 package resolver
 
 import (
+	"os"
+
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/businessdetail"
 	"github.com/satimoto/go-api/internal/channelrequest"
@@ -41,10 +43,17 @@ type Resolver struct {
 }
 
 func NewResolver(repositoryService *db.RepositoryService) *Resolver {
+	ocpiService := ocpi.NewService(os.Getenv("OCPI_RPC_ADDRESS"))
+
+	return NewResolverWithServices(repositoryService, ocpiService)
+}
+
+func NewResolverWithServices(repositoryService *db.RepositoryService, ocpiService ocpi.Ocpi) *Resolver {
 	repo := Repository(repositoryService)
+
 	return &Resolver{
 		Repository:                repo,
-		OcpiService:               ocpi.NewService(),
+		OcpiService:               ocpiService,
 		AuthenticationResolver:    authentication.NewResolver(repositoryService),
 		BusinessDetailResolver:    businessdetail.NewResolver(repositoryService),
 		ChannelRequestResolver:    channelrequest.NewResolver(repositoryService),
