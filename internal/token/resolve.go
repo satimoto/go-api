@@ -2,6 +2,7 @@ package token
 
 import (
 	"context"
+	"os"
 
 	"github.com/satimoto/go-datastore/db"
 	"github.com/satimoto/go-ocpi-api/pkg/ocpi"
@@ -19,10 +20,16 @@ type TokenResolver struct {
 }
 
 func NewResolver(repositoryService *db.RepositoryService) *TokenResolver {
+	ocpiService := ocpi.NewService(os.Getenv("OCPI_RPC_ADDRESS"))
+	
+	return NewResolverWithServices(repositoryService, ocpiService)
+}
+
+func NewResolverWithServices(repositoryService *db.RepositoryService, ocpiService ocpi.Ocpi) *TokenResolver {
 	repo := TokenRepository(repositoryService)
 
 	return &TokenResolver{
 		Repository:  repo,
-		OcpiService: ocpi.NewService(),
+		OcpiService: ocpiService,
 	}
 }
