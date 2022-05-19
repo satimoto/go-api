@@ -7,16 +7,16 @@ import (
 	"context"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/image"
+	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func (r *mutationResolver) CreateImage(ctx context.Context, input graph.CreateImageInput) (*db.Image, error) {
-	params := image.NewCreateImageParams(input)
+	params := param.NewCreateImageParams(input)
 
-	i, err := r.ImageResolver.Repository.CreateImage(ctx, params)
+	i, err := r.ImageRepository.CreateImage(ctx, params)
 
 	if err != nil {
 		return nil, gqlerror.Errorf("Error creating image")

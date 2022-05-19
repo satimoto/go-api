@@ -38,7 +38,7 @@ func (r *businessDetailResolver) Website(ctx context.Context, obj *db.BusinessDe
 
 func (r *businessDetailResolver) Logo(ctx context.Context, obj *db.BusinessDetail) (*db.Image, error) {
 	if obj.LogoID.Valid {
-		if image, err := r.ImageResolver.Repository.GetImage(ctx, obj.LogoID.Int64); err == nil {
+		if image, err := r.ImageRepository.GetImage(ctx, obj.LogoID.Int64); err == nil {
 			return &image, nil
 		}
 	}
