@@ -30,7 +30,7 @@ func (r *channelRequestResolver) AmountMsat(ctx context.Context, obj *db.Channel
 }
 
 func (r *channelRequestResolver) Node(ctx context.Context, obj *db.ChannelRequest) (*db.Node, error) {
-	if node, err := r.NodeResolver.Repository.GetNode(ctx, obj.NodeID); err == nil {
+	if node, err := r.NodeRepository.GetNode(ctx, obj.NodeID); err == nil {
 		return &node, nil
 	}
 
@@ -63,11 +63,11 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 			var node *db.Node
 
 			if u.NodeID.Valid {
-				if n, err := r.NodeResolver.Repository.GetNode(ctx, u.NodeID.Int64); err == nil {
+				if n, err := r.NodeRepository.GetNode(ctx, u.NodeID.Int64); err == nil {
 					node = &n
 				}
 			} else {
-				if nodes, err := r.NodeResolver.Repository.ListNodes(ctx); err == nil && len(nodes) > 0 {
+				if nodes, err := r.NodeRepository.ListNodes(ctx); err == nil && len(nodes) > 0 {
 					for _, n := range nodes {
 						node = &n
 						break

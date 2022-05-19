@@ -9,12 +9,12 @@ import (
 	"github.com/satimoto/go-api/internal/emailsubscription"
 	"github.com/satimoto/go-api/internal/energymix"
 	"github.com/satimoto/go-api/internal/evse"
-	"github.com/satimoto/go-api/internal/image"
 	"github.com/satimoto/go-api/internal/location"
 	"github.com/satimoto/go-api/internal/openingtime"
 	"github.com/satimoto/go-api/internal/token"
 	"github.com/satimoto/go-api/internal/user"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/image"
 	"github.com/satimoto/go-datastore/pkg/node"
 	"github.com/satimoto/go-ocpi-api/pkg/ocpi"
 )
@@ -27,19 +27,19 @@ type Repository interface{}
 
 type Resolver struct {
 	Repository
-	OcpiService ocpi.Ocpi
-	*authentication.AuthenticationResolver
-	*businessdetail.BusinessDetailResolver
-	*channelrequest.ChannelRequestResolver
-	*emailsubscription.EmailSubscriptionResolver
-	*energymix.EnergyMixResolver
-	*evse.EvseResolver
-	*image.ImageResolver
-	*location.LocationResolver
-	*node.NodeResolver
-	*openingtime.OpeningTimeResolver
-	*token.TokenResolver
-	*user.UserResolver
+	OcpiService               ocpi.Ocpi
+	AuthenticationResolver    *authentication.AuthenticationResolver
+	BusinessDetailResolver    *businessdetail.BusinessDetailResolver
+	ChannelRequestResolver    *channelrequest.ChannelRequestResolver
+	EmailSubscriptionResolver *emailsubscription.EmailSubscriptionResolver
+	EnergyMixResolver         *energymix.EnergyMixResolver
+	EvseResolver              *evse.EvseResolver
+	ImageRepository           image.ImageRepository
+	LocationResolver          *location.LocationResolver
+	NodeRepository            node.NodeRepository
+	OpeningTimeResolver       *openingtime.OpeningTimeResolver
+	TokenResolver             *token.TokenResolver
+	UserResolver              *user.UserResolver
 }
 
 func NewResolver(repositoryService *db.RepositoryService) *Resolver {
@@ -60,9 +60,9 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ocpiServic
 		EmailSubscriptionResolver: emailsubscription.NewResolver(repositoryService),
 		EnergyMixResolver:         energymix.NewResolver(repositoryService),
 		EvseResolver:              evse.NewResolver(repositoryService),
-		ImageResolver:             image.NewResolver(repositoryService),
+		ImageRepository:           image.NewRepository(repositoryService),
 		LocationResolver:          location.NewResolver(repositoryService),
-		NodeResolver:              node.NewResolver(repositoryService),
+		NodeRepository:            node.NewRepository(repositoryService),
 		OpeningTimeResolver:       openingtime.NewResolver(repositoryService),
 		TokenResolver:             token.NewResolver(repositoryService),
 		UserResolver:              user.NewResolver(repositoryService),
