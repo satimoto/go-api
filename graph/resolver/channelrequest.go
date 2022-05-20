@@ -11,7 +11,7 @@ import (
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
-	"github.com/satimoto/go-api/internal/user"
+	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -39,7 +39,7 @@ func (r *channelRequestResolver) Node(ctx context.Context, obj *db.ChannelReques
 
 func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
 	if userId := authentication.GetUserId(ctx); userId != nil {
-		if u, err := r.UserResolver.Repository.GetUser(ctx, *userId); err == nil {
+		if u, err := r.UserRepository.GetUser(ctx, *userId); err == nil {
 			paymentHashBytes, err := base64.StdEncoding.DecodeString(input.PaymentHash)
 
 			if err != nil {
@@ -78,13 +78,13 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 			if node == nil {
 				return nil, gqlerror.Errorf("No node available")
 			} else if !u.NodeID.Valid || u.NodeID.Int64 != node.ID {
-				userUpdateParams := user.NewUpdateUserParams(u)
+				userUpdateParams := param.NewUpdateUserParams(u)
 				userUpdateParams.NodeID = util.SqlNullInt64(node.ID)
 
-				r.UserResolver.Repository.UpdateUser(ctx, userUpdateParams)
+				r.UserRepository.UpdateUser(ctx, userUpdateParams)
 			}
 
-			channelRequest, err := r.ChannelRequestResolver.Repository.CreateChannelRequest(ctx, db.CreateChannelRequestParams{
+			channelRequest, err := r.ChannelRequestRepository.CreateChannelRequest(ctx, db.CreateChannelRequestParams{
 				UserID:      u.ID,
 				NodeID:      node.ID,
 				Status:      db.ChannelRequestStatusREQUESTED,

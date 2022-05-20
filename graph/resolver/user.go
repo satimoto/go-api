@@ -9,7 +9,7 @@ import (
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
-	"github.com/satimoto/go-api/internal/user"
+	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -28,7 +28,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
-	u, err := r.UserResolver.Repository.CreateUser(ctx, db.CreateUserParams{
+	u, err := r.UserRepository.CreateUser(ctx, db.CreateUserParams{
 		CommissionPercent: util.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
 		DeviceToken:       input.DeviceToken,
 		LinkingPubkey:     auth.LinkingPubkey.String,
@@ -51,17 +51,17 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUserInput) (*db.User, error) {
 	if userId := authentication.GetUserId(ctx); userId != nil {
-		u, err := r.UserResolver.Repository.GetUser(ctx, *userId)
+		u, err := r.UserRepository.GetUser(ctx, *userId)
 
 		if err != nil {
 			log.Printf("Error updating user: %s", err.Error())
 			return nil, gqlerror.Errorf("Error updating user")
 		}
 
-		updateUserParams := user.NewUpdateUserParams(u)
+		updateUserParams := param.NewUpdateUserParams(u)
 		updateUserParams.DeviceToken = input.DeviceToken
 
-		u, err = r.UserResolver.Repository.UpdateUser(ctx, updateUserParams)
+		u, err = r.UserRepository.UpdateUser(ctx, updateUserParams)
 
 		if err != nil {
 			log.Printf("Error updating user: %s", err.Error())

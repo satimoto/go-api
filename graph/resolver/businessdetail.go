@@ -7,7 +7,7 @@ import (
 	"context"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/businessdetail"
+	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
 	dbUtil "github.com/satimoto/go-datastore/pkg/util"
@@ -15,7 +15,7 @@ import (
 )
 
 func (r *mutationResolver) CreateBusinessDetail(ctx context.Context, input graph.CreateBusinessDetailInput) (*db.BusinessDetail, error) {
-	params := businessdetail.NewCreateBusinessDetailParams(input)
+	params := param.NewCreateBusinessDetailParams(input)
 
 	if input.Logo != nil {
 		if logo, err := r.CreateImage(ctx, *input.Logo); err == nil {
@@ -23,7 +23,7 @@ func (r *mutationResolver) CreateBusinessDetail(ctx context.Context, input graph
 		}
 	}
 
-	businessDetail, err := r.BusinessDetailResolver.Repository.CreateBusinessDetail(ctx, params)
+	businessDetail, err := r.BusinessDetailRepository.CreateBusinessDetail(ctx, params)
 
 	if err != nil {
 		return nil, gqlerror.Errorf("Error creating business detail")

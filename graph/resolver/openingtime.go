@@ -11,15 +11,15 @@ import (
 )
 
 func (r *openingTimeResolver) RegularHours(ctx context.Context, obj *db.OpeningTime) ([]db.RegularHour, error) {
-	return r.OpeningTimeResolver.Repository.ListRegularHours(ctx, obj.ID)
+	return r.OpeningTimeRepository.ListRegularHours(ctx, obj.ID)
 }
 
 func (r *openingTimeResolver) ExceptionalOpenings(ctx context.Context, obj *db.OpeningTime) ([]db.ExceptionalPeriod, error) {
-	return r.OpeningTimeResolver.Repository.ListExceptionalOpeningPeriods(ctx, obj.ID)
+	return r.OpeningTimeRepository.ListExceptionalOpeningPeriods(ctx, obj.ID)
 }
 
 func (r *openingTimeResolver) ExceptionalClosings(ctx context.Context, obj *db.OpeningTime) ([]db.ExceptionalPeriod, error) {
-	return r.OpeningTimeResolver.Repository.ListExceptionalClosingPeriods(ctx, obj.ID)
+	return r.OpeningTimeRepository.ListExceptionalClosingPeriods(ctx, obj.ID)
 }
 
 // OpeningTime returns graph.OpeningTimeResolver implementation.

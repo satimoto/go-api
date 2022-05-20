@@ -9,7 +9,7 @@ import (
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
-	"github.com/satimoto/go-api/internal/location"
+	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -17,7 +17,7 @@ import (
 
 func (r *queryResolver) GetLocation(ctx context.Context, uid string) (*db.Location, error) {
 	if userId := authentication.GetUserId(ctx); userId != nil {
-		if l, err := r.LocationResolver.Repository.GetLocationByUid(ctx, uid); err == nil {
+		if l, err := r.LocationRepository.GetLocationByUid(ctx, uid); err == nil {
 			return &l, nil
 		}
 		return nil, gqlerror.Errorf("Location not found")
@@ -30,11 +30,11 @@ func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocat
 	if userId := authentication.GetUserId(ctx); userId != nil {
 		var list []graph.ListLocation
 
-		params := location.NewListLocationsByGeomParams(input)
+		params := param.NewListLocationsByGeomParams(input)
 
-		if locations, err := r.LocationResolver.Repository.ListLocationsByGeom(ctx, params); err == nil {
+		if locations, err := r.LocationRepository.ListLocationsByGeom(ctx, params); err == nil {
 			for _, l := range locations {
-				list = append(list, location.NewListLocation(l))
+				list = append(list, param.NewListLocation(l))
 			}
 		}
 
@@ -55,7 +55,7 @@ func (r *locationResolver) Name(ctx context.Context, obj *db.Location) (*string,
 func (r *locationResolver) RelatedLocations(ctx context.Context, obj *db.Location) ([]graph.Geolocation, error) {
 	list := []graph.Geolocation{}
 
-	if relatedLocations, err := r.LocationResolver.Repository.ListRelatedLocations(ctx, obj.ID); err == nil {
+	if relatedLocations, err := r.LocationRepository.ListRelatedLocations(ctx, obj.ID); err == nil {
 		for _, relatedLocation := range relatedLocations {
 			name, _ := util.NullString(relatedLocation.Name)
 			list = append(list, graph.Geolocation{
@@ -70,16 +70,16 @@ func (r *locationResolver) RelatedLocations(ctx context.Context, obj *db.Locatio
 }
 
 func (r *locationResolver) Evses(ctx context.Context, obj *db.Location) ([]db.Evse, error) {
-	return r.LocationResolver.Repository.ListEvses(ctx, obj.ID)
+	return r.LocationRepository.ListEvses(ctx, obj.ID)
 }
 
 func (r *locationResolver) Directions(ctx context.Context, obj *db.Location) ([]db.DisplayText, error) {
-	return r.LocationResolver.Repository.ListLocationDirections(ctx, obj.ID)
+	return r.LocationRepository.ListLocationDirections(ctx, obj.ID)
 }
 
 func (r *locationResolver) Operator(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
 	if obj.OperatorID.Valid {
-		if businessDetail, err := r.BusinessDetailResolver.Repository.GetBusinessDetail(ctx, obj.OperatorID.Int64); err == nil {
+		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.OperatorID.Int64); err == nil {
 			return &businessDetail, nil
 		}
 	}
@@ -89,7 +89,7 @@ func (r *locationResolver) Operator(ctx context.Context, obj *db.Location) (*db.
 
 func (r *locationResolver) Suboperator(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
 	if obj.SuboperatorID.Valid {
-		if businessDetail, err := r.BusinessDetailResolver.Repository.GetBusinessDetail(ctx, obj.SuboperatorID.Int64); err == nil {
+		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.SuboperatorID.Int64); err == nil {
 			return &businessDetail, nil
 		}
 	}
@@ -99,7 +99,7 @@ func (r *locationResolver) Suboperator(ctx context.Context, obj *db.Location) (*
 
 func (r *locationResolver) Owner(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
 	if obj.OwnerID.Valid {
-		if businessDetail, err := r.BusinessDetailResolver.Repository.GetBusinessDetail(ctx, obj.OwnerID.Int64); err == nil {
+		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.OwnerID.Int64); err == nil {
 			return &businessDetail, nil
 		}
 	}
@@ -110,7 +110,7 @@ func (r *locationResolver) Owner(ctx context.Context, obj *db.Location) (*db.Bus
 func (r *locationResolver) Facilities(ctx context.Context, obj *db.Location) ([]graph.TextDescription, error) {
 	list := []graph.TextDescription{}
 
-	if facilities, err := r.LocationResolver.Repository.ListLocationFacilities(ctx, obj.ID); err == nil {
+	if facilities, err := r.LocationRepository.ListLocationFacilities(ctx, obj.ID); err == nil {
 		for _, facility := range facilities {
 			list = append(list, graph.TextDescription{
 				Text:        facility.Text,
@@ -128,7 +128,7 @@ func (r *locationResolver) TimeZone(ctx context.Context, obj *db.Location) (*str
 
 func (r *locationResolver) OpeningTime(ctx context.Context, obj *db.Location) (*db.OpeningTime, error) {
 	if obj.OpeningTimeID.Valid {
-		if openingTime, err := r.OpeningTimeResolver.Repository.GetOpeningTime(ctx, obj.OpeningTimeID.Int64); err == nil {
+		if openingTime, err := r.OpeningTimeRepository.GetOpeningTime(ctx, obj.OpeningTimeID.Int64); err == nil {
 			return &openingTime, nil
 		}
 	}
@@ -137,12 +137,12 @@ func (r *locationResolver) OpeningTime(ctx context.Context, obj *db.Location) (*
 }
 
 func (r *locationResolver) Images(ctx context.Context, obj *db.Location) ([]db.Image, error) {
-	return r.LocationResolver.Repository.ListLocationImages(ctx, obj.ID)
+	return r.LocationRepository.ListLocationImages(ctx, obj.ID)
 }
 
 func (r *locationResolver) EnergyMix(ctx context.Context, obj *db.Location) (*db.EnergyMix, error) {
 	if obj.EnergyMixID.Valid {
-		if energyMix, err := r.EnergyMixResolver.Repository.GetEnergyMix(ctx, obj.EnergyMixID.Int64); err == nil {
+		if energyMix, err := r.EnergyMixRepository.GetEnergyMix(ctx, obj.EnergyMixID.Int64); err == nil {
 			return &energyMix, nil
 		}
 	}
