@@ -22,13 +22,13 @@ func (r *evseResolver) Status(ctx context.Context, obj *db.Evse) (string, error)
 }
 
 func (r *evseResolver) StatusSchedule(ctx context.Context, obj *db.Evse) ([]db.StatusSchedule, error) {
-	return r.EvseResolver.Repository.ListStatusSchedules(ctx, obj.ID)
+	return r.EvseRepository.ListStatusSchedules(ctx, obj.ID)
 }
 
 func (r *evseResolver) Capabilities(ctx context.Context, obj *db.Evse) ([]graph.TextDescription, error) {
 	list := []graph.TextDescription{}
 
-	if capabilities, err := r.EvseResolver.Repository.ListEvseCapabilities(ctx, obj.ID); err == nil {
+	if capabilities, err := r.EvseRepository.ListEvseCapabilities(ctx, obj.ID); err == nil {
 		for _, capability := range capabilities {
 			list = append(list, graph.TextDescription{
 				Text:        capability.Text,
@@ -41,7 +41,7 @@ func (r *evseResolver) Capabilities(ctx context.Context, obj *db.Evse) ([]graph.
 }
 
 func (r *evseResolver) Connectors(ctx context.Context, obj *db.Evse) ([]db.Connector, error) {
-	return r.EvseResolver.Repository.ListConnectors(ctx, obj.ID)
+	return r.EvseRepository.ListConnectors(ctx, obj.ID)
 }
 
 func (r *evseResolver) FloorLevel(ctx context.Context, obj *db.Evse) (*string, error) {
@@ -57,13 +57,13 @@ func (r *evseResolver) PhysicalReference(ctx context.Context, obj *db.Evse) (*st
 }
 
 func (r *evseResolver) Directions(ctx context.Context, obj *db.Evse) ([]db.DisplayText, error) {
-	return r.EvseResolver.Repository.ListEvseDirections(ctx, obj.ID)
+	return r.EvseRepository.ListEvseDirections(ctx, obj.ID)
 }
 
 func (r *evseResolver) ParkingRestrictions(ctx context.Context, obj *db.Evse) ([]graph.TextDescription, error) {
 	list := []graph.TextDescription{}
 
-	if parkingRestrictions, err := r.EvseResolver.Repository.ListEvseParkingRestrictions(ctx, obj.ID); err == nil {
+	if parkingRestrictions, err := r.EvseRepository.ListEvseParkingRestrictions(ctx, obj.ID); err == nil {
 		for _, parkingRestriction := range parkingRestrictions {
 			list = append(list, graph.TextDescription{
 				Text:        parkingRestriction.Text,
@@ -76,7 +76,7 @@ func (r *evseResolver) ParkingRestrictions(ctx context.Context, obj *db.Evse) ([
 
 }
 func (r *evseResolver) Images(ctx context.Context, obj *db.Evse) ([]db.Image, error) {
-	return r.EvseResolver.Repository.ListEvseImages(ctx, obj.ID)
+	return r.EvseRepository.ListEvseImages(ctx, obj.ID)
 }
 
 func (r *evseResolver) LastUpdated(ctx context.Context, obj *db.Evse) (string, error) {

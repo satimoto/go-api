@@ -21,7 +21,7 @@ import (
 )
 
 func (r *mutationResolver) CreateEmailSubscription(ctx context.Context, input graph.CreateEmailSubscriptionInput) (*db.EmailSubscription, error) {
-	emailSubscription, err := r.EmailSubscriptionResolver.Repository.CreateEmailSubscription(ctx, db.CreateEmailSubscriptionParams{
+	emailSubscription, err := r.EmailSubscriptionRepository.CreateEmailSubscription(ctx, db.CreateEmailSubscriptionParams{
 		Email:            strings.ToLower(input.Email),
 		Locale:           util.DefaultString(input.Locale, "en"),
 		VerificationCode: util.RandomVerificationCode(),
@@ -47,8 +47,8 @@ func (r *mutationResolver) CreateEmailSubscription(ctx context.Context, input gr
 		return nil, gqlerror.Errorf("Error creating verification email")
 	}
 
-	sendEmailInput := r.EmailSubscriptionResolver.Emailer.Build(emailSubscription.Email, subject, html)
-	_, err = r.EmailSubscriptionResolver.Emailer.Send(sendEmailInput)
+	sendEmailInput := r.Emailer.Build(emailSubscription.Email, subject, html)
+	_, err = r.Emailer.Send(sendEmailInput)
 
 	if err != nil {
 		log.Print(err.Error())
@@ -59,14 +59,14 @@ func (r *mutationResolver) CreateEmailSubscription(ctx context.Context, input gr
 }
 
 func (r *mutationResolver) VerifyEmailSubscription(ctx context.Context, input graph.VerifyEmailSubscriptionInput) (*db.EmailSubscription, error) {
-	emailSubscription, err := r.EmailSubscriptionResolver.Repository.GetEmailSubscriptionByEmail(ctx, strings.ToLower(input.Email))
+	emailSubscription, err := r.EmailSubscriptionRepository.GetEmailSubscriptionByEmail(ctx, strings.ToLower(input.Email))
 
 	if err != nil {
 		return nil, gqlerror.Errorf("Email subscription not found")
 	}
 
 	if emailSubscription.VerificationCode == input.VerificationCode {
-		emailSubscription, err = r.EmailSubscriptionResolver.Repository.UpdateEmailSubscription(ctx, db.UpdateEmailSubscriptionParams{
+		emailSubscription, err = r.EmailSubscriptionRepository.UpdateEmailSubscription(ctx, db.UpdateEmailSubscriptionParams{
 			ID:               emailSubscription.ID,
 			Email:            emailSubscription.Email,
 			Locale:           emailSubscription.Locale,

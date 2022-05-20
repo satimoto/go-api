@@ -1,4 +1,4 @@
-package businessdetail
+package param
 
 import (
 	"github.com/satimoto/go-api/graph"

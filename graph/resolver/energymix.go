@@ -12,11 +12,11 @@ import (
 )
 
 func (r *energyMixResolver) EnergySources(ctx context.Context, obj *db.EnergyMix) ([]db.EnergySource, error) {
-	return r.EnergyMixResolver.Repository.ListEnergySources(ctx, obj.ID)
+	return r.EnergyMixRepository.ListEnergySources(ctx, obj.ID)
 }
 
 func (r *energyMixResolver) EnvironmentalImpact(ctx context.Context, obj *db.EnergyMix) ([]db.EnvironmentalImpact, error) {
-	return r.EnergyMixResolver.Repository.ListEnvironmentalImpacts(ctx, obj.ID)
+	return r.EnergyMixRepository.ListEnvironmentalImpacts(ctx, obj.ID)
 }
 
 func (r *energyMixResolver) SupplierName(ctx context.Context, obj *db.EnergyMix) (*string, error) {

@@ -1,4 +1,4 @@
-package location
+package param
 
 import (
 	"github.com/satimoto/go-api/graph"
@@ -11,6 +11,7 @@ func NewListLocationsByGeomParams(input graph.ListLocationsInput) db.ListLocatio
 		YMin: input.YMin,
 		XMax: input.XMax,
 		YMax: input.YMax,
+		
 	}
 }
 

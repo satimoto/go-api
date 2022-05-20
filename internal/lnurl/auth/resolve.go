@@ -9,8 +9,8 @@ type LnUrlAuthRepository interface {
 }
 
 type LnUrlAuthResolver struct {
-	Repository LnUrlAuthRepository
-	*authentication.AuthenticationResolver
+	Repository             LnUrlAuthRepository
+	AuthenticationResolver *authentication.AuthenticationResolver
 }
 
 func NewResolver(repositoryService *db.RepositoryService) *LnUrlAuthResolver {
