@@ -94,6 +94,7 @@ module "service-api" {
   task_network_mode              = var.task_network_mode
   task_cpu                       = var.task_cpu
   task_memory                    = var.task_memory
+  target_health_path             = var.target_health_path
   target_health_interval         = var.target_health_interval
   target_health_timeout          = var.target_health_timeout
   target_health_matcher          = var.target_health_matcher
