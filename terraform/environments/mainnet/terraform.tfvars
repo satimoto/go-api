@@ -26,6 +26,8 @@ task_cpu = 256
 
 task_memory = 512
 
+target_health_path = "/health"
+
 target_health_interval = 120
 
 target_health_timeout = 5

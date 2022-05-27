@@ -54,6 +54,10 @@ variable "task_memory" {
   description = "The amount (in MiB) of memory used by the task"
 }
 
+variable "target_health_path" {
+  description = "The path to check the target's health"
+}
+
 variable "target_health_interval" {
   description = "The approximate amount of time, in seconds, between health checks of an individual target"
 }
