@@ -54,6 +54,7 @@ func (rs *RestService) Handler() *chi.Mux {
 		MaxAge:           300,
 	}))
 
+	router.Mount("/health", rs.mountHealth())
 	router.Mount("/metrics", promhttp.Handler())
 	router.Mount("/v1", rs.mountV1())
 

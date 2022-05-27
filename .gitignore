@@ -16,3 +16,8 @@
 # Dependency directories (remove the comment below to include it)
 vendor/
 bin/
+
+# Terraform
+.terraform
+.terraform.lock*
+*.tfstate.backup
