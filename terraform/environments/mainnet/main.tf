@@ -70,6 +70,28 @@ data "aws_ssm_parameter" "satimoto_db_password" {
   name = var.rds_satimoto_db_password_ssm_key
 }
 
+resource "aws_iam_role" "task_role" {
+  name               = "${var.service_name}-task-role"
+  assume_role_policy = file("../../resources/ecs-task-role.json")
+
+  inline_policy {
+    name = "${var.service_name}-ses-task-role-policy"
+    policy = jsonencode({
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Effect" : "Allow",
+          "Action" : [
+            "ses:SendEmail",
+            "ses:SendRawEmail"
+          ],
+          "Resource" : "*"
+        }
+      ]
+    })
+  }
+}
+
 module "service-api" {
   source             = "git::https://github.com/satimoto/terraform-infrastructure.git//modules/service?ref=f9cad99f17c1d7c14273b9433e249922a2b92544"
   availability_zones = var.availability_zones
@@ -94,6 +116,7 @@ module "service-api" {
   task_network_mode              = var.task_network_mode
   task_cpu                       = var.task_cpu
   task_memory                    = var.task_memory
+  task_role_arn                  = aws_iam_role.task_role.arn
   target_health_path             = var.target_health_path
   target_health_interval         = var.target_health_interval
   target_health_timeout          = var.target_health_timeout
@@ -115,7 +138,7 @@ module "service-api" {
     env_default_commission_percent = var.env_default_commission_percent
     env_jwt_secret                 = data.aws_ssm_parameter.jwt_secret.value
     env_ocpi_rpc_address           = "ocpi.${data.terraform_remote_state.infrastructure.outputs.ecs_service_discovery_namespace_name}:${var.env_ocpi_rpc_port}"
-    env_reply_to_address           = "Satimoto <hello@satimoto.com>"
+    env_reply_to_email             = "Satimoto <hello@satimoto.com>"
     env_rest_port                  = var.service_container_port
     env_shutdown_timeout           = var.env_shutdown_timeout
     env_web_domain                 = "https://${data.terraform_remote_state.infrastructure.outputs.route53_zone_name}"
