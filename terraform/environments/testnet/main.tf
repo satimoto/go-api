@@ -1,14 +1,14 @@
 provider "aws" {
   region                = var.region
   forbidden_account_ids = var.forbidden_account_ids
-  profile               = "satimoto-mainnet"
+  profile               = "satimoto-testnet"
 }
 
 provider "aws" {
   alias                 = "us_east_1"
   region                = "us-east-1"
   forbidden_account_ids = var.forbidden_account_ids
-  profile               = "satimoto-mainnet"
+  profile               = "satimoto-testnet"
 }
 
 provider "aws" {
@@ -26,38 +26,25 @@ data "terraform_remote_state" "infrastructure" {
   backend = "s3"
 
   config = {
-    bucket  = "satimoto-terraform-mainnet"
+    bucket  = "satimoto-terraform-testnet"
     key     = "infrastructure.tfstate"
     region  = "eu-central-1"
-    profile = "satimoto-mainnet"
+    profile = "satimoto-testnet"
   }
 }
 
 terraform {
   backend "s3" {
-    bucket  = "satimoto-terraform-mainnet"
+    bucket  = "satimoto-terraform-testnet"
     key     = "api.tfstate"
     region  = "eu-central-1"
-    profile = "satimoto-mainnet"
+    profile = "satimoto-testnet"
   }
 }
 
 # -----------------------------------------------------------------------------
 # Modules
 # -----------------------------------------------------------------------------
-
-module "subdomain_zone" {
-  providers = {
-    aws.zone_owner = aws.zone_owner
-  }
-  source             = "git::https://github.com/satimoto/terraform-infrastructure.git//modules/subdomain-zone?ref=develop"
-  availability_zones = var.availability_zones
-  region             = var.region
-
-  domain_name     = data.terraform_remote_state.infrastructure.outputs.route53_zone_name
-  subdomain_name  = var.subdomain_name
-  route53_zone_id = data.terraform_remote_state.infrastructure.outputs.route53_zone_id
-}
 
 data "aws_caller_identity" "current" {}
 
@@ -99,7 +86,7 @@ module "service-api" {
 
   vpc_id                         = data.terraform_remote_state.infrastructure.outputs.vpc_id
   private_subnet_ids             = data.terraform_remote_state.infrastructure.outputs.private_subnet_ids
-  route53_zone_id                = module.subdomain_zone.route53_zone_id
+  route53_zone_id                = data.terraform_remote_state.infrastructure.outputs.route53_zone_id
   alb_security_group_id          = data.terraform_remote_state.infrastructure.outputs.alb_security_group_id
   alb_dns_name                   = data.terraform_remote_state.infrastructure.outputs.alb_dns_name
   alb_zone_id                    = data.terraform_remote_state.infrastructure.outputs.alb_zone_id
@@ -124,7 +111,7 @@ module "service-api" {
 
   task_container_definitions = templatefile("../../resources/task-container-definitions.json", {
     account_id                     = data.aws_caller_identity.current.account_id
-    image_tag                      = "mainnet"
+    image_tag                      = "testnet"
     region                         = var.region
     service_name                   = var.service_name
     service_container_port         = var.service_container_port
