@@ -51,8 +51,8 @@
         "value": "${env_ocpi_rpc_address}"
       },
       {
-        "name": "REPLY_TO_ADDRESS",
-        "value": "${env_reply_to_address}"
+        "name": "REPLY_TO_EMAIL",
+        "value": "${env_reply_to_email}"
       },
       {
         "name": "REST_PORT",
