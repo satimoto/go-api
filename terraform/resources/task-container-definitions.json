@@ -1,6 +1,6 @@
 [
   {
-    "image": "${account_id}.dkr.ecr.${region}.amazonaws.com/api:${image_tag}",
+    "image": "${account_id}.dkr.ecr.${region}.amazonaws.com/${service_name}:${image_tag}",
     "networkMode": "${task_network_mode}",
     "name": "${service_name}",
     "logConfiguration": {
