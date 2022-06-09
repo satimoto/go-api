@@ -38,6 +38,6 @@ subdomain_name = "api"
 
 env_default_commission_percent = 7
 
-env_ocpi_rpc_port = 50001
+env_ocpi_rpc_port = 50000
 
 env_shutdown_timeout = 20
