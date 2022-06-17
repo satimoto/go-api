@@ -80,7 +80,7 @@ func (r *evseResolver) Images(ctx context.Context, obj *db.Evse) ([]db.Image, er
 }
 
 func (r *evseResolver) LastUpdated(ctx context.Context, obj *db.Evse) (string, error) {
-	return obj.LastUpdated.Format(time.RFC3339Nano), nil
+	return obj.LastUpdated.Format(time.RFC3339), nil
 }
 
 // Evse returns graph.EvseResolver implementation.

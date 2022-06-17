@@ -157,7 +157,7 @@ func (r *locationResolver) EnergyMix(ctx context.Context, obj *db.Location) (*db
 }
 
 func (r *locationResolver) LastUpdated(ctx context.Context, obj *db.Location) (string, error) {
-	return obj.LastUpdated.Format(time.RFC3339Nano), nil
+	return obj.LastUpdated.Format(time.RFC3339), nil
 }
 
 // Location returns graph.LocationResolver implementation.

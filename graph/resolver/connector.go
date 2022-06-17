@@ -33,7 +33,7 @@ func (r *connectorResolver) TermsAndConditions(ctx context.Context, obj *db.Conn
 }
 
 func (r *connectorResolver) LastUpdated(ctx context.Context, obj *db.Connector) (string, error) {
-	return obj.LastUpdated.Format(time.RFC3339Nano), nil
+	return obj.LastUpdated.Format(time.RFC3339), nil
 }
 
 // Connector returns graph.ConnectorResolver implementation.

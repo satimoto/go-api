@@ -13,11 +13,11 @@ import (
 )
 
 func (r *statusScheduleResolver) PeriodBegin(ctx context.Context, obj *db.StatusSchedule) (string, error) {
-	return obj.PeriodBegin.Format(time.RFC3339Nano), nil
+	return obj.PeriodBegin.Format(time.RFC3339), nil
 }
 
 func (r *statusScheduleResolver) PeriodEnd(ctx context.Context, obj *db.StatusSchedule) (*string, error) {
-	return util.NullTime(obj.PeriodEnd, time.RFC3339Nano)
+	return util.NullTime(obj.PeriodEnd, time.RFC3339)
 }
 func (r *statusScheduleResolver) Status(ctx context.Context, obj *db.StatusSchedule) (string, error) {
 	return string(obj.Status), nil
