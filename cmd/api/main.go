@@ -30,7 +30,7 @@ func init() {
 		log.Fatalf("Database env variables not defined")
 	}
 
-	dataSourceName := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s", dbUser, dbPass, dbHost, dbName, sslMode)
+	dataSourceName := fmt.Sprintf("postgres://%s:%s@%s/%s?binary_parameters=yes&sslmode=%s", dbUser, dbPass, dbHost, dbName, sslMode)
 	d, err := sql.Open("postgres", dataSourceName)
 
 	if err != nil {

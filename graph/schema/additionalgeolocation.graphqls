@@ -1,0 +1,5 @@
+type AddtionalGeoLocation {
+    latitude: Float!
+    longitude: Float!
+    name: DisplayText
+}

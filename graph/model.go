@@ -7,8 +7,15 @@ import (
 	"io"
 	"strconv"
 
+	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/geom"
 )
+
+type AddtionalGeoLocation struct {
+	Latitude  float64         `json:"latitude"`
+	Longitude float64         `json:"longitude"`
+	Name      *db.DisplayText `json:"name"`
+}
 
 type CreateAuthentication struct {
 	Code  string `json:"code"`

@@ -9,6 +9,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/businessdetail"
 	"github.com/satimoto/go-datastore/pkg/channelrequest"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/displaytext"
 	"github.com/satimoto/go-datastore/pkg/emailsubscription"
 	"github.com/satimoto/go-datastore/pkg/energymix"
 	"github.com/satimoto/go-datastore/pkg/evse"
@@ -33,6 +34,7 @@ type Resolver struct {
 	AuthenticationResolver      *authentication.AuthenticationResolver
 	BusinessDetailRepository    businessdetail.BusinessDetailRepository
 	ChannelRequestRepository    channelrequest.ChannelRequestRepository
+	DisplayTextRepository       displaytext.DisplayTextRepository
 	EmailSubscriptionRepository emailsubscription.EmailSubscriptionRepository
 	EnergyMixRepository         energymix.EnergyMixRepository
 	EvseRepository              evse.EvseRepository
@@ -61,6 +63,7 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ocpiServic
 		AuthenticationResolver:      authentication.NewResolver(repositoryService),
 		BusinessDetailRepository:    businessdetail.NewRepository(repositoryService),
 		ChannelRequestRepository:    channelrequest.NewRepository(repositoryService),
+		DisplayTextRepository:       displaytext.NewRepository(repositoryService),
 		EmailSubscriptionRepository: emailsubscription.NewRepository(repositoryService),
 		EnergyMixRepository:         energymix.NewRepository(repositoryService),
 		EvseRepository:              evse.NewRepository(repositoryService),

@@ -58,6 +58,12 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AddtionalGeoLocation struct {
+		Latitude  func(childComplexity int) int
+		Longitude func(childComplexity int) int
+		Name      func(childComplexity int) int
+	}
+
 	BusinessDetail struct {
 		Logo    func(childComplexity int) int
 		Name    func(childComplexity int) int
@@ -348,7 +354,7 @@ type LocationResolver interface {
 	Type(ctx context.Context, obj *db.Location) (string, error)
 	Name(ctx context.Context, obj *db.Location) (*string, error)
 
-	RelatedLocations(ctx context.Context, obj *db.Location) ([]Geolocation, error)
+	RelatedLocations(ctx context.Context, obj *db.Location) ([]AddtionalGeoLocation, error)
 	Evses(ctx context.Context, obj *db.Location) ([]db.Evse, error)
 
 	Directions(ctx context.Context, obj *db.Location) ([]db.DisplayText, error)
@@ -414,6 +420,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AddtionalGeoLocation.latitude":
+		if e.complexity.AddtionalGeoLocation.Latitude == nil {
+			break
+		}
+
+		return e.complexity.AddtionalGeoLocation.Latitude(childComplexity), true
+
+	case "AddtionalGeoLocation.longitude":
+		if e.complexity.AddtionalGeoLocation.Longitude == nil {
+			break
+		}
+
+		return e.complexity.AddtionalGeoLocation.Longitude(childComplexity), true
+
+	case "AddtionalGeoLocation.name":
+		if e.complexity.AddtionalGeoLocation.Name == nil {
+			break
+		}
+
+		return e.complexity.AddtionalGeoLocation.Name(childComplexity), true
 
 	case "BusinessDetail.logo":
 		if e.complexity.BusinessDetail.Logo == nil {
@@ -1541,6 +1568,11 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	{Name: "graph/schema/additionalgeolocation.graphqls", Input: `type AddtionalGeoLocation {
+    latitude: Float!
+    longitude: Float!
+    name: DisplayText
+}`, BuiltIn: false},
 	{Name: "graph/schema/authentication.graphqls", Input: `enum AuthenticationAction {
   register
   login
@@ -1792,7 +1824,7 @@ type Location {
     postalCode: String!
     country: String!
     geom: Geometry!
-    relatedLocations: [Geolocation!]!
+    relatedLocations: [AddtionalGeoLocation!]!
     evses: [Evse!]!
     availableEvses: Int!
     totalEvses: Int!
@@ -2161,6 +2193,108 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _AddtionalGeoLocation_latitude(ctx context.Context, field graphql.CollectedField, obj *AddtionalGeoLocation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AddtionalGeoLocation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Latitude, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AddtionalGeoLocation_longitude(ctx context.Context, field graphql.CollectedField, obj *AddtionalGeoLocation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AddtionalGeoLocation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Longitude, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AddtionalGeoLocation_name(ctx context.Context, field graphql.CollectedField, obj *AddtionalGeoLocation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AddtionalGeoLocation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.DisplayText)
+	fc.Result = res
+	return ec.marshalODisplayText2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐDisplayText(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _BusinessDetail_name(ctx context.Context, field graphql.CollectedField, obj *db.BusinessDetail) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2257,7 +2391,7 @@ func (ec *executionContext) _BusinessDetail_logo(ctx context.Context, field grap
 	}
 	res := resTmp.(*db.Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐImage(ctx, field.Selections, res)
+	return ec.marshalOImage2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐImage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ChannelRequest_id(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
@@ -2432,7 +2566,7 @@ func (ec *executionContext) _ChannelRequest_node(ctx context.Context, field grap
 	}
 	res := resTmp.(*db.Node)
 	fc.Result = res
-	return ec.marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNode(ctx, field.Selections, res)
+	return ec.marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐNode(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Connector_uid(ctx context.Context, field graphql.CollectedField, obj *db.Connector) (ret graphql.Marshaler) {
@@ -3266,7 +3400,7 @@ func (ec *executionContext) _EnergyMix_energySources(ctx context.Context, field 
 	}
 	res := resTmp.([]db.EnergySource)
 	fc.Result = res
-	return ec.marshalNEnergySource2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEnergySourceᚄ(ctx, field.Selections, res)
+	return ec.marshalNEnergySource2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnergySourceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EnergyMix_environmentalImpact(ctx context.Context, field graphql.CollectedField, obj *db.EnergyMix) (ret graphql.Marshaler) {
@@ -3301,7 +3435,7 @@ func (ec *executionContext) _EnergyMix_environmentalImpact(ctx context.Context, 
 	}
 	res := resTmp.([]db.EnvironmentalImpact)
 	fc.Result = res
-	return ec.marshalNEnvironmentalImpact2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEnvironmentalImpactᚄ(ctx, field.Selections, res)
+	return ec.marshalNEnvironmentalImpact2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnvironmentalImpactᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EnergyMix_supplierName(ctx context.Context, field graphql.CollectedField, obj *db.EnergyMix) (ret graphql.Marshaler) {
@@ -3642,7 +3776,7 @@ func (ec *executionContext) _Evse_statusSchedule(ctx context.Context, field grap
 	}
 	res := resTmp.([]db.StatusSchedule)
 	fc.Result = res
-	return ec.marshalNStatusSchedule2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐStatusScheduleᚄ(ctx, field.Selections, res)
+	return ec.marshalNStatusSchedule2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐStatusScheduleᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Evse_capabilities(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
@@ -3712,7 +3846,7 @@ func (ec *executionContext) _Evse_connectors(ctx context.Context, field graphql.
 	}
 	res := resTmp.([]db.Connector)
 	fc.Result = res
-	return ec.marshalNConnector2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐConnectorᚄ(ctx, field.Selections, res)
+	return ec.marshalNConnector2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐConnectorᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Evse_floorLevel(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
@@ -3776,7 +3910,7 @@ func (ec *executionContext) _Evse_geom(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.(*geom.Geometry4326)
 	fc.Result = res
-	return ec.marshalOGeometry2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋgeomᚐGeometry4326(ctx, field.Selections, res)
+	return ec.marshalOGeometry2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋgeomᚐGeometry4326(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Evse_isRemoteCapable(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
@@ -3913,7 +4047,7 @@ func (ec *executionContext) _Evse_directions(ctx context.Context, field graphql.
 	}
 	res := resTmp.([]db.DisplayText)
 	fc.Result = res
-	return ec.marshalNDisplayText2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐDisplayTextᚄ(ctx, field.Selections, res)
+	return ec.marshalNDisplayText2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐDisplayTextᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Evse_parkingRestrictions(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
@@ -3983,7 +4117,7 @@ func (ec *executionContext) _Evse_images(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]db.Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐImageᚄ(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Evse_lastUpdated(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
@@ -4531,7 +4665,7 @@ func (ec *executionContext) _ListLocation_geom(ctx context.Context, field graphq
 	}
 	res := resTmp.(geom.Geometry4326)
 	fc.Result = res
-	return ec.marshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋgeomᚐGeometry4326(ctx, field.Selections, res)
+	return ec.marshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋgeomᚐGeometry4326(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ListLocation_availableEvses(ctx context.Context, field graphql.CollectedField, obj *ListLocation) (ret graphql.Marshaler) {
@@ -4948,7 +5082,7 @@ func (ec *executionContext) _Location_geom(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(geom.Geometry4326)
 	fc.Result = res
-	return ec.marshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋgeomᚐGeometry4326(ctx, field.Selections, res)
+	return ec.marshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋgeomᚐGeometry4326(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_relatedLocations(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -4981,9 +5115,9 @@ func (ec *executionContext) _Location_relatedLocations(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Geolocation)
+	res := resTmp.([]AddtionalGeoLocation)
 	fc.Result = res
-	return ec.marshalNGeolocation2ᚕgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGeolocationᚄ(ctx, field.Selections, res)
+	return ec.marshalNAddtionalGeoLocation2ᚕgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐAddtionalGeoLocationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_evses(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -5018,7 +5152,7 @@ func (ec *executionContext) _Location_evses(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]db.Evse)
 	fc.Result = res
-	return ec.marshalNEvse2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEvseᚄ(ctx, field.Selections, res)
+	return ec.marshalNEvse2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEvseᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_availableEvses(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -5193,7 +5327,7 @@ func (ec *executionContext) _Location_directions(ctx context.Context, field grap
 	}
 	res := resTmp.([]db.DisplayText)
 	fc.Result = res
-	return ec.marshalNDisplayText2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐDisplayTextᚄ(ctx, field.Selections, res)
+	return ec.marshalNDisplayText2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐDisplayTextᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_operator(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -5225,7 +5359,7 @@ func (ec *executionContext) _Location_operator(ctx context.Context, field graphq
 	}
 	res := resTmp.(*db.BusinessDetail)
 	fc.Result = res
-	return ec.marshalOBusinessDetail2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐBusinessDetail(ctx, field.Selections, res)
+	return ec.marshalOBusinessDetail2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐBusinessDetail(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_suboperator(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -5257,7 +5391,7 @@ func (ec *executionContext) _Location_suboperator(ctx context.Context, field gra
 	}
 	res := resTmp.(*db.BusinessDetail)
 	fc.Result = res
-	return ec.marshalOBusinessDetail2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐBusinessDetail(ctx, field.Selections, res)
+	return ec.marshalOBusinessDetail2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐBusinessDetail(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_owner(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -5289,7 +5423,7 @@ func (ec *executionContext) _Location_owner(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*db.BusinessDetail)
 	fc.Result = res
-	return ec.marshalOBusinessDetail2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐBusinessDetail(ctx, field.Selections, res)
+	return ec.marshalOBusinessDetail2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐBusinessDetail(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_facilities(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -5388,7 +5522,7 @@ func (ec *executionContext) _Location_openingTime(ctx context.Context, field gra
 	}
 	res := resTmp.(*db.OpeningTime)
 	fc.Result = res
-	return ec.marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐOpeningTime(ctx, field.Selections, res)
+	return ec.marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐOpeningTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_chargingWhenClosed(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -5458,7 +5592,7 @@ func (ec *executionContext) _Location_images(ctx context.Context, field graphql.
 	}
 	res := resTmp.([]db.Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐImageᚄ(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_energyMix(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -5490,7 +5624,7 @@ func (ec *executionContext) _Location_energyMix(ctx context.Context, field graph
 	}
 	res := resTmp.(*db.EnergyMix)
 	fc.Result = res
-	return ec.marshalOEnergyMix2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEnergyMix(ctx, field.Selections, res)
+	return ec.marshalOEnergyMix2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnergyMix(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_lastUpdated(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -5651,7 +5785,7 @@ func (ec *executionContext) _Mutation_createChannelRequest(ctx context.Context, 
 	}
 	res := resTmp.(*db.ChannelRequest)
 	fc.Result = res
-	return ec.marshalNChannelRequest2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐChannelRequest(ctx, field.Selections, res)
+	return ec.marshalNChannelRequest2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐChannelRequest(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_startSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5777,7 +5911,7 @@ func (ec *executionContext) _Mutation_createCredential(ctx context.Context, fiel
 	}
 	res := resTmp.(*db.Credential)
 	fc.Result = res
-	return ec.marshalNCredential2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐCredential(ctx, field.Selections, res)
+	return ec.marshalNCredential2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCredential(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_registerCredential(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5903,7 +6037,7 @@ func (ec *executionContext) _Mutation_createEmailSubscription(ctx context.Contex
 	}
 	res := resTmp.(*db.EmailSubscription)
 	fc.Result = res
-	return ec.marshalNEmailSubscription2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEmailSubscription(ctx, field.Selections, res)
+	return ec.marshalNEmailSubscription2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEmailSubscription(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_verifyEmailSubscription(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5945,7 +6079,7 @@ func (ec *executionContext) _Mutation_verifyEmailSubscription(ctx context.Contex
 	}
 	res := resTmp.(*db.EmailSubscription)
 	fc.Result = res
-	return ec.marshalNEmailSubscription2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEmailSubscription(ctx, field.Selections, res)
+	return ec.marshalNEmailSubscription2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEmailSubscription(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5987,7 +6121,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*db.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6029,7 +6163,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*db.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Node_pubkey(ctx context.Context, field graphql.CollectedField, obj *db.Node) (ret graphql.Marshaler) {
@@ -6169,7 +6303,7 @@ func (ec *executionContext) _OpeningTime_regularHours(ctx context.Context, field
 	}
 	res := resTmp.([]db.RegularHour)
 	fc.Result = res
-	return ec.marshalNRegularHour2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐRegularHourᚄ(ctx, field.Selections, res)
+	return ec.marshalNRegularHour2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐRegularHourᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningTime_twentyfourseven(ctx context.Context, field graphql.CollectedField, obj *db.OpeningTime) (ret graphql.Marshaler) {
@@ -6239,7 +6373,7 @@ func (ec *executionContext) _OpeningTime_exceptionalOpenings(ctx context.Context
 	}
 	res := resTmp.([]db.ExceptionalPeriod)
 	fc.Result = res
-	return ec.marshalNExceptionalPeriod2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐExceptionalPeriodᚄ(ctx, field.Selections, res)
+	return ec.marshalNExceptionalPeriod2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐExceptionalPeriodᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OpeningTime_exceptionalClosings(ctx context.Context, field graphql.CollectedField, obj *db.OpeningTime) (ret graphql.Marshaler) {
@@ -6274,7 +6408,7 @@ func (ec *executionContext) _OpeningTime_exceptionalClosings(ctx context.Context
 	}
 	res := resTmp.([]db.ExceptionalPeriod)
 	fc.Result = res
-	return ec.marshalNExceptionalPeriod2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐExceptionalPeriodᚄ(ctx, field.Selections, res)
+	return ec.marshalNExceptionalPeriod2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐExceptionalPeriodᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_verifyAuthentication(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6355,7 +6489,7 @@ func (ec *executionContext) _Query_getLocation(ctx context.Context, field graphq
 	}
 	res := resTmp.(*db.Location)
 	fc.Result = res
-	return ec.marshalOLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐLocation(ctx, field.Selections, res)
+	return ec.marshalOLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_listLocations(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -8813,6 +8947,40 @@ func (ec *executionContext) unmarshalInputVerifyEmailSubscriptionInput(ctx conte
 
 // region    **************************** object.gotpl ****************************
 
+var addtionalGeoLocationImplementors = []string{"AddtionalGeoLocation"}
+
+func (ec *executionContext) _AddtionalGeoLocation(ctx context.Context, sel ast.SelectionSet, obj *AddtionalGeoLocation) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, addtionalGeoLocationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AddtionalGeoLocation")
+		case "latitude":
+			out.Values[i] = ec._AddtionalGeoLocation_latitude(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "longitude":
+			out.Values[i] = ec._AddtionalGeoLocation_longitude(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._AddtionalGeoLocation_name(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var businessDetailImplementors = []string{"BusinessDetail"}
 
 func (ec *executionContext) _BusinessDetail(ctx context.Context, sel ast.SelectionSet, obj *db.BusinessDetail) graphql.Marshaler {
@@ -10895,6 +11063,54 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNAddtionalGeoLocation2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐAddtionalGeoLocation(ctx context.Context, sel ast.SelectionSet, v AddtionalGeoLocation) graphql.Marshaler {
+	return ec._AddtionalGeoLocation(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAddtionalGeoLocation2ᚕgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐAddtionalGeoLocationᚄ(ctx context.Context, sel ast.SelectionSet, v []AddtionalGeoLocation) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAddtionalGeoLocation2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐAddtionalGeoLocation(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNAuthenticationAction2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐAuthenticationAction(ctx context.Context, v interface{}) (AuthenticationAction, error) {
 	var res AuthenticationAction
 	err := res.UnmarshalGQL(v)
@@ -10920,11 +11136,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNChannelRequest2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐChannelRequest(ctx context.Context, sel ast.SelectionSet, v db.ChannelRequest) graphql.Marshaler {
+func (ec *executionContext) marshalNChannelRequest2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐChannelRequest(ctx context.Context, sel ast.SelectionSet, v db.ChannelRequest) graphql.Marshaler {
 	return ec._ChannelRequest(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNChannelRequest2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐChannelRequest(ctx context.Context, sel ast.SelectionSet, v *db.ChannelRequest) graphql.Marshaler {
+func (ec *executionContext) marshalNChannelRequest2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐChannelRequest(ctx context.Context, sel ast.SelectionSet, v *db.ChannelRequest) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -10934,11 +11150,11 @@ func (ec *executionContext) marshalNChannelRequest2ᚖgithubᚗcomᚋsatimotoᚋ
 	return ec._ChannelRequest(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNConnector2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐConnector(ctx context.Context, sel ast.SelectionSet, v db.Connector) graphql.Marshaler {
+func (ec *executionContext) marshalNConnector2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐConnector(ctx context.Context, sel ast.SelectionSet, v db.Connector) graphql.Marshaler {
 	return ec._Connector(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNConnector2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐConnectorᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Connector) graphql.Marshaler {
+func (ec *executionContext) marshalNConnector2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐConnectorᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Connector) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -10962,7 +11178,7 @@ func (ec *executionContext) marshalNConnector2ᚕgithubᚗcomᚋsatimotoᚋgoᚑ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNConnector2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐConnector(ctx, sel, v[i])
+			ret[i] = ec.marshalNConnector2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐConnector(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11021,11 +11237,11 @@ func (ec *executionContext) unmarshalNCreateUserInput2githubᚗcomᚋsatimotoᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNCredential2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐCredential(ctx context.Context, sel ast.SelectionSet, v db.Credential) graphql.Marshaler {
+func (ec *executionContext) marshalNCredential2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCredential(ctx context.Context, sel ast.SelectionSet, v db.Credential) graphql.Marshaler {
 	return ec._Credential(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCredential2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐCredential(ctx context.Context, sel ast.SelectionSet, v *db.Credential) graphql.Marshaler {
+func (ec *executionContext) marshalNCredential2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCredential(ctx context.Context, sel ast.SelectionSet, v *db.Credential) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -11035,11 +11251,11 @@ func (ec *executionContext) marshalNCredential2ᚖgithubᚗcomᚋsatimotoᚋgo�
 	return ec._Credential(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNDisplayText2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐDisplayText(ctx context.Context, sel ast.SelectionSet, v db.DisplayText) graphql.Marshaler {
+func (ec *executionContext) marshalNDisplayText2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐDisplayText(ctx context.Context, sel ast.SelectionSet, v db.DisplayText) graphql.Marshaler {
 	return ec._DisplayText(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNDisplayText2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐDisplayTextᚄ(ctx context.Context, sel ast.SelectionSet, v []db.DisplayText) graphql.Marshaler {
+func (ec *executionContext) marshalNDisplayText2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐDisplayTextᚄ(ctx context.Context, sel ast.SelectionSet, v []db.DisplayText) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11063,7 +11279,7 @@ func (ec *executionContext) marshalNDisplayText2ᚕgithubᚗcomᚋsatimotoᚋgo�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNDisplayText2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐDisplayText(ctx, sel, v[i])
+			ret[i] = ec.marshalNDisplayText2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐDisplayText(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11083,11 +11299,11 @@ func (ec *executionContext) marshalNDisplayText2ᚕgithubᚗcomᚋsatimotoᚋgo�
 	return ret
 }
 
-func (ec *executionContext) marshalNEmailSubscription2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEmailSubscription(ctx context.Context, sel ast.SelectionSet, v db.EmailSubscription) graphql.Marshaler {
+func (ec *executionContext) marshalNEmailSubscription2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEmailSubscription(ctx context.Context, sel ast.SelectionSet, v db.EmailSubscription) graphql.Marshaler {
 	return ec._EmailSubscription(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNEmailSubscription2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEmailSubscription(ctx context.Context, sel ast.SelectionSet, v *db.EmailSubscription) graphql.Marshaler {
+func (ec *executionContext) marshalNEmailSubscription2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEmailSubscription(ctx context.Context, sel ast.SelectionSet, v *db.EmailSubscription) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -11097,11 +11313,11 @@ func (ec *executionContext) marshalNEmailSubscription2ᚖgithubᚗcomᚋsatimoto
 	return ec._EmailSubscription(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNEnergySource2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEnergySource(ctx context.Context, sel ast.SelectionSet, v db.EnergySource) graphql.Marshaler {
+func (ec *executionContext) marshalNEnergySource2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnergySource(ctx context.Context, sel ast.SelectionSet, v db.EnergySource) graphql.Marshaler {
 	return ec._EnergySource(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNEnergySource2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEnergySourceᚄ(ctx context.Context, sel ast.SelectionSet, v []db.EnergySource) graphql.Marshaler {
+func (ec *executionContext) marshalNEnergySource2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnergySourceᚄ(ctx context.Context, sel ast.SelectionSet, v []db.EnergySource) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11125,7 +11341,7 @@ func (ec *executionContext) marshalNEnergySource2ᚕgithubᚗcomᚋsatimotoᚋgo
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEnergySource2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEnergySource(ctx, sel, v[i])
+			ret[i] = ec.marshalNEnergySource2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnergySource(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11145,11 +11361,11 @@ func (ec *executionContext) marshalNEnergySource2ᚕgithubᚗcomᚋsatimotoᚋgo
 	return ret
 }
 
-func (ec *executionContext) marshalNEnvironmentalImpact2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEnvironmentalImpact(ctx context.Context, sel ast.SelectionSet, v db.EnvironmentalImpact) graphql.Marshaler {
+func (ec *executionContext) marshalNEnvironmentalImpact2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnvironmentalImpact(ctx context.Context, sel ast.SelectionSet, v db.EnvironmentalImpact) graphql.Marshaler {
 	return ec._EnvironmentalImpact(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNEnvironmentalImpact2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEnvironmentalImpactᚄ(ctx context.Context, sel ast.SelectionSet, v []db.EnvironmentalImpact) graphql.Marshaler {
+func (ec *executionContext) marshalNEnvironmentalImpact2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnvironmentalImpactᚄ(ctx context.Context, sel ast.SelectionSet, v []db.EnvironmentalImpact) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11173,7 +11389,7 @@ func (ec *executionContext) marshalNEnvironmentalImpact2ᚕgithubᚗcomᚋsatimo
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEnvironmentalImpact2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEnvironmentalImpact(ctx, sel, v[i])
+			ret[i] = ec.marshalNEnvironmentalImpact2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnvironmentalImpact(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11193,11 +11409,11 @@ func (ec *executionContext) marshalNEnvironmentalImpact2ᚕgithubᚗcomᚋsatimo
 	return ret
 }
 
-func (ec *executionContext) marshalNEvse2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEvse(ctx context.Context, sel ast.SelectionSet, v db.Evse) graphql.Marshaler {
+func (ec *executionContext) marshalNEvse2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEvse(ctx context.Context, sel ast.SelectionSet, v db.Evse) graphql.Marshaler {
 	return ec._Evse(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNEvse2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEvseᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Evse) graphql.Marshaler {
+func (ec *executionContext) marshalNEvse2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEvseᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Evse) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11221,7 +11437,7 @@ func (ec *executionContext) marshalNEvse2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatas
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEvse2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEvse(ctx, sel, v[i])
+			ret[i] = ec.marshalNEvse2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEvse(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11241,11 +11457,11 @@ func (ec *executionContext) marshalNEvse2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatas
 	return ret
 }
 
-func (ec *executionContext) marshalNExceptionalPeriod2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐExceptionalPeriod(ctx context.Context, sel ast.SelectionSet, v db.ExceptionalPeriod) graphql.Marshaler {
+func (ec *executionContext) marshalNExceptionalPeriod2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐExceptionalPeriod(ctx context.Context, sel ast.SelectionSet, v db.ExceptionalPeriod) graphql.Marshaler {
 	return ec._ExceptionalPeriod(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNExceptionalPeriod2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐExceptionalPeriodᚄ(ctx context.Context, sel ast.SelectionSet, v []db.ExceptionalPeriod) graphql.Marshaler {
+func (ec *executionContext) marshalNExceptionalPeriod2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐExceptionalPeriodᚄ(ctx context.Context, sel ast.SelectionSet, v []db.ExceptionalPeriod) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11269,7 +11485,7 @@ func (ec *executionContext) marshalNExceptionalPeriod2ᚕgithubᚗcomᚋsatimoto
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNExceptionalPeriod2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐExceptionalPeriod(ctx, sel, v[i])
+			ret[i] = ec.marshalNExceptionalPeriod2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐExceptionalPeriod(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11318,60 +11534,12 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNGeolocation2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGeolocation(ctx context.Context, sel ast.SelectionSet, v Geolocation) graphql.Marshaler {
-	return ec._Geolocation(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNGeolocation2ᚕgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGeolocationᚄ(ctx context.Context, sel ast.SelectionSet, v []Geolocation) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNGeolocation2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGeolocation(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) unmarshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋgeomᚐGeometry4326(ctx context.Context, v interface{}) (geom.Geometry4326, error) {
+func (ec *executionContext) unmarshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋgeomᚐGeometry4326(ctx context.Context, v interface{}) (geom.Geometry4326, error) {
 	res, err := geom.UnmarshalGeometry4326(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋgeomᚐGeometry4326(ctx context.Context, sel ast.SelectionSet, v geom.Geometry4326) graphql.Marshaler {
+func (ec *executionContext) marshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋgeomᚐGeometry4326(ctx context.Context, sel ast.SelectionSet, v geom.Geometry4326) graphql.Marshaler {
 	res := geom.MarshalGeometry4326(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -11396,11 +11564,11 @@ func (ec *executionContext) marshalNID2int64(ctx context.Context, sel ast.Select
 	return res
 }
 
-func (ec *executionContext) marshalNImage2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐImage(ctx context.Context, sel ast.SelectionSet, v db.Image) graphql.Marshaler {
+func (ec *executionContext) marshalNImage2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐImage(ctx context.Context, sel ast.SelectionSet, v db.Image) graphql.Marshaler {
 	return ec._Image(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNImage2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Image) graphql.Marshaler {
+func (ec *executionContext) marshalNImage2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Image) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11424,7 +11592,7 @@ func (ec *executionContext) marshalNImage2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdata
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNImage2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐImage(ctx, sel, v[i])
+			ret[i] = ec.marshalNImage2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐImage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11527,11 +11695,11 @@ func (ec *executionContext) unmarshalNListLocationsInput2githubᚗcomᚋsatimoto
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNNode2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNode(ctx context.Context, sel ast.SelectionSet, v db.Node) graphql.Marshaler {
+func (ec *executionContext) marshalNNode2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐNode(ctx context.Context, sel ast.SelectionSet, v db.Node) graphql.Marshaler {
 	return ec._Node(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐNode(ctx context.Context, sel ast.SelectionSet, v *db.Node) graphql.Marshaler {
+func (ec *executionContext) marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐNode(ctx context.Context, sel ast.SelectionSet, v *db.Node) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -11546,11 +11714,11 @@ func (ec *executionContext) unmarshalNRegisterCredentialInput2githubᚗcomᚋsat
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNRegularHour2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐRegularHour(ctx context.Context, sel ast.SelectionSet, v db.RegularHour) graphql.Marshaler {
+func (ec *executionContext) marshalNRegularHour2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐRegularHour(ctx context.Context, sel ast.SelectionSet, v db.RegularHour) graphql.Marshaler {
 	return ec._RegularHour(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNRegularHour2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐRegularHourᚄ(ctx context.Context, sel ast.SelectionSet, v []db.RegularHour) graphql.Marshaler {
+func (ec *executionContext) marshalNRegularHour2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐRegularHourᚄ(ctx context.Context, sel ast.SelectionSet, v []db.RegularHour) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11574,7 +11742,7 @@ func (ec *executionContext) marshalNRegularHour2ᚕgithubᚗcomᚋsatimotoᚋgo�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNRegularHour2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐRegularHour(ctx, sel, v[i])
+			ret[i] = ec.marshalNRegularHour2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐRegularHour(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11627,11 +11795,11 @@ func (ec *executionContext) unmarshalNStartSessionInput2githubᚗcomᚋsatimoto�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNStatusSchedule2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐStatusSchedule(ctx context.Context, sel ast.SelectionSet, v db.StatusSchedule) graphql.Marshaler {
+func (ec *executionContext) marshalNStatusSchedule2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐStatusSchedule(ctx context.Context, sel ast.SelectionSet, v db.StatusSchedule) graphql.Marshaler {
 	return ec._StatusSchedule(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNStatusSchedule2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐStatusScheduleᚄ(ctx context.Context, sel ast.SelectionSet, v []db.StatusSchedule) graphql.Marshaler {
+func (ec *executionContext) marshalNStatusSchedule2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐStatusScheduleᚄ(ctx context.Context, sel ast.SelectionSet, v []db.StatusSchedule) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11655,7 +11823,7 @@ func (ec *executionContext) marshalNStatusSchedule2ᚕgithubᚗcomᚋsatimotoᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNStatusSchedule2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐStatusSchedule(ctx, sel, v[i])
+			ret[i] = ec.marshalNStatusSchedule2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐStatusSchedule(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11767,11 +11935,11 @@ func (ec *executionContext) unmarshalNUpdateUserInput2githubᚗcomᚋsatimotoᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx context.Context, sel ast.SelectionSet, v db.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐUser(ctx context.Context, sel ast.SelectionSet, v db.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐUser(ctx context.Context, sel ast.SelectionSet, v *db.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐUser(ctx context.Context, sel ast.SelectionSet, v *db.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -12081,7 +12249,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) marshalOBusinessDetail2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐBusinessDetail(ctx context.Context, sel ast.SelectionSet, v *db.BusinessDetail) graphql.Marshaler {
+func (ec *executionContext) marshalOBusinessDetail2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐBusinessDetail(ctx context.Context, sel ast.SelectionSet, v *db.BusinessDetail) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -12096,14 +12264,21 @@ func (ec *executionContext) unmarshalOCreateImageInput2ᚖgithubᚗcomᚋsatimot
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOEnergyMix2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐEnergyMix(ctx context.Context, sel ast.SelectionSet, v *db.EnergyMix) graphql.Marshaler {
+func (ec *executionContext) marshalODisplayText2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐDisplayText(ctx context.Context, sel ast.SelectionSet, v *db.DisplayText) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DisplayText(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOEnergyMix2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnergyMix(ctx context.Context, sel ast.SelectionSet, v *db.EnergyMix) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._EnergyMix(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOGeometry2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋgeomᚐGeometry4326(ctx context.Context, v interface{}) (*geom.Geometry4326, error) {
+func (ec *executionContext) unmarshalOGeometry2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋgeomᚐGeometry4326(ctx context.Context, v interface{}) (*geom.Geometry4326, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -12111,14 +12286,14 @@ func (ec *executionContext) unmarshalOGeometry2ᚖgithubᚗcomᚋsatimotoᚋgo�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOGeometry2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋgeomᚐGeometry4326(ctx context.Context, sel ast.SelectionSet, v *geom.Geometry4326) graphql.Marshaler {
+func (ec *executionContext) marshalOGeometry2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋgeomᚐGeometry4326(ctx context.Context, sel ast.SelectionSet, v *geom.Geometry4326) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return geom.MarshalGeometry4326(*v)
 }
 
-func (ec *executionContext) marshalOImage2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐImage(ctx context.Context, sel ast.SelectionSet, v *db.Image) graphql.Marshaler {
+func (ec *executionContext) marshalOImage2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐImage(ctx context.Context, sel ast.SelectionSet, v *db.Image) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -12140,14 +12315,14 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return graphql.MarshalInt(*v)
 }
 
-func (ec *executionContext) marshalOLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐLocation(ctx context.Context, sel ast.SelectionSet, v *db.Location) graphql.Marshaler {
+func (ec *executionContext) marshalOLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx context.Context, sel ast.SelectionSet, v *db.Location) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Location(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋdbᚐOpeningTime(ctx context.Context, sel ast.SelectionSet, v *db.OpeningTime) graphql.Marshaler {
+func (ec *executionContext) marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐOpeningTime(ctx context.Context, sel ast.SelectionSet, v *db.OpeningTime) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
