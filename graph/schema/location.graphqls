@@ -17,7 +17,7 @@ type Location {
     postalCode: String!
     country: String!
     geom: Geometry!
-    relatedLocations: [Geolocation!]!
+    relatedLocations: [AddtionalGeoLocation!]!
     evses: [Evse!]!
     availableEvses: Int!
     totalEvses: Int!

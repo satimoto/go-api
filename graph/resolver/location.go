@@ -52,17 +52,23 @@ func (r *locationResolver) Name(ctx context.Context, obj *db.Location) (*string,
 	return util.NullString(obj.Name)
 }
 
-func (r *locationResolver) RelatedLocations(ctx context.Context, obj *db.Location) ([]graph.Geolocation, error) {
-	list := []graph.Geolocation{}
+func (r *locationResolver) RelatedLocations(ctx context.Context, obj *db.Location) ([]graph.AddtionalGeoLocation, error) {
+	list := []graph.AddtionalGeoLocation{}
 
-	if relatedLocations, err := r.LocationRepository.ListRelatedLocations(ctx, obj.ID); err == nil {
-		for _, relatedLocation := range relatedLocations {
-			name, _ := util.NullString(relatedLocation.Name)
-			list = append(list, graph.Geolocation{
-				Latitude:  relatedLocation.LatitudeFloat,
-				Longitude: relatedLocation.LongitudeFloat,
-				Name:      name,
-			})
+	if additionalGeoLocations, err := r.LocationRepository.ListAdditionalGeoLocations(ctx, obj.ID); err == nil {
+		for _, additionalGeoLocation := range additionalGeoLocations {
+			agl := graph.AddtionalGeoLocation{
+				Latitude:  additionalGeoLocation.LatitudeFloat,
+				Longitude: additionalGeoLocation.LongitudeFloat,
+			}
+
+			if additionalGeoLocation.DisplayTextID.Valid {
+				if displayText, err := r.DisplayTextRepository.GetDisplayText(ctx, additionalGeoLocation.DisplayTextID.Int64); err == nil {
+					agl.Name = &displayText
+				}
+			}
+
+			list = append(list, agl)
 		}
 	}
 
