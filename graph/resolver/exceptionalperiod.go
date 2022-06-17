@@ -12,10 +12,10 @@ import (
 )
 
 func (r *exceptionalPeriodResolver) PeriodBegin(ctx context.Context, obj *db.ExceptionalPeriod) (string, error) {
-	return obj.PeriodBegin.Format(time.RFC3339Nano), nil
+	return obj.PeriodBegin.Format(time.RFC3339), nil
 }
 func (r *exceptionalPeriodResolver) PeriodEnd(ctx context.Context, obj *db.ExceptionalPeriod) (string, error) {
-	return obj.PeriodEnd.Format(time.RFC3339Nano), nil
+	return obj.PeriodEnd.Format(time.RFC3339), nil
 }
 
 // ExceptionalPeriod returns graph.ExceptionalPeriodResolver implementation.
