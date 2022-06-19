@@ -2,6 +2,7 @@ package param
 
 import (
 	"github.com/satimoto/go-api/graph"
+	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
 )
 
@@ -11,7 +12,7 @@ func NewListLocationsByGeomParams(input graph.ListLocationsInput) db.ListLocatio
 		YMin: input.YMin,
 		XMax: input.XMax,
 		YMax: input.YMax,
-		
+		LastUpdate: util.DefaultString(input.LastUpdate, ""),
 	}
 }
 
