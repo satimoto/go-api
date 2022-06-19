@@ -1848,6 +1848,7 @@ input ListLocationsInput {
     yMin: Float!
     xMax: Float!
     yMax: Float!
+    lastUpdate: String
 }
 
 extend type Query {
@@ -8768,6 +8769,14 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yMax"))
 			it.YMax, err = ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "lastUpdate":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastUpdate"))
+			it.LastUpdate, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
