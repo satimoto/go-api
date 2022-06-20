@@ -5,6 +5,7 @@ type Connector {
     powerType: String!
     voltage: Int!
     amperage: Int!
+    wattage: Int!
     tariffId: String
     termsAndConditions: String
     lastUpdated: String!
