@@ -4,9 +4,7 @@ go 1.17
 
 require (
 	github.com/99designs/gqlgen v0.17.2
-	github.com/aws/aws-lambda-go v1.27.0
 	github.com/aws/aws-sdk-go v1.42.17
-	github.com/awslabs/aws-lambda-go-api-proxy v0.11.0
 	github.com/fiatjaf/go-lnurl v1.9.2
 	github.com/go-chi/chi v1.5.4
 	github.com/go-chi/chi/v5 v5.0.7
@@ -66,20 +64,23 @@ require (
 require (
 	github.com/edjumacator/chi-prometheus v0.0.0-20181210190628-e076595e3e86
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/client_golang v1.12.2
+	github.com/satimoto/go-ferp v0.0.0-20220616081646-4cef41ddc35c
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced // indirect
+	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.27.1 // indirect
 )
 
 require (
+	github.com/aws/aws-lambda-go v1.27.0 // indirect
+	github.com/awslabs/aws-lambda-go-api-proxy v0.11.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	google.golang.org/grpc v1.46.0 // indirect
 )
 
 replace git.schwanenlied.me/yawning/bsaes.git => github.com/Yawning/bsaes v0.0.0-20180720073208-c0276d75487e

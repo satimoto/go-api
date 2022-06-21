@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/satimoto/go-api/internal/ferp"
 	"github.com/satimoto/go-api/internal/rest"
 	"github.com/satimoto/go-datastore/pkg/util"
 )
@@ -47,7 +48,10 @@ func main() {
 	shutdownCtx, cancelFunc := context.WithCancel(context.Background())
 	waitGroup := &sync.WaitGroup{}
 
-	restService := rest.NewRest(database)
+	ferpService := ferp.NewService(os.Getenv("FERP_RPC_ADDRESS"))
+	ferpService.Start(shutdownCtx, waitGroup)
+
+	restService := rest.NewRest(database, ferpService)
 	restService.StartRest(shutdownCtx, waitGroup)
 
 	sigtermChan := make(chan os.Signal)

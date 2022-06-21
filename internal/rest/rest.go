@@ -18,6 +18,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/ferp"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/util"
 )
@@ -28,13 +29,15 @@ type Rest interface {
 }
 
 type RestService struct {
-	*db.RepositoryService
-	*http.Server
+	RepositoryService *db.RepositoryService
+	FerpService       ferp.Ferp
+	Server            *http.Server
 }
 
-func NewRest(d *sql.DB) Rest {
+func NewRest(d *sql.DB, ferpService ferp.Ferp) Rest {
 	return &RestService{
 		RepositoryService: db.NewRepositoryService(d),
+		FerpService:       ferpService,
 	}
 }
 

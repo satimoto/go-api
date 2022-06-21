@@ -78,6 +78,10 @@ variable "env_default_commission_percent" {
   description = "The environment variable to set the default commission percent"
 }
 
+variable "env_ferp_rpc_port" {
+  description = "The environment variable to set the FERP RPC port"
+}
+
 variable "env_ocpi_rpc_port" {
   description = "The environment variable to set the OCPI RPC port"
 }

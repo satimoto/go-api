@@ -93,6 +93,12 @@ type ListLocationsInput struct {
 	LastUpdate *string `json:"lastUpdate"`
 }
 
+type Rate struct {
+	Rate        string `json:"rate"`
+	RateMsat    string `json:"rateMsat"`
+	LastUpdated string `json:"lastUpdated"`
+}
+
 type RegisterCredentialInput struct {
 	ID          int64   `json:"id"`
 	ClientToken *string `json:"clientToken"`
