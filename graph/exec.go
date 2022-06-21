@@ -244,8 +244,15 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetLocation          func(childComplexity int, uid string) int
+		GetRate              func(childComplexity int, currency string) int
 		ListLocations        func(childComplexity int, input ListLocationsInput) int
 		VerifyAuthentication func(childComplexity int, code string) int
+	}
+
+	Rate struct {
+		LastUpdated func(childComplexity int) int
+		Rate        func(childComplexity int) int
+		RateMsat    func(childComplexity int) int
 	}
 
 	RegularHour struct {
@@ -397,6 +404,7 @@ type QueryResolver interface {
 	VerifyAuthentication(ctx context.Context, code string) (*VerifyAuthentication, error)
 	GetLocation(ctx context.Context, uid string) (*db.Location, error)
 	ListLocations(ctx context.Context, input ListLocationsInput) ([]ListLocation, error)
+	GetRate(ctx context.Context, currency string) (*Rate, error)
 }
 type RegularHourResolver interface {
 	Weekday(ctx context.Context, obj *db.RegularHour) (int, error)
@@ -1341,6 +1349,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetLocation(childComplexity, args["uid"].(string)), true
 
+	case "Query.getRate":
+		if e.complexity.Query.GetRate == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getRate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetRate(childComplexity, args["currency"].(string)), true
+
 	case "Query.listLocations":
 		if e.complexity.Query.ListLocations == nil {
 			break
@@ -1364,6 +1384,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.VerifyAuthentication(childComplexity, args["code"].(string)), true
+
+	case "Rate.lastUpdated":
+		if e.complexity.Rate.LastUpdated == nil {
+			break
+		}
+
+		return e.complexity.Rate.LastUpdated(childComplexity), true
+
+	case "Rate.rate":
+		if e.complexity.Rate.Rate == nil {
+			break
+		}
+
+		return e.complexity.Rate.Rate(childComplexity), true
+
+	case "Rate.rateMsat":
+		if e.complexity.Rate.RateMsat == nil {
+			break
+		}
+
+		return e.complexity.Rate.RateMsat(childComplexity), true
 
 	case "RegularHour.periodBegin":
 		if e.complexity.RegularHour.PeriodBegin == nil {
@@ -1879,6 +1920,16 @@ scalar Geometry`, BuiltIn: false},
     exceptionalClosings: [ExceptionalPeriod!]!
 }
 `, BuiltIn: false},
+	{Name: "graph/schema/rate.graphqls", Input: `type Rate {
+    rate: String!
+    rateMsat: String!
+    lastUpdated: String!
+}
+
+extend type Query {
+    getRate(currency: String!): Rate
+}
+`, BuiltIn: false},
 	{Name: "graph/schema/regularhour.graphqls", Input: `type RegularHour {
     weekday: Int!
     periodBegin: String!
@@ -2132,6 +2183,21 @@ func (ec *executionContext) field_Query_getLocation_args(ctx context.Context, ra
 		}
 	}
 	args["uid"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getRate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["currency"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currency"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["currency"] = arg0
 	return args, nil
 }
 
@@ -6579,6 +6645,45 @@ func (ec *executionContext) _Query_listLocations(ctx context.Context, field grap
 	return ec.marshalNListLocation2ᚕgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListLocationᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_getRate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getRate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetRate(rctx, args["currency"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Rate)
+	fc.Result = res
+	return ec.marshalORate2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRate(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6648,6 +6753,111 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Rate_rate(ctx context.Context, field graphql.CollectedField, obj *Rate) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Rate",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Rate_rateMsat(ctx context.Context, field graphql.CollectedField, obj *Rate) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Rate",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RateMsat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Rate_lastUpdated(ctx context.Context, field graphql.CollectedField, obj *Rate) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Rate",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LastUpdated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _RegularHour_weekday(ctx context.Context, field graphql.CollectedField, obj *db.RegularHour) (ret graphql.Marshaler) {
@@ -10545,10 +10755,58 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "getRate":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getRate(ctx, field)
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
 			out.Values[i] = ec._Query___schema(ctx, field)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var rateImplementors = []string{"Rate"}
+
+func (ec *executionContext) _Rate(ctx context.Context, sel ast.SelectionSet, obj *Rate) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, rateImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Rate")
+		case "rate":
+			out.Values[i] = ec._Rate_rate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "rateMsat":
+			out.Values[i] = ec._Rate_rateMsat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "lastUpdated":
+			out.Values[i] = ec._Rate_lastUpdated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12385,6 +12643,13 @@ func (ec *executionContext) marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgo�
 		return graphql.Null
 	}
 	return ec._OpeningTime(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalORate2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRate(ctx context.Context, sel ast.SelectionSet, v *Rate) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Rate(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
