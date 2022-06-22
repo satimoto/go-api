@@ -131,6 +131,11 @@ type StopSessionInput struct {
 	SessionUID string `json:"sessionUid"`
 }
 
+type TariffElement struct {
+	PriceComponents []db.PriceComponent    `json:"priceComponents"`
+	Restrictions    *db.ElementRestriction `json:"restrictions"`
+}
+
 type TextDescription struct {
 	Text        string `json:"text"`
 	Description string `json:"description"`
