@@ -39,6 +39,7 @@ type ResolverRoot interface {
 	BusinessDetail() BusinessDetailResolver
 	ChannelRequest() ChannelRequestResolver
 	Connector() ConnectorResolver
+	ElementRestriction() ElementRestrictionResolver
 	EnergyMix() EnergyMixResolver
 	EnergySource() EnergySourceResolver
 	EnvironmentalImpact() EnvironmentalImpactResolver
@@ -49,9 +50,11 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Node() NodeResolver
 	OpeningTime() OpeningTimeResolver
+	PriceComponent() PriceComponentResolver
 	Query() QueryResolver
 	RegularHour() RegularHourResolver
 	StatusSchedule() StatusScheduleResolver
+	Tariff() TariffResolver
 }
 
 type DirectiveRoot struct {
@@ -84,6 +87,7 @@ type ComplexityRoot struct {
 		LastUpdated        func(childComplexity int) int
 		PowerType          func(childComplexity int) int
 		Standard           func(childComplexity int) int
+		Tariff             func(childComplexity int) int
 		TariffID           func(childComplexity int) int
 		TermsAndConditions func(childComplexity int) int
 		Uid                func(childComplexity int) int
@@ -107,6 +111,20 @@ type ComplexityRoot struct {
 	DisplayText struct {
 		Language func(childComplexity int) int
 		Text     func(childComplexity int) int
+	}
+
+	ElementRestriction struct {
+		DayOfWeek   func(childComplexity int) int
+		EndDate     func(childComplexity int) int
+		EndTime     func(childComplexity int) int
+		MaxDuration func(childComplexity int) int
+		MaxKwh      func(childComplexity int) int
+		MaxPower    func(childComplexity int) int
+		MinDuration func(childComplexity int) int
+		MinKwh      func(childComplexity int) int
+		MinPower    func(childComplexity int) int
+		StartDate   func(childComplexity int) int
+		StartTime   func(childComplexity int) int
 	}
 
 	EmailSubscription struct {
@@ -242,9 +260,16 @@ type ComplexityRoot struct {
 		Twentyfourseven     func(childComplexity int) int
 	}
 
+	PriceComponent struct {
+		Price    func(childComplexity int) int
+		StepSize func(childComplexity int) int
+		Type     func(childComplexity int) int
+	}
+
 	Query struct {
 		GetLocation          func(childComplexity int, uid string) int
 		GetRate              func(childComplexity int, currency string) int
+		GetTariff            func(childComplexity int, uid string) int
 		ListLocations        func(childComplexity int, input ListLocationsInput) int
 		VerifyAuthentication func(childComplexity int, code string) int
 	}
@@ -285,6 +310,18 @@ type ComplexityRoot struct {
 		Status     func(childComplexity int) int
 	}
 
+	Tariff struct {
+		Currency  func(childComplexity int) int
+		Elements  func(childComplexity int) int
+		EnergyMix func(childComplexity int) int
+		Uid       func(childComplexity int) int
+	}
+
+	TariffElement struct {
+		PriceComponents func(childComplexity int) int
+		Restrictions    func(childComplexity int) int
+	}
+
 	TextDescription struct {
 		Description func(childComplexity int) int
 		Text        func(childComplexity int) int
@@ -317,8 +354,22 @@ type ConnectorResolver interface {
 	PowerType(ctx context.Context, obj *db.Connector) (string, error)
 
 	TariffID(ctx context.Context, obj *db.Connector) (*string, error)
+	Tariff(ctx context.Context, obj *db.Connector) (*db.Tariff, error)
 	TermsAndConditions(ctx context.Context, obj *db.Connector) (*string, error)
 	LastUpdated(ctx context.Context, obj *db.Connector) (string, error)
+}
+type ElementRestrictionResolver interface {
+	StartTime(ctx context.Context, obj *db.ElementRestriction) (*string, error)
+	EndTime(ctx context.Context, obj *db.ElementRestriction) (*string, error)
+	StartDate(ctx context.Context, obj *db.ElementRestriction) (*string, error)
+	EndDate(ctx context.Context, obj *db.ElementRestriction) (*string, error)
+	MinKwh(ctx context.Context, obj *db.ElementRestriction) (*float64, error)
+	MaxKwh(ctx context.Context, obj *db.ElementRestriction) (*float64, error)
+	MinPower(ctx context.Context, obj *db.ElementRestriction) (*float64, error)
+	MaxPower(ctx context.Context, obj *db.ElementRestriction) (*float64, error)
+	MinDuration(ctx context.Context, obj *db.ElementRestriction) (*int, error)
+	MaxDuration(ctx context.Context, obj *db.ElementRestriction) (*int, error)
+	DayOfWeek(ctx context.Context, obj *db.ElementRestriction) ([]string, error)
 }
 type EnergyMixResolver interface {
 	EnergySources(ctx context.Context, obj *db.EnergyMix) ([]db.EnergySource, error)
@@ -400,11 +451,15 @@ type OpeningTimeResolver interface {
 	ExceptionalOpenings(ctx context.Context, obj *db.OpeningTime) ([]db.ExceptionalPeriod, error)
 	ExceptionalClosings(ctx context.Context, obj *db.OpeningTime) ([]db.ExceptionalPeriod, error)
 }
+type PriceComponentResolver interface {
+	Type(ctx context.Context, obj *db.PriceComponent) (string, error)
+}
 type QueryResolver interface {
 	VerifyAuthentication(ctx context.Context, code string) (*VerifyAuthentication, error)
 	GetLocation(ctx context.Context, uid string) (*db.Location, error)
 	ListLocations(ctx context.Context, input ListLocationsInput) ([]ListLocation, error)
 	GetRate(ctx context.Context, currency string) (*Rate, error)
+	GetTariff(ctx context.Context, uid string) (*db.Tariff, error)
 }
 type RegularHourResolver interface {
 	Weekday(ctx context.Context, obj *db.RegularHour) (int, error)
@@ -413,6 +468,10 @@ type StatusScheduleResolver interface {
 	PeriodBegin(ctx context.Context, obj *db.StatusSchedule) (string, error)
 	PeriodEnd(ctx context.Context, obj *db.StatusSchedule) (*string, error)
 	Status(ctx context.Context, obj *db.StatusSchedule) (string, error)
+}
+type TariffResolver interface {
+	Elements(ctx context.Context, obj *db.Tariff) ([]TariffElement, error)
+	EnergyMix(ctx context.Context, obj *db.Tariff) (*db.EnergyMix, error)
 }
 
 type executableSchema struct {
@@ -542,6 +601,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Connector.Standard(childComplexity), true
 
+	case "Connector.tariff":
+		if e.complexity.Connector.Tariff == nil {
+			break
+		}
+
+		return e.complexity.Connector.Tariff(childComplexity), true
+
 	case "Connector.tariffId":
 		if e.complexity.Connector.TariffID == nil {
 			break
@@ -639,6 +705,83 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DisplayText.Text(childComplexity), true
+
+	case "ElementRestriction.dayOfWeek":
+		if e.complexity.ElementRestriction.DayOfWeek == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.DayOfWeek(childComplexity), true
+
+	case "ElementRestriction.endDate":
+		if e.complexity.ElementRestriction.EndDate == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.EndDate(childComplexity), true
+
+	case "ElementRestriction.endTime":
+		if e.complexity.ElementRestriction.EndTime == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.EndTime(childComplexity), true
+
+	case "ElementRestriction.maxDuration":
+		if e.complexity.ElementRestriction.MaxDuration == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.MaxDuration(childComplexity), true
+
+	case "ElementRestriction.maxKwh":
+		if e.complexity.ElementRestriction.MaxKwh == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.MaxKwh(childComplexity), true
+
+	case "ElementRestriction.maxPower":
+		if e.complexity.ElementRestriction.MaxPower == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.MaxPower(childComplexity), true
+
+	case "ElementRestriction.minDuration":
+		if e.complexity.ElementRestriction.MinDuration == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.MinDuration(childComplexity), true
+
+	case "ElementRestriction.minKwh":
+		if e.complexity.ElementRestriction.MinKwh == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.MinKwh(childComplexity), true
+
+	case "ElementRestriction.minPower":
+		if e.complexity.ElementRestriction.MinPower == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.MinPower(childComplexity), true
+
+	case "ElementRestriction.startDate":
+		if e.complexity.ElementRestriction.StartDate == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.StartDate(childComplexity), true
+
+	case "ElementRestriction.startTime":
+		if e.complexity.ElementRestriction.StartTime == nil {
+			break
+		}
+
+		return e.complexity.ElementRestriction.StartTime(childComplexity), true
 
 	case "EmailSubscription.email":
 		if e.complexity.EmailSubscription.Email == nil {
@@ -1337,6 +1480,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OpeningTime.Twentyfourseven(childComplexity), true
 
+	case "PriceComponent.price":
+		if e.complexity.PriceComponent.Price == nil {
+			break
+		}
+
+		return e.complexity.PriceComponent.Price(childComplexity), true
+
+	case "PriceComponent.stepSize":
+		if e.complexity.PriceComponent.StepSize == nil {
+			break
+		}
+
+		return e.complexity.PriceComponent.StepSize(childComplexity), true
+
+	case "PriceComponent.type":
+		if e.complexity.PriceComponent.Type == nil {
+			break
+		}
+
+		return e.complexity.PriceComponent.Type(childComplexity), true
+
 	case "Query.getLocation":
 		if e.complexity.Query.GetLocation == nil {
 			break
@@ -1360,6 +1524,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetRate(childComplexity, args["currency"].(string)), true
+
+	case "Query.getTariff":
+		if e.complexity.Query.GetTariff == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getTariff_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetTariff(childComplexity, args["uid"].(string)), true
 
 	case "Query.listLocations":
 		if e.complexity.Query.ListLocations == nil {
@@ -1510,6 +1686,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StopSession.Status(childComplexity), true
+
+	case "Tariff.currency":
+		if e.complexity.Tariff.Currency == nil {
+			break
+		}
+
+		return e.complexity.Tariff.Currency(childComplexity), true
+
+	case "Tariff.elements":
+		if e.complexity.Tariff.Elements == nil {
+			break
+		}
+
+		return e.complexity.Tariff.Elements(childComplexity), true
+
+	case "Tariff.energyMix":
+		if e.complexity.Tariff.EnergyMix == nil {
+			break
+		}
+
+		return e.complexity.Tariff.EnergyMix(childComplexity), true
+
+	case "Tariff.uid":
+		if e.complexity.Tariff.Uid == nil {
+			break
+		}
+
+		return e.complexity.Tariff.Uid(childComplexity), true
+
+	case "TariffElement.priceComponents":
+		if e.complexity.TariffElement.PriceComponents == nil {
+			break
+		}
+
+		return e.complexity.TariffElement.PriceComponents(childComplexity), true
+
+	case "TariffElement.restrictions":
+		if e.complexity.TariffElement.Restrictions == nil {
+			break
+		}
+
+		return e.complexity.TariffElement.Restrictions(childComplexity), true
 
 	case "TextDescription.description":
 		if e.complexity.TextDescription.Description == nil {
@@ -1730,6 +1948,7 @@ extend type Mutation {
     amperage: Int!
     wattage: Int!
     tariffId: String
+    tariff: Tariff
     termsAndConditions: String
     lastUpdated: String!
 }`, BuiltIn: false},
@@ -1770,6 +1989,19 @@ extend type Mutation {
     text: String!
 }
 `, BuiltIn: false},
+	{Name: "graph/schema/elementrestriction.graphqls", Input: `type ElementRestriction {
+    startTime: String
+    endTime: String
+    startDate: String
+    endDate: String
+    minKwh: Float
+    maxKwh: Float
+    minPower: Float
+    maxPower: Float
+    minDuration: Int
+    maxDuration: Int
+    dayOfWeek: [String!]
+}`, BuiltIn: false},
 	{Name: "graph/schema/emailsubscription.graphqls", Input: `type EmailSubscription {
     id: ID!
     email: String!
@@ -1920,6 +2152,11 @@ scalar Geometry`, BuiltIn: false},
     exceptionalClosings: [ExceptionalPeriod!]!
 }
 `, BuiltIn: false},
+	{Name: "graph/schema/pricecomponent.graphqls", Input: `type PriceComponent {
+    type: String!
+    price: Float!
+    stepSize: Int!
+}`, BuiltIn: false},
 	{Name: "graph/schema/rate.graphqls", Input: `type Rate {
     rate: String!
     rateMsat: String!
@@ -1944,6 +2181,21 @@ extend type Query {
     periodEnd: String
     status: String!
 }`, BuiltIn: false},
+	{Name: "graph/schema/tariff.graphqls", Input: `type Tariff {
+    uid: String!
+    currency: String!
+    elements: [TariffElement!]!
+    energyMix: EnergyMix
+}
+
+extend type Query {
+    getTariff(uid: String!): Tariff
+}`, BuiltIn: false},
+	{Name: "graph/schema/tariffelement.graphqls", Input: `type TariffElement {
+    priceComponents: [PriceComponent!]
+    restrictions: ElementRestriction
+}
+`, BuiltIn: false},
 	{Name: "graph/schema/textdescription.graphqls", Input: `type TextDescription {
     text: String!
     description: String!
@@ -2198,6 +2450,21 @@ func (ec *executionContext) field_Query_getRate_args(ctx context.Context, rawArg
 		}
 	}
 	args["currency"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getTariff_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["uid"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["uid"] = arg0
 	return args, nil
 }
 
@@ -2922,6 +3189,38 @@ func (ec *executionContext) _Connector_tariffId(ctx context.Context, field graph
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Connector_tariff(ctx context.Context, field graphql.CollectedField, obj *db.Connector) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Connector",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Connector().Tariff(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.Tariff)
+	fc.Result = res
+	return ec.marshalOTariff2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTariff(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Connector_termsAndConditions(ctx context.Context, field graphql.CollectedField, obj *db.Connector) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3302,6 +3601,358 @@ func (ec *executionContext) _DisplayText_text(ctx context.Context, field graphql
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_startTime(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().StartTime(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_endTime(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().EndTime(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_startDate(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().StartDate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_endDate(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().EndDate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_minKwh(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().MinKwh(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_maxKwh(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().MaxKwh(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_minPower(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().MinPower(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_maxPower(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().MaxPower(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_minDuration(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().MinDuration(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_maxDuration(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().MaxDuration(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ElementRestriction_dayOfWeek(ctx context.Context, field graphql.CollectedField, obj *db.ElementRestriction) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ElementRestriction",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ElementRestriction().DayOfWeek(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EmailSubscription_id(ctx context.Context, field graphql.CollectedField, obj *db.EmailSubscription) (ret graphql.Marshaler) {
@@ -6522,6 +7173,111 @@ func (ec *executionContext) _OpeningTime_exceptionalClosings(ctx context.Context
 	return ec.marshalNExceptionalPeriod2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐExceptionalPeriodᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _PriceComponent_type(ctx context.Context, field graphql.CollectedField, obj *db.PriceComponent) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PriceComponent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PriceComponent().Type(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PriceComponent_price(ctx context.Context, field graphql.CollectedField, obj *db.PriceComponent) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PriceComponent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Price, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PriceComponent_stepSize(ctx context.Context, field graphql.CollectedField, obj *db.PriceComponent) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PriceComponent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.StepSize, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int32)
+	fc.Result = res
+	return ec.marshalNInt2int32(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_verifyAuthentication(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6682,6 +7438,45 @@ func (ec *executionContext) _Query_getRate(ctx context.Context, field graphql.Co
 	res := resTmp.(*Rate)
 	fc.Result = res
 	return ec.marshalORate2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRate(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getTariff(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getTariff_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTariff(rctx, args["uid"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.Tariff)
+	fc.Result = res
+	return ec.marshalOTariff2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTariff(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7377,6 +8172,207 @@ func (ec *executionContext) _StopSession_sessionUid(ctx context.Context, field g
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tariff_uid(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tariff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Uid, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tariff_currency(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tariff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Currency, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tariff_elements(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tariff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tariff().Elements(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]TariffElement)
+	fc.Result = res
+	return ec.marshalNTariffElement2ᚕgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐTariffElementᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tariff_energyMix(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tariff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tariff().EnergyMix(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.EnergyMix)
+	fc.Result = res
+	return ec.marshalOEnergyMix2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnergyMix(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TariffElement_priceComponents(ctx context.Context, field graphql.CollectedField, obj *TariffElement) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TariffElement",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PriceComponents, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]db.PriceComponent)
+	fc.Result = res
+	return ec.marshalOPriceComponent2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPriceComponentᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TariffElement_restrictions(ctx context.Context, field graphql.CollectedField, obj *TariffElement) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TariffElement",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Restrictions, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.ElementRestriction)
+	fc.Result = res
+	return ec.marshalOElementRestriction2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐElementRestriction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _TextDescription_text(ctx context.Context, field graphql.CollectedField, obj *TextDescription) (ret graphql.Marshaler) {
@@ -9460,6 +10456,17 @@ func (ec *executionContext) _Connector(ctx context.Context, sel ast.SelectionSet
 				res = ec._Connector_tariffId(ctx, field, obj)
 				return res
 			})
+		case "tariff":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Connector_tariff(ctx, field, obj)
+				return res
+			})
 		case "termsAndConditions":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -9596,6 +10603,149 @@ func (ec *executionContext) _DisplayText(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var elementRestrictionImplementors = []string{"ElementRestriction"}
+
+func (ec *executionContext) _ElementRestriction(ctx context.Context, sel ast.SelectionSet, obj *db.ElementRestriction) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, elementRestrictionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ElementRestriction")
+		case "startTime":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_startTime(ctx, field, obj)
+				return res
+			})
+		case "endTime":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_endTime(ctx, field, obj)
+				return res
+			})
+		case "startDate":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_startDate(ctx, field, obj)
+				return res
+			})
+		case "endDate":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_endDate(ctx, field, obj)
+				return res
+			})
+		case "minKwh":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_minKwh(ctx, field, obj)
+				return res
+			})
+		case "maxKwh":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_maxKwh(ctx, field, obj)
+				return res
+			})
+		case "minPower":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_minPower(ctx, field, obj)
+				return res
+			})
+		case "maxPower":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_maxPower(ctx, field, obj)
+				return res
+			})
+		case "minDuration":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_minDuration(ctx, field, obj)
+				return res
+			})
+		case "maxDuration":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_maxDuration(ctx, field, obj)
+				return res
+			})
+		case "dayOfWeek":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ElementRestriction_dayOfWeek(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10701,6 +11851,52 @@ func (ec *executionContext) _OpeningTime(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
+var priceComponentImplementors = []string{"PriceComponent"}
+
+func (ec *executionContext) _PriceComponent(ctx context.Context, sel ast.SelectionSet, obj *db.PriceComponent) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, priceComponentImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PriceComponent")
+		case "type":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PriceComponent_type(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "price":
+			out.Values[i] = ec._PriceComponent_price(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "stepSize":
+			out.Values[i] = ec._PriceComponent_stepSize(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -10764,6 +11960,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getRate(ctx, field)
+				return res
+			})
+		case "getTariff":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTariff(ctx, field)
 				return res
 			})
 		case "__type":
@@ -11022,6 +12229,89 @@ func (ec *executionContext) _StopSession(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var tariffImplementors = []string{"Tariff"}
+
+func (ec *executionContext) _Tariff(ctx context.Context, sel ast.SelectionSet, obj *db.Tariff) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tariffImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Tariff")
+		case "uid":
+			out.Values[i] = ec._Tariff_uid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "currency":
+			out.Values[i] = ec._Tariff_currency(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "elements":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tariff_elements(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "energyMix":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tariff_energyMix(ctx, field, obj)
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var tariffElementImplementors = []string{"TariffElement"}
+
+func (ec *executionContext) _TariffElement(ctx context.Context, sel ast.SelectionSet, obj *TariffElement) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tariffElementImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TariffElement")
+		case "priceComponents":
+			out.Values[i] = ec._TariffElement_priceComponents(ctx, field, obj)
+		case "restrictions":
+			out.Values[i] = ec._TariffElement_restrictions(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12025,6 +13315,10 @@ func (ec *executionContext) marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatas
 	return ec._Node(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNPriceComponent2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPriceComponent(ctx context.Context, sel ast.SelectionSet, v db.PriceComponent) graphql.Marshaler {
+	return ec._PriceComponent(ctx, sel, &v)
+}
+
 func (ec *executionContext) unmarshalNRegisterCredentialInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRegisterCredentialInput(ctx context.Context, v interface{}) (RegisterCredentialInput, error) {
 	res, err := ec.unmarshalInputRegisterCredentialInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -12191,6 +13485,54 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTariffElement2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐTariffElement(ctx context.Context, sel ast.SelectionSet, v TariffElement) graphql.Marshaler {
+	return ec._TariffElement(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTariffElement2ᚕgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐTariffElementᚄ(ctx context.Context, sel ast.SelectionSet, v []TariffElement) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTariffElement2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐTariffElement(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNTextDescription2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐTextDescription(ctx context.Context, sel ast.SelectionSet, v TextDescription) graphql.Marshaler {
@@ -12587,11 +13929,33 @@ func (ec *executionContext) marshalODisplayText2ᚖgithubᚗcomᚋsatimotoᚋgo�
 	return ec._DisplayText(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOElementRestriction2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐElementRestriction(ctx context.Context, sel ast.SelectionSet, v *db.ElementRestriction) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ElementRestriction(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOEnergyMix2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEnergyMix(ctx context.Context, sel ast.SelectionSet, v *db.EnergyMix) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._EnergyMix(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalFloat(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalFloat(*v)
 }
 
 func (ec *executionContext) unmarshalOGeometry2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋgeomᚐGeometry4326(ctx context.Context, v interface{}) (*geom.Geometry4326, error) {
@@ -12645,11 +14009,100 @@ func (ec *executionContext) marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgo�
 	return ec._OpeningTime(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOPriceComponent2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPriceComponentᚄ(ctx context.Context, sel ast.SelectionSet, v []db.PriceComponent) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPriceComponent2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPriceComponent(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalORate2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRate(ctx context.Context, sel ast.SelectionSet, v *Rate) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Rate(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
@@ -12665,6 +14118,13 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) marshalOTariff2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTariff(ctx context.Context, sel ast.SelectionSet, v *db.Tariff) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Tariff(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

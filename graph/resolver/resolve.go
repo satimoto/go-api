@@ -18,6 +18,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/location"
 	"github.com/satimoto/go-datastore/pkg/node"
 	"github.com/satimoto/go-datastore/pkg/openingtime"
+	"github.com/satimoto/go-datastore/pkg/tariff"
 	"github.com/satimoto/go-datastore/pkg/user"
 	"github.com/satimoto/go-ocpi-api/pkg/ocpi"
 )
@@ -44,6 +45,7 @@ type Resolver struct {
 	LocationRepository          location.LocationRepository
 	NodeRepository              node.NodeRepository
 	OpeningTimeRepository       openingtime.OpeningTimeRepository
+	TariffRepository            tariff.TariffRepository
 	TokenResolver               *token.TokenResolver
 	UserRepository              user.UserRepository
 }
@@ -75,6 +77,7 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 		LocationRepository:          location.NewRepository(repositoryService),
 		NodeRepository:              node.NewRepository(repositoryService),
 		OpeningTimeRepository:       openingtime.NewRepository(repositoryService),
+		TariffRepository:            tariff.NewRepository(repositoryService),
 		TokenResolver:               token.NewResolver(repositoryService),
 		UserRepository:              user.NewRepository(repositoryService),
 	}

@@ -28,6 +28,16 @@ func (r *connectorResolver) TariffID(ctx context.Context, obj *db.Connector) (*s
 	return util.NullString(obj.TariffID)
 }
 
+func (r *connectorResolver) Tariff(ctx context.Context, obj *db.Connector) (*db.Tariff, error) {
+	if obj.TariffID.Valid {
+		if tariff, err := r.TariffRepository.GetTariffByUid(ctx, obj.TariffID.String); err == nil {
+			return &tariff, nil
+		}
+	}
+
+	return nil, nil
+}
+
 func (r *connectorResolver) TermsAndConditions(ctx context.Context, obj *db.Connector) (*string, error) {
 	return util.NullString(obj.TermsAndConditions)
 }
