@@ -45,7 +45,7 @@ func (rs *RestService) Handler() *chi.Mux {
 	router := chi.NewRouter()
 
 	// Set middleware
-	router.Use(render.SetContentType(render.ContentTypeJSON), middleware.Logger, middleware.RedirectSlashes, middleware.Recoverer)
+	router.Use(render.SetContentType(render.ContentTypeJSON), middleware.RedirectSlashes, middleware.Recoverer)
 	router.Use(middleware.Timeout(120 * time.Second))
 	router.Use(authentication.AuthorizationContext())
 	router.Use(chiprometheus.NewMiddleware("api"))
