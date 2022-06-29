@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/satimoto/go-api/graph/resolver"
-	"github.com/satimoto/go-ocpi-api/pkg/ocpi"
+	"github.com/satimoto/go-ocpi/pkg/ocpi"
 )
 
 func (rs *RestService) mountGraphql() *chi.Mux {

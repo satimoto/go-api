@@ -5,7 +5,7 @@ import (
 
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/token"
-	"github.com/satimoto/go-ocpi-api/pkg/ocpi"
+	"github.com/satimoto/go-ocpi/pkg/ocpi"
 )
 
 type TokenResolver struct {
