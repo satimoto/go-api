@@ -51,7 +51,6 @@ require (
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/paulmach/orb v0.7.1 // indirect
-	github.com/satimoto/go-ocpi-api v0.0.3-0.20220518210005-014a687a70dc
 	github.com/tidwall/gjson v1.6.1 // indirect
 	github.com/tidwall/match v1.0.1 // indirect
 	github.com/tidwall/pretty v1.0.2 // indirect
@@ -66,6 +65,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/prometheus/client_golang v1.12.2
 	github.com/satimoto/go-ferp v0.0.0-20220616081646-4cef41ddc35c
+	github.com/satimoto/go-ocpi v0.0.3-0.20220629073124-496523cd8663
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced // indirect
 	google.golang.org/grpc v1.47.0

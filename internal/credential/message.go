@@ -3,7 +3,7 @@ package credential
 import (
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/util"
-	"github.com/satimoto/go-ocpi-api/ocpirpc"
+	"github.com/satimoto/go-ocpi/ocpirpc"
 )
 
 func NewCreateBusinessDetailRequest(input graph.CreateBusinessDetailInput) *ocpirpc.CreateBusinessDetailRequest {

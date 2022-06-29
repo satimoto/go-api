@@ -20,7 +20,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/openingtime"
 	"github.com/satimoto/go-datastore/pkg/tariff"
 	"github.com/satimoto/go-datastore/pkg/user"
-	"github.com/satimoto/go-ocpi-api/pkg/ocpi"
+	"github.com/satimoto/go-ocpi/pkg/ocpi"
 )
 
 // This file will not be regenerated automatically.
