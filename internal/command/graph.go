@@ -3,7 +3,7 @@ package command
 import (
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-datastore/pkg/util"
-	"github.com/satimoto/go-ocpi-api/ocpirpc"
+	"github.com/satimoto/go-ocpi/ocpirpc"
 )
 
 func NewStartSession(response ocpirpc.StartSessionResponse) *graph.StartSession {

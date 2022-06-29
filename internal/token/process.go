@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/satimoto/go-datastore/pkg/db"
-	"github.com/satimoto/go-ocpi-api/ocpirpc"
+	"github.com/satimoto/go-ocpi/ocpirpc"
 )
 
 func (r *TokenResolver) CreateToken(ctx context.Context, userID int64) (*ocpirpc.CreateTokenResponse, error) {
