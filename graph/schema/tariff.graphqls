@@ -1,10 +1,16 @@
 type Tariff {
+    id: ID!
     uid: String!
     currency: String!
     elements: [TariffElement!]!
     energyMix: EnergyMix
 }
 
+input GetTariffInput {
+    id: ID
+    uid: String
+}
+
 extend type Query {
-    getTariff(uid: String!): Tariff
+    getTariff(input: GetTariffInput!): Tariff!
 }

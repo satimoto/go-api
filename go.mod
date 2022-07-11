@@ -13,7 +13,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
-	github.com/satimoto/go-datastore v0.1.2-0.20220622133836-a81a7a5cb5a0
+	github.com/satimoto/go-datastore v0.1.2-0.20220708123616-97e1b56f1fbd
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.4.0
 )
@@ -65,7 +65,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/prometheus/client_golang v1.12.2
 	github.com/satimoto/go-ferp v0.0.0-20220616081646-4cef41ddc35c
-	github.com/satimoto/go-ocpi v0.0.3-0.20220629073124-496523cd8663
+	github.com/satimoto/go-ocpi v0.0.3-0.20220706220813-218dea960d16
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced // indirect
 	google.golang.org/grpc v1.47.0

@@ -1,0 +1,2 @@
+aws ecr get-login-password --region eu-central-1 --profile satimoto-mainnet | docker login --username AWS --password-stdin https://490833747373.dkr.ecr.eu-central-1.amazonaws.com
+./scripts/docker/tag.sh -b -t -m -c

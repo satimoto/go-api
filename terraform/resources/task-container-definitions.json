@@ -17,6 +17,10 @@
         "containerPort": ${service_container_port}
       }
     ],
+    "dockerLabels": {
+      "PROMETHEUS_EXPORTER_PORT": "${env_rest_port}",
+      "PROMETHEUS_EXPORTER_JOB_NAME": "${service_name}"
+    },
     "environment": [
       {
         "name": "API_DOMAIN",

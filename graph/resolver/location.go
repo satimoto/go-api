@@ -15,11 +15,18 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *queryResolver) GetLocation(ctx context.Context, uid string) (*db.Location, error) {
+func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocationInput) (*db.Location, error) {
 	if userId := authentication.GetUserId(ctx); userId != nil {
-		if l, err := r.LocationRepository.GetLocationByUid(ctx, uid); err == nil {
-			return &l, nil
+		if input.ID != nil {
+			if l, err := r.LocationRepository.GetLocation(ctx, *input.ID); err == nil {
+				return &l, nil
+			}
+		} else if input.UID != nil {
+			if l, err := r.LocationRepository.GetLocationByUid(ctx, *input.UID); err == nil {
+				return &l, nil
+			}
 		}
+
 		return nil, gqlerror.Errorf("Location not found")
 	}
 

@@ -75,6 +75,22 @@ type Geolocation struct {
 	Name      *string `json:"name"`
 }
 
+type GetLocationInput struct {
+	ID  *int64  `json:"id"`
+	UID *string `json:"uid"`
+}
+
+type GetSessionInput struct {
+	ID              *int64  `json:"id"`
+	UID             *string `json:"uid"`
+	AuthorizationID *string `json:"authorizationId"`
+}
+
+type GetTariffInput struct {
+	ID  *int64  `json:"id"`
+	UID *string `json:"uid"`
+}
+
 type ListLocation struct {
 	UID             string            `json:"uid"`
 	Name            string            `json:"name"`

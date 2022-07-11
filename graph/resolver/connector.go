@@ -12,6 +12,10 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 )
 
+func (r *connectorResolver) Identifier(ctx context.Context, obj *db.Connector) (*string, error) {
+	return util.NullString(obj.Identifier)
+}
+
 func (r *connectorResolver) Standard(ctx context.Context, obj *db.Connector) (string, error) {
 	return string(obj.Standard), nil
 }
