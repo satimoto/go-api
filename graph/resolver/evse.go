@@ -13,8 +13,8 @@ import (
 	"github.com/satimoto/go-datastore/pkg/geom"
 )
 
-func (r *evseResolver) EvseID(ctx context.Context, obj *db.Evse) (*string, error) {
-	return util.NullString(obj.EvseID)
+func (r *evseResolver) Identifier(ctx context.Context, obj *db.Evse) (*string, error) {
+	return util.NullString(obj.Identifier)
 }
 
 func (r *evseResolver) Status(ctx context.Context, obj *db.Evse) (string, error) {

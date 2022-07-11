@@ -1,5 +1,7 @@
 type Connector {
+    id: ID!
     uid: String!
+    identifier: String
     standard: String!
     format: String!
     powerType: String!

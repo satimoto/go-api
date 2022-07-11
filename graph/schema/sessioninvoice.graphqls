@@ -1,0 +1,20 @@
+type SessionInvoice {
+    id: ID!
+    currency: String!
+    currencyRate: Int!
+    currencyRateMsat: Int!
+    amountFiat: Float!
+    amountMsat: Int!
+    commissionFiat: Float!
+    commissionMsat: Int!
+    taxFiat: Float!
+    taxMsat: Int!
+    paymentRequest: String!
+    isSettled: Boolean!
+    isExpired: Boolean!
+    lastUpdated: String!
+}
+
+extend type Query {
+    getSessionInvoice(id: ID!): SessionInvoice
+}

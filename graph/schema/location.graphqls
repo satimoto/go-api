@@ -9,6 +9,7 @@ type ListLocation {
 }
 
 type Location {
+    id: ID!
     uid: String!
     type: String!
     name: String
@@ -36,6 +37,11 @@ type Location {
     lastUpdated: String!
 }
 
+input GetLocationInput {
+    id: ID
+    uid: String
+}
+
 input ListLocationsInput {
     xMin: Float!
     yMin: Float!
@@ -45,7 +51,7 @@ input ListLocationsInput {
 }
 
 extend type Query {
-    getLocation(uid: String!): Location
+    getLocation(input: GetLocationInput!): Location!
     listLocations(input: ListLocationsInput!): [ListLocation!]!
 }
 

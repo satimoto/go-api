@@ -53,6 +53,8 @@ type ResolverRoot interface {
 	PriceComponent() PriceComponentResolver
 	Query() QueryResolver
 	RegularHour() RegularHourResolver
+	Session() SessionResolver
+	SessionInvoice() SessionInvoiceResolver
 	StatusSchedule() StatusScheduleResolver
 	Tariff() TariffResolver
 }
@@ -84,6 +86,8 @@ type ComplexityRoot struct {
 	Connector struct {
 		Amperage           func(childComplexity int) int
 		Format             func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		Identifier         func(childComplexity int) int
 		LastUpdated        func(childComplexity int) int
 		PowerType          func(childComplexity int) int
 		Standard           func(childComplexity int) int
@@ -156,9 +160,10 @@ type ComplexityRoot struct {
 		Capabilities        func(childComplexity int) int
 		Connectors          func(childComplexity int) int
 		Directions          func(childComplexity int) int
-		EvseID              func(childComplexity int) int
 		FloorLevel          func(childComplexity int) int
 		Geom                func(childComplexity int) int
+		ID                  func(childComplexity int) int
+		Identifier          func(childComplexity int) int
 		Images              func(childComplexity int) int
 		IsRemoteCapable     func(childComplexity int) int
 		IsRfidCapable       func(childComplexity int) int
@@ -215,6 +220,7 @@ type ComplexityRoot struct {
 		Evses              func(childComplexity int) int
 		Facilities         func(childComplexity int) int
 		Geom               func(childComplexity int) int
+		ID                 func(childComplexity int) int
 		Images             func(childComplexity int) int
 		IsRemoteCapable    func(childComplexity int) int
 		IsRfidCapable      func(childComplexity int) int
@@ -267,9 +273,11 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetLocation          func(childComplexity int, uid string) int
+		GetLocation          func(childComplexity int, input GetLocationInput) int
 		GetRate              func(childComplexity int, currency string) int
-		GetTariff            func(childComplexity int, uid string) int
+		GetSession           func(childComplexity int, input GetSessionInput) int
+		GetSessionInvoice    func(childComplexity int, id int64) int
+		GetTariff            func(childComplexity int, input GetTariffInput) int
 		ListLocations        func(childComplexity int, input ListLocationsInput) int
 		VerifyAuthentication func(childComplexity int, code string) int
 	}
@@ -288,6 +296,40 @@ type ComplexityRoot struct {
 
 	Result struct {
 		ID func(childComplexity int) int
+	}
+
+	Session struct {
+		AuthMethod      func(childComplexity int) int
+		AuthorizationID func(childComplexity int) int
+		Connector       func(childComplexity int) int
+		EndDatetime     func(childComplexity int) int
+		Evse            func(childComplexity int) int
+		ID              func(childComplexity int) int
+		Kwh             func(childComplexity int) int
+		LastUpdated     func(childComplexity int) int
+		Location        func(childComplexity int) int
+		MeterID         func(childComplexity int) int
+		SessionInvoices func(childComplexity int) int
+		StartDatetime   func(childComplexity int) int
+		Status          func(childComplexity int) int
+		Uid             func(childComplexity int) int
+	}
+
+	SessionInvoice struct {
+		AmountFiat       func(childComplexity int) int
+		AmountMsat       func(childComplexity int) int
+		CommissionFiat   func(childComplexity int) int
+		CommissionMsat   func(childComplexity int) int
+		Currency         func(childComplexity int) int
+		CurrencyRate     func(childComplexity int) int
+		CurrencyRateMsat func(childComplexity int) int
+		ID               func(childComplexity int) int
+		IsExpired        func(childComplexity int) int
+		IsSettled        func(childComplexity int) int
+		LastUpdated      func(childComplexity int) int
+		PaymentRequest   func(childComplexity int) int
+		TaxFiat          func(childComplexity int) int
+		TaxMsat          func(childComplexity int) int
 	}
 
 	StartSession struct {
@@ -314,6 +356,7 @@ type ComplexityRoot struct {
 		Currency  func(childComplexity int) int
 		Elements  func(childComplexity int) int
 		EnergyMix func(childComplexity int) int
+		ID        func(childComplexity int) int
 		Uid       func(childComplexity int) int
 	}
 
@@ -349,6 +392,7 @@ type ChannelRequestResolver interface {
 	Node(ctx context.Context, obj *db.ChannelRequest) (*db.Node, error)
 }
 type ConnectorResolver interface {
+	Identifier(ctx context.Context, obj *db.Connector) (*string, error)
 	Standard(ctx context.Context, obj *db.Connector) (string, error)
 	Format(ctx context.Context, obj *db.Connector) (string, error)
 	PowerType(ctx context.Context, obj *db.Connector) (string, error)
@@ -384,7 +428,7 @@ type EnvironmentalImpactResolver interface {
 	Source(ctx context.Context, obj *db.EnvironmentalImpact) (string, error)
 }
 type EvseResolver interface {
-	EvseID(ctx context.Context, obj *db.Evse) (*string, error)
+	Identifier(ctx context.Context, obj *db.Evse) (*string, error)
 	Status(ctx context.Context, obj *db.Evse) (string, error)
 	StatusSchedule(ctx context.Context, obj *db.Evse) ([]db.StatusSchedule, error)
 	Capabilities(ctx context.Context, obj *db.Evse) ([]TextDescription, error)
@@ -456,13 +500,32 @@ type PriceComponentResolver interface {
 }
 type QueryResolver interface {
 	VerifyAuthentication(ctx context.Context, code string) (*VerifyAuthentication, error)
-	GetLocation(ctx context.Context, uid string) (*db.Location, error)
+	GetLocation(ctx context.Context, input GetLocationInput) (*db.Location, error)
 	ListLocations(ctx context.Context, input ListLocationsInput) ([]ListLocation, error)
 	GetRate(ctx context.Context, currency string) (*Rate, error)
-	GetTariff(ctx context.Context, uid string) (*db.Tariff, error)
+	GetSession(ctx context.Context, input GetSessionInput) (*db.Session, error)
+	GetSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error)
+	GetTariff(ctx context.Context, input GetTariffInput) (*db.Tariff, error)
 }
 type RegularHourResolver interface {
 	Weekday(ctx context.Context, obj *db.RegularHour) (int, error)
+}
+type SessionResolver interface {
+	AuthorizationID(ctx context.Context, obj *db.Session) (*string, error)
+	StartDatetime(ctx context.Context, obj *db.Session) (string, error)
+	EndDatetime(ctx context.Context, obj *db.Session) (*string, error)
+
+	AuthMethod(ctx context.Context, obj *db.Session) (string, error)
+	Location(ctx context.Context, obj *db.Session) (*db.Location, error)
+	Evse(ctx context.Context, obj *db.Session) (*db.Evse, error)
+	Connector(ctx context.Context, obj *db.Session) (*db.Connector, error)
+	MeterID(ctx context.Context, obj *db.Session) (*string, error)
+	SessionInvoices(ctx context.Context, obj *db.Session) ([]db.SessionInvoice, error)
+	Status(ctx context.Context, obj *db.Session) (string, error)
+	LastUpdated(ctx context.Context, obj *db.Session) (string, error)
+}
+type SessionInvoiceResolver interface {
+	LastUpdated(ctx context.Context, obj *db.SessionInvoice) (string, error)
 }
 type StatusScheduleResolver interface {
 	PeriodBegin(ctx context.Context, obj *db.StatusSchedule) (string, error)
@@ -579,6 +642,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Connector.Format(childComplexity), true
+
+	case "Connector.id":
+		if e.complexity.Connector.ID == nil {
+			break
+		}
+
+		return e.complexity.Connector.ID(childComplexity), true
+
+	case "Connector.identifier":
+		if e.complexity.Connector.Identifier == nil {
+			break
+		}
+
+		return e.complexity.Connector.Identifier(childComplexity), true
 
 	case "Connector.lastUpdated":
 		if e.complexity.Connector.LastUpdated == nil {
@@ -895,13 +972,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Evse.Directions(childComplexity), true
 
-	case "Evse.evseId":
-		if e.complexity.Evse.EvseID == nil {
-			break
-		}
-
-		return e.complexity.Evse.EvseID(childComplexity), true
-
 	case "Evse.floorLevel":
 		if e.complexity.Evse.FloorLevel == nil {
 			break
@@ -915,6 +985,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Evse.Geom(childComplexity), true
+
+	case "Evse.id":
+		if e.complexity.Evse.ID == nil {
+			break
+		}
+
+		return e.complexity.Evse.ID(childComplexity), true
+
+	case "Evse.identifier":
+		if e.complexity.Evse.Identifier == nil {
+			break
+		}
+
+		return e.complexity.Evse.Identifier(childComplexity), true
 
 	case "Evse.images":
 		if e.complexity.Evse.Images == nil {
@@ -1181,6 +1265,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Location.Geom(childComplexity), true
+
+	case "Location.id":
+		if e.complexity.Location.ID == nil {
+			break
+		}
+
+		return e.complexity.Location.ID(childComplexity), true
 
 	case "Location.images":
 		if e.complexity.Location.Images == nil {
@@ -1511,7 +1602,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetLocation(childComplexity, args["uid"].(string)), true
+		return e.complexity.Query.GetLocation(childComplexity, args["input"].(GetLocationInput)), true
 
 	case "Query.getRate":
 		if e.complexity.Query.GetRate == nil {
@@ -1525,6 +1616,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetRate(childComplexity, args["currency"].(string)), true
 
+	case "Query.getSession":
+		if e.complexity.Query.GetSession == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getSession_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetSession(childComplexity, args["input"].(GetSessionInput)), true
+
+	case "Query.getSessionInvoice":
+		if e.complexity.Query.GetSessionInvoice == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getSessionInvoice_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetSessionInvoice(childComplexity, args["id"].(int64)), true
+
 	case "Query.getTariff":
 		if e.complexity.Query.GetTariff == nil {
 			break
@@ -1535,7 +1650,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetTariff(childComplexity, args["uid"].(string)), true
+		return e.complexity.Query.GetTariff(childComplexity, args["input"].(GetTariffInput)), true
 
 	case "Query.listLocations":
 		if e.complexity.Query.ListLocations == nil {
@@ -1609,6 +1724,202 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Result.ID(childComplexity), true
+
+	case "Session.authMethod":
+		if e.complexity.Session.AuthMethod == nil {
+			break
+		}
+
+		return e.complexity.Session.AuthMethod(childComplexity), true
+
+	case "Session.authorizationId":
+		if e.complexity.Session.AuthorizationID == nil {
+			break
+		}
+
+		return e.complexity.Session.AuthorizationID(childComplexity), true
+
+	case "Session.connector":
+		if e.complexity.Session.Connector == nil {
+			break
+		}
+
+		return e.complexity.Session.Connector(childComplexity), true
+
+	case "Session.endDatetime":
+		if e.complexity.Session.EndDatetime == nil {
+			break
+		}
+
+		return e.complexity.Session.EndDatetime(childComplexity), true
+
+	case "Session.evse":
+		if e.complexity.Session.Evse == nil {
+			break
+		}
+
+		return e.complexity.Session.Evse(childComplexity), true
+
+	case "Session.id":
+		if e.complexity.Session.ID == nil {
+			break
+		}
+
+		return e.complexity.Session.ID(childComplexity), true
+
+	case "Session.kwh":
+		if e.complexity.Session.Kwh == nil {
+			break
+		}
+
+		return e.complexity.Session.Kwh(childComplexity), true
+
+	case "Session.lastUpdated":
+		if e.complexity.Session.LastUpdated == nil {
+			break
+		}
+
+		return e.complexity.Session.LastUpdated(childComplexity), true
+
+	case "Session.location":
+		if e.complexity.Session.Location == nil {
+			break
+		}
+
+		return e.complexity.Session.Location(childComplexity), true
+
+	case "Session.meterId":
+		if e.complexity.Session.MeterID == nil {
+			break
+		}
+
+		return e.complexity.Session.MeterID(childComplexity), true
+
+	case "Session.sessionInvoices":
+		if e.complexity.Session.SessionInvoices == nil {
+			break
+		}
+
+		return e.complexity.Session.SessionInvoices(childComplexity), true
+
+	case "Session.startDatetime":
+		if e.complexity.Session.StartDatetime == nil {
+			break
+		}
+
+		return e.complexity.Session.StartDatetime(childComplexity), true
+
+	case "Session.status":
+		if e.complexity.Session.Status == nil {
+			break
+		}
+
+		return e.complexity.Session.Status(childComplexity), true
+
+	case "Session.uid":
+		if e.complexity.Session.Uid == nil {
+			break
+		}
+
+		return e.complexity.Session.Uid(childComplexity), true
+
+	case "SessionInvoice.amountFiat":
+		if e.complexity.SessionInvoice.AmountFiat == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.AmountFiat(childComplexity), true
+
+	case "SessionInvoice.amountMsat":
+		if e.complexity.SessionInvoice.AmountMsat == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.AmountMsat(childComplexity), true
+
+	case "SessionInvoice.commissionFiat":
+		if e.complexity.SessionInvoice.CommissionFiat == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.CommissionFiat(childComplexity), true
+
+	case "SessionInvoice.commissionMsat":
+		if e.complexity.SessionInvoice.CommissionMsat == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.CommissionMsat(childComplexity), true
+
+	case "SessionInvoice.currency":
+		if e.complexity.SessionInvoice.Currency == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.Currency(childComplexity), true
+
+	case "SessionInvoice.currencyRate":
+		if e.complexity.SessionInvoice.CurrencyRate == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.CurrencyRate(childComplexity), true
+
+	case "SessionInvoice.currencyRateMsat":
+		if e.complexity.SessionInvoice.CurrencyRateMsat == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.CurrencyRateMsat(childComplexity), true
+
+	case "SessionInvoice.id":
+		if e.complexity.SessionInvoice.ID == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.ID(childComplexity), true
+
+	case "SessionInvoice.isExpired":
+		if e.complexity.SessionInvoice.IsExpired == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.IsExpired(childComplexity), true
+
+	case "SessionInvoice.isSettled":
+		if e.complexity.SessionInvoice.IsSettled == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.IsSettled(childComplexity), true
+
+	case "SessionInvoice.lastUpdated":
+		if e.complexity.SessionInvoice.LastUpdated == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.LastUpdated(childComplexity), true
+
+	case "SessionInvoice.paymentRequest":
+		if e.complexity.SessionInvoice.PaymentRequest == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.PaymentRequest(childComplexity), true
+
+	case "SessionInvoice.taxFiat":
+		if e.complexity.SessionInvoice.TaxFiat == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.TaxFiat(childComplexity), true
+
+	case "SessionInvoice.taxMsat":
+		if e.complexity.SessionInvoice.TaxMsat == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.TaxMsat(childComplexity), true
 
 	case "StartSession.authorizationId":
 		if e.complexity.StartSession.AuthorizationID == nil {
@@ -1707,6 +2018,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tariff.EnergyMix(childComplexity), true
+
+	case "Tariff.id":
+		if e.complexity.Tariff.ID == nil {
+			break
+		}
+
+		return e.complexity.Tariff.ID(childComplexity), true
 
 	case "Tariff.uid":
 		if e.complexity.Tariff.Uid == nil {
@@ -1940,7 +2258,9 @@ extend type Mutation {
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/connector.graphqls", Input: `type Connector {
+    id: ID!
     uid: String!
+    identifier: String
     standard: String!
     format: String!
     powerType: String!
@@ -2042,8 +2362,9 @@ extend type Mutation {
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/evse.graphqls", Input: `type Evse {
+    id: ID!
     uid: String!
-    evseId: String
+    identifier: String
     status: String!
     statusSchedule: [StatusSchedule!]!
     capabilities: [TextDescription!]! 
@@ -2098,6 +2419,7 @@ input CreateImageInput {
 }
 
 type Location {
+    id: ID!
     uid: String!
     type: String!
     name: String
@@ -2125,6 +2447,11 @@ type Location {
     lastUpdated: String!
 }
 
+input GetLocationInput {
+    id: ID
+    uid: String
+}
+
 input ListLocationsInput {
     xMin: Float!
     yMin: Float!
@@ -2134,7 +2461,7 @@ input ListLocationsInput {
 }
 
 extend type Query {
-    getLocation(uid: String!): Location
+    getLocation(input: GetLocationInput!): Location!
     listLocations(input: ListLocationsInput!): [ListLocation!]!
 }
 
@@ -2176,20 +2503,72 @@ extend type Query {
 	{Name: "graph/schema/result.graphqls", Input: `type Result {
     id: ID!
 }`, BuiltIn: false},
+	{Name: "graph/schema/session.graphqls", Input: `type Session {
+    id: ID!
+    uid: String!
+    authorizationId: String
+    startDatetime: String!
+    endDatetime: String
+    kwh: Float!
+    authMethod: String!
+    location: Location!
+    evse: Evse!
+    connector: Connector!
+    meterId: String
+    sessionInvoices: [SessionInvoice!]!
+    status: String!
+    lastUpdated: String!
+}
+
+input GetSessionInput {
+    id: ID
+    uid: String
+    authorizationId: String
+}
+
+extend type Query {
+    getSession(input: GetSessionInput!): Session!
+}`, BuiltIn: false},
+	{Name: "graph/schema/sessioninvoice.graphqls", Input: `type SessionInvoice {
+    id: ID!
+    currency: String!
+    currencyRate: Int!
+    currencyRateMsat: Int!
+    amountFiat: Float!
+    amountMsat: Int!
+    commissionFiat: Float!
+    commissionMsat: Int!
+    taxFiat: Float!
+    taxMsat: Int!
+    paymentRequest: String!
+    isSettled: Boolean!
+    isExpired: Boolean!
+    lastUpdated: String!
+}
+
+extend type Query {
+    getSessionInvoice(id: ID!): SessionInvoice
+}`, BuiltIn: false},
 	{Name: "graph/schema/statusschedule.graphqls", Input: `type StatusSchedule {
     periodBegin: String!
     periodEnd: String
     status: String!
 }`, BuiltIn: false},
 	{Name: "graph/schema/tariff.graphqls", Input: `type Tariff {
+    id: ID!
     uid: String!
     currency: String!
     elements: [TariffElement!]!
     energyMix: EnergyMix
 }
 
+input GetTariffInput {
+    id: ID
+    uid: String
+}
+
 extend type Query {
-    getTariff(uid: String!): Tariff
+    getTariff(input: GetTariffInput!): Tariff!
 }`, BuiltIn: false},
 	{Name: "graph/schema/tariffelement.graphqls", Input: `type TariffElement {
     priceComponents: [PriceComponent!]
@@ -2426,15 +2805,15 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_getLocation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["uid"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 GetLocationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNGetLocationInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetLocationInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["uid"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -2453,18 +2832,48 @@ func (ec *executionContext) field_Query_getRate_args(ctx context.Context, rawArg
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getTariff_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_getSessionInvoice_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["uid"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 int64
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int64(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["uid"] = arg0
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 GetSessionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNGetSessionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetSessionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getTariff_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 GetTariffInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNGetTariffInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetTariffInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -2912,6 +3321,41 @@ func (ec *executionContext) _ChannelRequest_node(ctx context.Context, field grap
 	return ec.marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐNode(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Connector_id(ctx context.Context, field graphql.CollectedField, obj *db.Connector) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Connector",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Connector_uid(ctx context.Context, field graphql.CollectedField, obj *db.Connector) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2945,6 +3389,38 @@ func (ec *executionContext) _Connector_uid(ctx context.Context, field graphql.Co
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Connector_identifier(ctx context.Context, field graphql.CollectedField, obj *db.Connector) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Connector",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Connector().Identifier(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Connector_standard(ctx context.Context, field graphql.CollectedField, obj *db.Connector) (ret graphql.Marshaler) {
@@ -4404,6 +4880,41 @@ func (ec *executionContext) _EnvironmentalImpact_amount(ctx context.Context, fie
 	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Evse_id(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Evse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Evse_uid(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4439,7 +4950,7 @@ func (ec *executionContext) _Evse_uid(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Evse_evseId(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
+func (ec *executionContext) _Evse_identifier(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4457,7 +4968,7 @@ func (ec *executionContext) _Evse_evseId(ctx context.Context, field graphql.Coll
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Evse().EvseID(rctx, obj)
+		return ec.resolvers.Evse().Identifier(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5568,6 +6079,41 @@ func (ec *executionContext) _ListLocation_isRfidCapable(ctx context.Context, fie
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Location_id(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Location",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_uid(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
@@ -7345,18 +7891,21 @@ func (ec *executionContext) _Query_getLocation(ctx context.Context, field graphq
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetLocation(rctx, args["uid"].(string))
+		return ec.resolvers.Query().GetLocation(rctx, args["input"].(GetLocationInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*db.Location)
 	fc.Result = res
-	return ec.marshalOLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx, field.Selections, res)
+	return ec.marshalNLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_listLocations(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7440,6 +7989,87 @@ func (ec *executionContext) _Query_getRate(ctx context.Context, field graphql.Co
 	return ec.marshalORate2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRate(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_getSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getSession_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetSession(rctx, args["input"].(GetSessionInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Session)
+	fc.Result = res
+	return ec.marshalNSession2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getSessionInvoice(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getSessionInvoice_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetSessionInvoice(rctx, args["id"].(int64))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.SessionInvoice)
+	fc.Result = res
+	return ec.marshalOSessionInvoice2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSessionInvoice(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_getTariff(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7465,18 +8095,21 @@ func (ec *executionContext) _Query_getTariff(ctx context.Context, field graphql.
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetTariff(rctx, args["uid"].(string))
+		return ec.resolvers.Query().GetTariff(rctx, args["input"].(GetTariffInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*db.Tariff)
 	fc.Result = res
-	return ec.marshalOTariff2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTariff(ctx, field.Selections, res)
+	return ec.marshalNTariff2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTariff(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7793,6 +8426,977 @@ func (ec *executionContext) _Result_id(ctx context.Context, field graphql.Collec
 	res := resTmp.(int64)
 	fc.Result = res
 	return ec.marshalNID2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_id(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_uid(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Uid, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_authorizationId(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().AuthorizationID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_startDatetime(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().StartDatetime(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_endDatetime(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().EndDatetime(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_kwh(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Kwh, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_authMethod(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().AuthMethod(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_location(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().Location(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Location)
+	fc.Result = res
+	return ec.marshalNLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_evse(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().Evse(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Evse)
+	fc.Result = res
+	return ec.marshalNEvse2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEvse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_connector(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().Connector(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Connector)
+	fc.Result = res
+	return ec.marshalNConnector2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐConnector(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_meterId(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().MeterID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_sessionInvoices(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().SessionInvoices(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]db.SessionInvoice)
+	fc.Result = res
+	return ec.marshalNSessionInvoice2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSessionInvoiceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_status(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().Status(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Session_lastUpdated(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Session().LastUpdated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_id(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_currency(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Currency, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_currencyRate(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CurrencyRate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_currencyRateMsat(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CurrencyRateMsat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_amountFiat(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AmountFiat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_amountMsat(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AmountMsat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_commissionFiat(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CommissionFiat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_commissionMsat(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CommissionMsat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_taxFiat(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TaxFiat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_taxMsat(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TaxMsat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_paymentRequest(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PaymentRequest, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_isSettled(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsSettled, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_isExpired(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsExpired, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SessionInvoice_lastUpdated(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SessionInvoice().LastUpdated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _StartSession_id(ctx context.Context, field graphql.CollectedField, obj *StartSession) (ret graphql.Marshaler) {
@@ -8172,6 +9776,41 @@ func (ec *executionContext) _StopSession_sessionUid(ctx context.Context, field g
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tariff_id(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tariff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Tariff_uid(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
@@ -9981,6 +11620,107 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputGetLocationInput(ctx context.Context, obj interface{}) (GetLocationInput, error) {
+	var it GetLocationInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "uid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
+			it.UID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputGetSessionInput(ctx context.Context, obj interface{}) (GetSessionInput, error) {
+	var it GetSessionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "uid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
+			it.UID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "authorizationId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorizationId"))
+			it.AuthorizationID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputGetTariffInput(ctx context.Context, obj interface{}) (GetTariffInput, error) {
+	var it GetTariffInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "uid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
+			it.UID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context, obj interface{}) (ListLocationsInput, error) {
 	var it ListLocationsInput
 	asMap := map[string]interface{}{}
@@ -10383,11 +12123,27 @@ func (ec *executionContext) _Connector(ctx context.Context, sel ast.SelectionSet
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Connector")
+		case "id":
+			out.Values[i] = ec._Connector_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "uid":
 			out.Values[i] = ec._Connector_uid(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "identifier":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Connector_identifier(ctx, field, obj)
+				return res
+			})
 		case "standard":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -10969,12 +12725,17 @@ func (ec *executionContext) _Evse(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Evse")
+		case "id":
+			out.Values[i] = ec._Evse_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "uid":
 			out.Values[i] = ec._Evse_uid(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "evseId":
+		case "identifier":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -10982,7 +12743,7 @@ func (ec *executionContext) _Evse(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Evse_evseId(ctx, field, obj)
+				res = ec._Evse_identifier(ctx, field, obj)
 				return res
 			})
 		case "status":
@@ -11409,6 +13170,11 @@ func (ec *executionContext) _Location(ctx context.Context, sel ast.SelectionSet,
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Location")
+		case "id":
+			out.Values[i] = ec._Location_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "uid":
 			out.Values[i] = ec._Location_uid(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -11935,6 +13701,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getLocation(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "listLocations":
@@ -11962,6 +13731,31 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_getRate(ctx, field)
 				return res
 			})
+		case "getSession":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getSession(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "getSessionInvoice":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getSessionInvoice(ctx, field)
+				return res
+			})
 		case "getTariff":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -11971,6 +13765,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getTariff(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "__type":
@@ -12087,6 +13884,289 @@ func (ec *executionContext) _Result(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var sessionImplementors = []string{"Session"}
+
+func (ec *executionContext) _Session(ctx context.Context, sel ast.SelectionSet, obj *db.Session) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sessionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Session")
+		case "id":
+			out.Values[i] = ec._Session_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "uid":
+			out.Values[i] = ec._Session_uid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "authorizationId":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_authorizationId(ctx, field, obj)
+				return res
+			})
+		case "startDatetime":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_startDatetime(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "endDatetime":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_endDatetime(ctx, field, obj)
+				return res
+			})
+		case "kwh":
+			out.Values[i] = ec._Session_kwh(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "authMethod":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_authMethod(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "location":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_location(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "evse":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_evse(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "connector":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_connector(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "meterId":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_meterId(ctx, field, obj)
+				return res
+			})
+		case "sessionInvoices":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_sessionInvoices(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "status":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_status(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "lastUpdated":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Session_lastUpdated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var sessionInvoiceImplementors = []string{"SessionInvoice"}
+
+func (ec *executionContext) _SessionInvoice(ctx context.Context, sel ast.SelectionSet, obj *db.SessionInvoice) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sessionInvoiceImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SessionInvoice")
+		case "id":
+			out.Values[i] = ec._SessionInvoice_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "currency":
+			out.Values[i] = ec._SessionInvoice_currency(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "currencyRate":
+			out.Values[i] = ec._SessionInvoice_currencyRate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "currencyRateMsat":
+			out.Values[i] = ec._SessionInvoice_currencyRateMsat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "amountFiat":
+			out.Values[i] = ec._SessionInvoice_amountFiat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "amountMsat":
+			out.Values[i] = ec._SessionInvoice_amountMsat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "commissionFiat":
+			out.Values[i] = ec._SessionInvoice_commissionFiat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "commissionMsat":
+			out.Values[i] = ec._SessionInvoice_commissionMsat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "taxFiat":
+			out.Values[i] = ec._SessionInvoice_taxFiat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "taxMsat":
+			out.Values[i] = ec._SessionInvoice_taxMsat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "paymentRequest":
+			out.Values[i] = ec._SessionInvoice_paymentRequest(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "isSettled":
+			out.Values[i] = ec._SessionInvoice_isSettled(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "isExpired":
+			out.Values[i] = ec._SessionInvoice_isExpired(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "lastUpdated":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SessionInvoice_lastUpdated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12251,6 +14331,11 @@ func (ec *executionContext) _Tariff(ctx context.Context, sel ast.SelectionSet, o
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Tariff")
+		case "id":
+			out.Values[i] = ec._Tariff_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "uid":
 			out.Values[i] = ec._Tariff_uid(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -12804,6 +14889,16 @@ func (ec *executionContext) marshalNConnector2ᚕgithubᚗcomᚋsatimotoᚋgoᚑ
 	return ret
 }
 
+func (ec *executionContext) marshalNConnector2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐConnector(ctx context.Context, sel ast.SelectionSet, v *db.Connector) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Connector(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNCreateAuthentication2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateAuthentication(ctx context.Context, sel ast.SelectionSet, v CreateAuthentication) graphql.Marshaler {
 	return ec._CreateAuthentication(ctx, sel, &v)
 }
@@ -13063,6 +15158,16 @@ func (ec *executionContext) marshalNEvse2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatas
 	return ret
 }
 
+func (ec *executionContext) marshalNEvse2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEvse(ctx context.Context, sel ast.SelectionSet, v *db.Evse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Evse(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNExceptionalPeriod2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐExceptionalPeriod(ctx context.Context, sel ast.SelectionSet, v db.ExceptionalPeriod) graphql.Marshaler {
 	return ec._ExceptionalPeriod(ctx, sel, &v)
 }
@@ -13153,6 +15258,21 @@ func (ec *executionContext) marshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdata
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNGetLocationInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetLocationInput(ctx context.Context, v interface{}) (GetLocationInput, error) {
+	res, err := ec.unmarshalInputGetLocationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNGetSessionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetSessionInput(ctx context.Context, v interface{}) (GetSessionInput, error) {
+	res, err := ec.unmarshalInputGetSessionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNGetTariffInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetTariffInput(ctx context.Context, v interface{}) (GetTariffInput, error) {
+	res, err := ec.unmarshalInputGetTariffInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNID2int64(ctx context.Context, v interface{}) (int64, error) {
@@ -13248,6 +15368,21 @@ func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2int64(ctx context.Context, v interface{}) (int64, error) {
+	res, err := graphql.UnmarshalInt64(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
+	res := graphql.MarshalInt64(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNListLocation2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListLocation(ctx context.Context, sel ast.SelectionSet, v ListLocation) graphql.Marshaler {
 	return ec._ListLocation(ctx, sel, &v)
 }
@@ -13299,6 +15434,20 @@ func (ec *executionContext) marshalNListLocation2ᚕgithubᚗcomᚋsatimotoᚋgo
 func (ec *executionContext) unmarshalNListLocationsInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListLocationsInput(ctx context.Context, v interface{}) (ListLocationsInput, error) {
 	res, err := ec.unmarshalInputListLocationsInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNLocation2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx context.Context, sel ast.SelectionSet, v db.Location) graphql.Marshaler {
+	return ec._Location(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx context.Context, sel ast.SelectionSet, v *db.Location) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Location(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNNode2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐNode(ctx context.Context, sel ast.SelectionSet, v db.Node) graphql.Marshaler {
@@ -13384,6 +15533,68 @@ func (ec *executionContext) marshalNResult2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapi
 		return graphql.Null
 	}
 	return ec._Result(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSession2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSession(ctx context.Context, sel ast.SelectionSet, v db.Session) graphql.Marshaler {
+	return ec._Session(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSession2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSession(ctx context.Context, sel ast.SelectionSet, v *db.Session) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Session(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSessionInvoice2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSessionInvoice(ctx context.Context, sel ast.SelectionSet, v db.SessionInvoice) graphql.Marshaler {
+	return ec._SessionInvoice(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSessionInvoice2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSessionInvoiceᚄ(ctx context.Context, sel ast.SelectionSet, v []db.SessionInvoice) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSessionInvoice2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSessionInvoice(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNStartSession2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐStartSession(ctx context.Context, sel ast.SelectionSet, v StartSession) graphql.Marshaler {
@@ -13485,6 +15696,20 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTariff2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTariff(ctx context.Context, sel ast.SelectionSet, v db.Tariff) graphql.Marshaler {
+	return ec._Tariff(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTariff2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTariff(ctx context.Context, sel ast.SelectionSet, v *db.Tariff) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Tariff(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNTariffElement2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐTariffElement(ctx context.Context, sel ast.SelectionSet, v TariffElement) graphql.Marshaler {
@@ -13973,6 +16198,21 @@ func (ec *executionContext) marshalOGeometry2ᚖgithubᚗcomᚋsatimotoᚋgoᚑd
 	return geom.MarshalGeometry4326(*v)
 }
 
+func (ec *executionContext) unmarshalOID2ᚖint64(ctx context.Context, v interface{}) (*int64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt64(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖint64(ctx context.Context, sel ast.SelectionSet, v *int64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalInt64(*v)
+}
+
 func (ec *executionContext) marshalOImage2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐImage(ctx context.Context, sel ast.SelectionSet, v *db.Image) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -13993,13 +16233,6 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 		return graphql.Null
 	}
 	return graphql.MarshalInt(*v)
-}
-
-func (ec *executionContext) marshalOLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx context.Context, sel ast.SelectionSet, v *db.Location) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Location(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐOpeningTime(ctx context.Context, sel ast.SelectionSet, v *db.OpeningTime) graphql.Marshaler {
@@ -14061,6 +16294,13 @@ func (ec *executionContext) marshalORate2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapi�
 		return graphql.Null
 	}
 	return ec._Rate(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSessionInvoice2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSessionInvoice(ctx context.Context, sel ast.SelectionSet, v *db.SessionInvoice) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SessionInvoice(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

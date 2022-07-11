@@ -12,11 +12,18 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *queryResolver) GetTariff(ctx context.Context, uid string) (*db.Tariff, error) {
+func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInput) (*db.Tariff, error) {
 	if userId := authentication.GetUserId(ctx); userId != nil {
-		if t, err := r.TariffRepository.GetTariffByUid(ctx, uid); err == nil {
-			return &t, nil
+		if input.ID != nil {
+			if t, err := r.TariffRepository.GetTariff(ctx, *input.ID); err == nil {
+				return &t, nil
+			}
+		} else if input.UID != nil {
+			if t, err := r.TariffRepository.GetTariffByUid(ctx, *input.UID); err == nil {
+				return &t, nil
+			}
 		}
+		
 		return nil, gqlerror.Errorf("Tariff not found")
 	}
 
