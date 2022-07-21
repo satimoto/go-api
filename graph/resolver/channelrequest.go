@@ -67,7 +67,7 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 					node = &n
 				}
 			} else {
-				if nodes, err := r.NodeRepository.ListNodes(ctx); err == nil && len(nodes) > 0 {
+				if nodes, err := r.NodeRepository.ListActiveNodes(ctx); err == nil && len(nodes) > 0 {
 					for _, n := range nodes {
 						node = &n
 						break
