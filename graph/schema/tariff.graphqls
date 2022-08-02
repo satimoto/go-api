@@ -2,6 +2,8 @@ type Tariff {
     id: ID!
     uid: String!
     currency: String!
+    currencyRate: Int!
+    currencyRateMsat: Int!
     elements: [TariffElement!]!
     energyMix: EnergyMix
 }
