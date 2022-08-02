@@ -30,6 +30,26 @@ func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInpu
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
+func (r *tariffResolver) CurrencyRate(ctx context.Context, obj *db.Tariff) (int, error) {
+	currencyRate, err := r.FerpService.GetRate(obj.Currency)
+
+	if err != nil {
+		return 0, gqlerror.Errorf("Error retrieving exchange rate")
+	}
+
+	return int(currencyRate.Rate), nil
+}
+
+func (r *tariffResolver) CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (int, error) {
+	currencyRate, err := r.FerpService.GetRate(obj.Currency)
+
+	if err != nil {
+		return 0, gqlerror.Errorf("Error retrieving exchange rate")
+	}
+
+	return int(currencyRate.RateMsat), nil
+}
+
 func (r *tariffResolver) Elements(ctx context.Context, obj *db.Tariff) ([]graph.TariffElement, error) {
 	list := []graph.TariffElement{}
 

@@ -353,11 +353,13 @@ type ComplexityRoot struct {
 	}
 
 	Tariff struct {
-		Currency  func(childComplexity int) int
-		Elements  func(childComplexity int) int
-		EnergyMix func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Uid       func(childComplexity int) int
+		Currency         func(childComplexity int) int
+		CurrencyRate     func(childComplexity int) int
+		CurrencyRateMsat func(childComplexity int) int
+		Elements         func(childComplexity int) int
+		EnergyMix        func(childComplexity int) int
+		ID               func(childComplexity int) int
+		Uid              func(childComplexity int) int
 	}
 
 	TariffElement struct {
@@ -533,6 +535,8 @@ type StatusScheduleResolver interface {
 	Status(ctx context.Context, obj *db.StatusSchedule) (string, error)
 }
 type TariffResolver interface {
+	CurrencyRate(ctx context.Context, obj *db.Tariff) (int, error)
+	CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (int, error)
 	Elements(ctx context.Context, obj *db.Tariff) ([]TariffElement, error)
 	EnergyMix(ctx context.Context, obj *db.Tariff) (*db.EnergyMix, error)
 }
@@ -2005,6 +2009,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tariff.Currency(childComplexity), true
 
+	case "Tariff.currencyRate":
+		if e.complexity.Tariff.CurrencyRate == nil {
+			break
+		}
+
+		return e.complexity.Tariff.CurrencyRate(childComplexity), true
+
+	case "Tariff.currencyRateMsat":
+		if e.complexity.Tariff.CurrencyRateMsat == nil {
+			break
+		}
+
+		return e.complexity.Tariff.CurrencyRateMsat(childComplexity), true
+
 	case "Tariff.elements":
 		if e.complexity.Tariff.Elements == nil {
 			break
@@ -2558,6 +2576,8 @@ extend type Query {
     id: ID!
     uid: String!
     currency: String!
+    currencyRate: Int!
+    currencyRateMsat: Int!
     elements: [TariffElement!]!
     energyMix: EnergyMix
 }
@@ -9883,6 +9903,76 @@ func (ec *executionContext) _Tariff_currency(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Tariff_currencyRate(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tariff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tariff().CurrencyRate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tariff_currencyRateMsat(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tariff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tariff().CurrencyRateMsat(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Tariff_elements(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -14346,6 +14436,34 @@ func (ec *executionContext) _Tariff(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "currencyRate":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tariff_currencyRate(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "currencyRateMsat":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tariff_currencyRateMsat(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "elements":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
