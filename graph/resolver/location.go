@@ -83,7 +83,7 @@ func (r *locationResolver) RelatedLocations(ctx context.Context, obj *db.Locatio
 }
 
 func (r *locationResolver) Evses(ctx context.Context, obj *db.Location) ([]db.Evse, error) {
-	return r.LocationRepository.ListEvses(ctx, obj.ID)
+	return r.LocationRepository.ListActiveEvses(ctx, obj.ID)
 }
 
 func (r *locationResolver) Directions(ctx context.Context, obj *db.Location) ([]db.DisplayText, error) {
