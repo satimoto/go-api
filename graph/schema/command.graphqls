@@ -1,0 +1,27 @@
+type StartSession {
+    id: ID!
+    status: String!
+    authorizationId: String!
+    locationUid: String!
+    evseUid: String
+}
+
+input StartSessionInput {
+    locationUid: String!
+    evseUid: String
+}
+
+type StopSession {
+    id: ID!
+    status: String!
+    sessionUid: String!
+}
+
+input StopSessionInput {
+    sessionUid: String!
+}
+
+extend type Mutation {
+    startSession(input: StartSessionInput!): StartSession!
+    stopSession(input: StopSessionInput!): StopSession!
+}

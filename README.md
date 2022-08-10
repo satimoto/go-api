@@ -15,12 +15,10 @@ gqlgen
 
 ### Run
 ```bash
-go run ./cmd/locald
+go run ./cmd/api
 ```
 
 ## Build
-
-### Run
 ```bash
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags '-s -w' -o bin/main cmd/satimotod/main.go
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags '-s -w' -o bin/main cmd/api/main.go
 ```

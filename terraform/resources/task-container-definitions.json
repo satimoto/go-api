@@ -1,0 +1,79 @@
+[
+  {
+    "image": "${account_id}.dkr.ecr.${region}.amazonaws.com/${service_name}:${image_tag}",
+    "networkMode": "${task_network_mode}",
+    "name": "${service_name}",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/${service_name}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "ecs"
+      }
+    },
+    "portMappings": [
+      {
+        "protocol": "tcp",
+        "containerPort": ${service_container_port}
+      }
+    ],
+    "dockerLabels": {
+      "PROMETHEUS_EXPORTER_PORT": "${env_rest_port}",
+      "PROMETHEUS_EXPORTER_JOB_NAME": "${service_name}"
+    },
+    "environment": [
+      {
+        "name": "API_DOMAIN",
+        "value": "${env_api_domain}"
+      },
+      {
+        "name": "DB_USER",
+        "value": "${env_db_user}"
+      },
+      {
+        "name": "DB_PASS",
+        "value": "${env_db_pass}"
+      },
+      {
+        "name": "DB_HOST",
+        "value": "${env_db_host}"
+      },
+      {
+        "name": "DB_NAME",
+        "value": "${env_db_name}"
+      },
+      {
+        "name": "DEFAULT_COMMISSION_PERCENT",
+        "value": "${env_default_commission_percent}"
+      },
+      {
+        "name": "FERP_RPC_ADDRESS",
+        "value": "${env_ferp_rpc_address}"
+      },
+      {
+        "name": "JWT_SECRET",
+        "value": "${env_jwt_secret}"
+      },
+      {
+        "name": "OCPI_RPC_ADDRESS",
+        "value": "${env_ocpi_rpc_address}"
+      },
+      {
+        "name": "REPLY_TO_EMAIL",
+        "value": "${env_reply_to_email}"
+      },
+      {
+        "name": "REST_PORT",
+        "value": "${env_rest_port}"
+      },
+      {
+        "name": "SHUTDOWN_TIMEOUT",
+        "value": "${env_shutdown_timeout}"
+      },
+      {
+        "name": "WEB_DOMAIN",
+        "value": "${env_web_domain}"
+      }
+    ]
+  }
+]

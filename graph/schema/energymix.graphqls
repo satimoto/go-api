@@ -1,0 +1,7 @@
+type EnergyMix {
+    isGreenEnergy: Boolean!
+    energySources: [EnergySource!]!
+    environmentalImpact: [EnvironmentalImpact!]!
+    supplierName: String
+    energyProductName: String
+}

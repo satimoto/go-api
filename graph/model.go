@@ -6,19 +6,43 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/geom"
 )
+
+type AddtionalGeoLocation struct {
+	Latitude  float64         `json:"latitude"`
+	Longitude float64         `json:"longitude"`
+	Name      *db.DisplayText `json:"name"`
+}
 
 type CreateAuthentication struct {
 	Code  string `json:"code"`
 	LnURL string `json:"lnUrl"`
 }
 
-type CreateAuthenticationInput struct {
-	Code        string `json:"code"`
-	LinkingKey  string `json:"linkingKey"`
-	NodeKey     string `json:"nodeKey"`
-	NodeAddress string `json:"nodeAddress"`
-	DeviceToken string `json:"deviceToken"`
+type CreateBusinessDetailInput struct {
+	Name    string            `json:"name"`
+	Website *string           `json:"website"`
+	Logo    *CreateImageInput `json:"logo"`
+}
+
+type CreateChannelRequestInput struct {
+	// This field must be encoded as base64.
+	PaymentHash string `json:"paymentHash"`
+	// This field must be encoded as base64.
+	PaymentAddr string `json:"paymentAddr"`
+	AmountMsat  string `json:"amountMsat"`
+}
+
+type CreateCredentialInput struct {
+	ClientToken    *string                    `json:"clientToken"`
+	URL            string                     `json:"url"`
+	BusinessDetail *CreateBusinessDetailInput `json:"businessDetail"`
+	CountryCode    string                     `json:"countryCode"`
+	PartyID        string                     `json:"partyId"`
+	IsHub          bool                       `json:"isHub"`
 }
 
 type CreateEmailSubscriptionInput struct {
@@ -26,15 +50,119 @@ type CreateEmailSubscriptionInput struct {
 	Locale *string `json:"locale"`
 }
 
+type CreateImageInput struct {
+	URL       string  `json:"url"`
+	Thumbnail *string `json:"thumbnail"`
+	Category  string  `json:"category"`
+	Type      string  `json:"type"`
+	Width     *int    `json:"width"`
+	Height    *int    `json:"height"`
+}
+
 type CreateUserInput struct {
 	Code        string `json:"code"`
-	NodeKey     string `json:"nodeKey"`
-	NodeAddress string `json:"nodeAddress"`
+	Pubkey      string `json:"pubkey"`
 	DeviceToken string `json:"deviceToken"`
 }
 
 type ExchangeAuthentication struct {
 	Token string `json:"token"`
+}
+
+type Geolocation struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	Name      *string `json:"name"`
+}
+
+type GetLocationInput struct {
+	ID  *int64  `json:"id"`
+	UID *string `json:"uid"`
+}
+
+type GetSessionInput struct {
+	ID              *int64  `json:"id"`
+	UID             *string `json:"uid"`
+	AuthorizationID *string `json:"authorizationId"`
+}
+
+type GetTariffInput struct {
+	ID  *int64  `json:"id"`
+	UID *string `json:"uid"`
+}
+
+type ListLocation struct {
+	UID             string            `json:"uid"`
+	Name            string            `json:"name"`
+	Geom            geom.Geometry4326 `json:"geom"`
+	AvailableEvses  int               `json:"availableEvses"`
+	TotalEvses      int               `json:"totalEvses"`
+	IsRemoteCapable bool              `json:"isRemoteCapable"`
+	IsRfidCapable   bool              `json:"isRfidCapable"`
+}
+
+type ListLocationsInput struct {
+	XMin       float64 `json:"xMin"`
+	YMin       float64 `json:"yMin"`
+	XMax       float64 `json:"xMax"`
+	YMax       float64 `json:"yMax"`
+	LastUpdate *string `json:"lastUpdate"`
+}
+
+type Rate struct {
+	Rate        string `json:"rate"`
+	RateMsat    string `json:"rateMsat"`
+	LastUpdated string `json:"lastUpdated"`
+}
+
+type RegisterCredentialInput struct {
+	ID          int64   `json:"id"`
+	ClientToken *string `json:"clientToken"`
+}
+
+type Result struct {
+	ID int64 `json:"id"`
+}
+
+type StartSession struct {
+	ID              int64   `json:"id"`
+	Status          string  `json:"status"`
+	AuthorizationID string  `json:"authorizationId"`
+	LocationUID     string  `json:"locationUid"`
+	EvseUID         *string `json:"evseUid"`
+}
+
+type StartSessionInput struct {
+	LocationUID string  `json:"locationUid"`
+	EvseUID     *string `json:"evseUid"`
+}
+
+type StopSession struct {
+	ID         int64  `json:"id"`
+	Status     string `json:"status"`
+	SessionUID string `json:"sessionUid"`
+}
+
+type StopSessionInput struct {
+	SessionUID string `json:"sessionUid"`
+}
+
+type TariffElement struct {
+	PriceComponents []db.PriceComponent    `json:"priceComponents"`
+	Restrictions    *db.ElementRestriction `json:"restrictions"`
+}
+
+type TextDescription struct {
+	Text        string `json:"text"`
+	Description string `json:"description"`
+}
+
+type UnregisterCredentialInput struct {
+	ID int64 `json:"id"`
+}
+
+type UpdateUserInput struct {
+	DeviceToken string `json:"deviceToken"`
 }
 
 type VerifyAuthentication struct {

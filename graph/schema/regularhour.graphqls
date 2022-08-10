@@ -1,0 +1,5 @@
+type RegularHour {
+    weekday: Int!
+    periodBegin: String!
+    periodEnd: String!
+}

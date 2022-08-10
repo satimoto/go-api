@@ -1,0 +1,5 @@
+type Geolocation {
+    latitude: Float!
+    longitude: Float!
+    name: String
+}
