@@ -1,0 +1,4 @@
+type EnergySource {
+    source: String!
+    percentage: Float!
+}

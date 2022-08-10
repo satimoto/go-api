@@ -1,4 +1,4 @@
-*.env
+*.env*
 
 # Binaries for programs and plugins
 *.exe
@@ -16,3 +16,8 @@
 # Dependency directories (remove the comment below to include it)
 vendor/
 bin/
+
+# Terraform
+.terraform
+.terraform.lock*
+*.tfstate.backup

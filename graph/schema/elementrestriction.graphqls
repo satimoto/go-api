@@ -1,0 +1,13 @@
+type ElementRestriction {
+    startTime: String
+    endTime: String
+    startDate: String
+    endDate: String
+    minKwh: Float
+    maxKwh: Float
+    minPower: Float
+    maxPower: Float
+    minDuration: Int
+    maxDuration: Int
+    dayOfWeek: [String!]
+}

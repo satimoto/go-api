@@ -1,0 +1,58 @@
+type ListLocation {
+    uid: String!
+    name: String!
+    geom: Geometry! 
+    availableEvses: Int!
+    totalEvses: Int!
+    isRemoteCapable: Boolean!
+    isRfidCapable: Boolean!
+}
+
+type Location {
+    id: ID!
+    uid: String!
+    type: String!
+    name: String
+    address: String!
+    city: String!
+    postalCode: String!
+    country: String!
+    geom: Geometry!
+    relatedLocations: [AddtionalGeoLocation!]!
+    evses: [Evse!]!
+    availableEvses: Int!
+    totalEvses: Int!
+    isRemoteCapable: Boolean!
+    isRfidCapable: Boolean!
+    directions: [DisplayText!]!
+    operator: BusinessDetail
+    suboperator: BusinessDetail
+    owner: BusinessDetail
+    facilities: [TextDescription!]!
+    timeZone: String
+    openingTime: OpeningTime
+    chargingWhenClosed: Boolean!
+    images: [Image!]!
+    energyMix: EnergyMix
+    lastUpdated: String!
+}
+
+input GetLocationInput {
+    id: ID
+    uid: String
+}
+
+input ListLocationsInput {
+    xMin: Float!
+    yMin: Float!
+    xMax: Float!
+    yMax: Float!
+    lastUpdate: String
+}
+
+extend type Query {
+    getLocation(input: GetLocationInput!): Location!
+    listLocations(input: ListLocationsInput!): [ListLocation!]!
+}
+
+scalar Geometry

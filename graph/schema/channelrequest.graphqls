@@ -1,0 +1,29 @@
+type ChannelRequest {
+    id: ID!
+    """
+    This field is base64 encoded.
+    """
+    paymentHash: String!
+    """
+    This field is base64 encoded.
+    """
+    paymentAddr: String!
+    amountMsat: String!
+    node: Node!
+}
+
+input CreateChannelRequestInput {
+    """
+    This field must be encoded as base64.
+    """
+    paymentHash: String!
+    """
+    This field must be encoded as base64.
+    """
+    paymentAddr: String!
+    amountMsat: String!
+}
+
+extend type Mutation {
+    createChannelRequest(input: CreateChannelRequestInput!): ChannelRequest!
+}

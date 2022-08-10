@@ -1,0 +1,6 @@
+type OpeningTime {
+    regularHours: [RegularHour!]!
+    twentyfourseven: Boolean!
+    exceptionalOpenings: [ExceptionalPeriod!]!
+    exceptionalClosings: [ExceptionalPeriod!]!
+}

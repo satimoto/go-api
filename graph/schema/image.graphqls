@@ -1,0 +1,17 @@
+type Image {
+    url: String!
+    thumbnail: String
+    category: String!
+    type: String!
+    width: Int
+    height: Int
+}
+
+input CreateImageInput {
+    url: String!
+    thumbnail: String
+    category: String!
+    type: String!
+    width: Int
+    height: Int
+}
