@@ -1,0 +1,18 @@
+type Evse {
+    id: ID!
+    uid: String!
+    identifier: String
+    status: String!
+    statusSchedule: [StatusSchedule!]!
+    capabilities: [TextDescription!]! 
+    connectors: [Connector!]!
+    floorLevel: String
+    geom: Geometry
+    isRemoteCapable: Boolean!
+    isRfidCapable: Boolean!
+    physicalReference: String
+    directions: [DisplayText!]!
+    parkingRestrictions: [TextDescription!]!
+    images: [Image!]!
+    lastUpdated: String!
+}

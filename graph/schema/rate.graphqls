@@ -1,0 +1,9 @@
+type Rate {
+    rate: String!
+    rateMsat: String!
+    lastUpdated: String!
+}
+
+extend type Query {
+    getRate(currency: String!): Rate
+}
