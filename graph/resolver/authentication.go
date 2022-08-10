@@ -9,11 +9,11 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
-	"github.com/satimoto/go-api/authentication"
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/lnurl"
-	"github.com/satimoto/go-api/lnurl/auth"
-	"github.com/satimoto/go-datastore/db"
+	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/lnurl"
+	"github.com/satimoto/go-api/internal/lnurl/auth"
+	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -31,7 +31,7 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, action grap
 
 	params := url.Values{}
 	params.Add("k1", authentication.Challenge)
-	params.Add("tag", "login")
+	params.Add("tag", action.String())
 
 	callbackUrl, err := auth.GenerateLnUrl("v1", authentication.Challenge)
 
@@ -59,7 +59,7 @@ func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code stri
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
-	user, err := r.UserResolver.Repository.GetUserByLinkingKey(ctx, auth.LinkingKey.String)
+	user, err := r.UserRepository.GetUserByLinkingPubkey(ctx, auth.LinkingPubkey.String)
 
 	if err != nil {
 		log.Printf("No linked user: %s", err.Error())

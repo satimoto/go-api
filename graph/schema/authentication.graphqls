@@ -18,14 +18,6 @@ type VerifyAuthentication {
     verified: Boolean!
 }
 
-input CreateAuthenticationInput {
-    code: String!
-    linkingKey: String!
-    nodeKey: String!
-    nodeAddress: String!
-    deviceToken: String!
-}
-
 extend type Query {
     verifyAuthentication(code: String!): VerifyAuthentication!
 }

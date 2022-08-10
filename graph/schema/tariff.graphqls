@@ -1,0 +1,18 @@
+type Tariff {
+    id: ID!
+    uid: String!
+    currency: String!
+    currencyRate: Int!
+    currencyRateMsat: Int!
+    elements: [TariffElement!]!
+    energyMix: EnergyMix
+}
+
+input GetTariffInput {
+    id: ID
+    uid: String
+}
+
+extend type Query {
+    getTariff(input: GetTariffInput!): Tariff!
+}

@@ -1,0 +1,5 @@
+type PriceComponent {
+    type: String!
+    price: Float!
+    stepSize: Int!
+}

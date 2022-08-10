@@ -1,0 +1,26 @@
+type Session {
+    id: ID!
+    uid: String!
+    authorizationId: String
+    startDatetime: String!
+    endDatetime: String
+    kwh: Float!
+    authMethod: String!
+    location: Location!
+    evse: Evse!
+    connector: Connector!
+    meterId: String
+    sessionInvoices: [SessionInvoice!]!
+    status: String!
+    lastUpdated: String!
+}
+
+input GetSessionInput {
+    id: ID
+    uid: String
+    authorizationId: String
+}
+
+extend type Query {
+    getSession(input: GetSessionInput!): Session!
+}
