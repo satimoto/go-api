@@ -9,10 +9,11 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
-	"github.com/satimoto/go-datastore/pkg/param"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/param"
 	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -56,6 +57,13 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 
 			if err != nil {
 				return nil, gqlerror.Errorf("Error decoding amountMsat")
+			}
+
+			amount := int64(lnwire.MilliSatoshi(amountMsat).ToSatoshis())
+			channelRequestMaxAmount := int64(util.GetEnvInt32("CHANNEL_REQUEST_MAX_AMOUNT", 200000))
+
+			if amount > channelRequestMaxAmount {
+				return nil, gqlerror.Errorf("Amount exceeds %v limit", channelRequestMaxAmount)
 			}
 
 			// TODO: Improve node selection

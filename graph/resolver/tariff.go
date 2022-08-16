@@ -31,6 +31,7 @@ func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInpu
 }
 
 func (r *tariffResolver) CurrencyRate(ctx context.Context, obj *db.Tariff) (int, error) {
+	// TODO: Apply commission and tax to rate
 	currencyRate, err := r.FerpService.GetRate(obj.Currency)
 
 	if err != nil {
@@ -41,6 +42,7 @@ func (r *tariffResolver) CurrencyRate(ctx context.Context, obj *db.Tariff) (int,
 }
 
 func (r *tariffResolver) CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (int, error) {
+	// TODO: Apply commission and tax to rate
 	currencyRate, err := r.FerpService.GetRate(obj.Currency)
 
 	if err != nil {

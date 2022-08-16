@@ -121,6 +121,7 @@ module "service-api" {
     env_db_pass                    = data.aws_ssm_parameter.satimoto_db_password.value
     env_db_host                    = "${data.terraform_remote_state.infrastructure.outputs.rds_cluster_endpoint}:${data.terraform_remote_state.infrastructure.outputs.rds_cluster_port}"
     env_db_name                    = "satimoto"
+    env_channel_request_max_amount = var.env_channel_request_max_amount
     env_default_commission_percent = var.env_default_commission_percent
     env_ferp_rpc_address           = "ferp.${data.terraform_remote_state.infrastructure.outputs.ecs_service_discovery_namespace_name}:${var.env_ferp_rpc_port}"
     env_jwt_secret                 = data.aws_ssm_parameter.jwt_secret.value
