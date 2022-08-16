@@ -99,6 +99,7 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 				Pubkey:      u.Pubkey,
 				PaymentHash: paymentHashBytes[:],
 				PaymentAddr: paymentAddrBytes,
+				Amount:      amount,
 				AmountMsat:  amountMsat,
 				SettledMsat: 0,
 			})

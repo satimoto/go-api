@@ -13,7 +13,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
-	github.com/satimoto/go-datastore v0.1.2-0.20220802065454-39080d2e53e9
+	github.com/satimoto/go-datastore v0.2.1-0.20220816182736-6c3ecfcf62a7
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.4.0
 )
@@ -44,7 +44,6 @@ require (
 	github.com/lib/pq v1.10.3 // indirect
 	github.com/lightninglabs/gozmq v0.0.0-20191113021534-d20a764486bf // indirect
 	github.com/lightninglabs/neutrino v0.13.0 // indirect
-	github.com/lightningnetwork/lnd v0.14.2-beta.rc1 // indirect
 	github.com/lightningnetwork/lnd/clock v1.1.0 // indirect
 	github.com/lightningnetwork/lnd/queue v1.1.0 // indirect
 	github.com/lightningnetwork/lnd/ticker v1.1.0 // indirect
@@ -63,6 +62,7 @@ require (
 require (
 	github.com/edjumacator/chi-prometheus v0.0.0-20181210190628-e076595e3e86
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/lightningnetwork/lnd v0.14.2-beta.rc1
 	github.com/prometheus/client_golang v1.12.2
 	github.com/satimoto/go-ferp v0.0.0-20220616081646-4cef41ddc35c
 	github.com/satimoto/go-ocpi v0.0.3-0.20220706220813-218dea960d16
