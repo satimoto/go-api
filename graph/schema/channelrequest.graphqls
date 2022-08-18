@@ -10,6 +10,7 @@ type ChannelRequest {
     paymentAddr: String!
     amountMsat: String!
     node: Node!
+    pendingChanId: String!
 }
 
 input CreateChannelRequestInput {
