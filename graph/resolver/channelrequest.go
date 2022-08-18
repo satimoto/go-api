@@ -5,8 +5,10 @@ package resolver
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"log"
+	"math/big"
 	"strconv"
 
 	"github.com/lightningnetwork/lnd/lnwire"
@@ -36,6 +38,13 @@ func (r *channelRequestResolver) Node(ctx context.Context, obj *db.ChannelReques
 	}
 
 	return nil, gqlerror.Errorf("Node not found")
+}
+
+func (r *channelRequestResolver) PendingChanID(ctx context.Context, obj *db.ChannelRequest) (string, error) {
+	bigInt := new(big.Int)
+	bigInt.SetBytes(obj.PendingChanID)
+
+	return bigInt.Text(10), nil
 }
 
 func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
@@ -92,16 +101,19 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 				r.UserRepository.UpdateUser(ctx, userUpdateParams)
 			}
 
+			pendingChanId := r.generatePendingChanId(ctx)
+
 			channelRequest, err := r.ChannelRequestRepository.CreateChannelRequest(ctx, db.CreateChannelRequestParams{
-				UserID:      u.ID,
-				NodeID:      node.ID,
-				Status:      db.ChannelRequestStatusREQUESTED,
-				Pubkey:      u.Pubkey,
-				PaymentHash: paymentHashBytes[:],
-				PaymentAddr: paymentAddrBytes,
-				Amount:      amount,
-				AmountMsat:  amountMsat,
-				SettledMsat: 0,
+				UserID:        u.ID,
+				NodeID:        node.ID,
+				Status:        db.ChannelRequestStatusREQUESTED,
+				Pubkey:        u.Pubkey,
+				PaymentHash:   paymentHashBytes[:],
+				PaymentAddr:   paymentAddrBytes,
+				Amount:        amount,
+				AmountMsat:    amountMsat,
+				SettledMsat:   0,
+				PendingChanID: pendingChanId,
 			})
 
 			if err != nil {
@@ -114,6 +126,18 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 	}
 
 	return nil, gqlerror.Errorf("Not Authenticated")
+}
+
+func (r *mutationResolver) generatePendingChanId(ctx context.Context) []byte {
+	pendingChanId := make([]byte, 32)
+
+	for {
+		if _, err := rand.Read(pendingChanId); err == nil {
+			if _, err := r.ChannelRequestRepository.GetChannelRequestByPendingChanId(ctx, pendingChanId); err != nil {
+				return pendingChanId
+			}
+		}
+	}
 }
 
 // ChannelRequest returns graph.ChannelRequestResolver implementation.
