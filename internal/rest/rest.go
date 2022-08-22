@@ -20,6 +20,7 @@ import (
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/ferp"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/user"
 	"github.com/satimoto/go-datastore/pkg/util"
 )
 
@@ -30,13 +31,17 @@ type Rest interface {
 
 type RestService struct {
 	RepositoryService *db.RepositoryService
+	UserRepository    user.UserRepository
 	FerpService       ferp.Ferp
 	Server            *http.Server
 }
 
 func NewRest(d *sql.DB, ferpService ferp.Ferp) Rest {
+	repositoryService := db.NewRepositoryService(d)
+
 	return &RestService{
-		RepositoryService: db.NewRepositoryService(d),
+		RepositoryService: repositoryService,
+		UserRepository:    user.NewRepository(repositoryService),
 		FerpService:       ferpService,
 	}
 }
