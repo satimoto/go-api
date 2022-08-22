@@ -4,6 +4,10 @@ import (
 	"context"
 	"net/http"
 	"strings"
+
+	"github.com/99designs/gqlgen/graphql"
+	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/user"
 )
 
 func AuthorizationContext() func(http.Handler) http.Handler {
@@ -31,6 +35,26 @@ func GetUserId(ctx context.Context) *int64 {
 
 	if ctxUserId != nil {
 		return ctxUserId.(*int64)
+	}
+
+	return nil
+}
+
+func GetUser(ctx context.Context, r user.UserRepository) *db.User {
+	operationCtx := graphql.GetOperationContext(ctx)
+	ctxUser := operationCtx.Variables["user"]
+
+	if ctxUser != nil {
+		return ctxUser.(*db.User)
+	}
+
+	userId := GetUserId(ctx)
+
+	if userId != nil {
+		if user, err := r.GetUser(ctx, *userId); err == nil {
+			operationCtx.Variables["user"] = &user
+			return &user
+		}
 	}
 
 	return nil

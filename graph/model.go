@@ -87,8 +87,9 @@ type GetSessionInput struct {
 }
 
 type GetTariffInput struct {
-	ID  *int64  `json:"id"`
-	UID *string `json:"uid"`
+	ID      *int64  `json:"id"`
+	UID     *string `json:"uid"`
+	Country *string `json:"country"`
 }
 
 type ListLocation struct {

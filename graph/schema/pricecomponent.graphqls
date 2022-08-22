@@ -1,5 +1,8 @@
 type PriceComponent {
     type: String!
     price: Float!
+    priceMsat: Int!
+    commissionMsat: Int!
+    taxMsat: Int
     stepSize: Int!
 }

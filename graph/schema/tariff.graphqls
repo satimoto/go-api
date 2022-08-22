@@ -4,6 +4,8 @@ type Tariff {
     currency: String!
     currencyRate: Int!
     currencyRateMsat: Int!
+    commissionPercent: Float!
+    taxPercent: Float
     elements: [TariffElement!]!
     energyMix: EnergyMix
 }
@@ -11,6 +13,7 @@ type Tariff {
 input GetTariffInput {
     id: ID
     uid: String
+    country: String
 }
 
 extend type Query {
