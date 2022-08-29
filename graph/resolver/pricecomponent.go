@@ -83,7 +83,7 @@ func (r *Resolver) PriceComponent() graph.PriceComponentResolver {
 type priceComponentResolver struct{ *Resolver }
 
 func (r *priceComponentResolver) calculateCommissionMsat(ctx context.Context, currencyRate *rate.CurrencyRate, obj *db.PriceComponent) (*int, error) {
-	user := authentication.GetUser(ctx, r.Resolver.UserRepository)ç
+	user := authentication.GetUser(ctx, r.Resolver.UserRepository)
 
 	if user == nil {
 		// Error retrieving user
