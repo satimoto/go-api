@@ -5,8 +5,8 @@ package resolver
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/base64"
+	"encoding/binary"
 	"log"
 	"math/big"
 	"strconv"
@@ -17,6 +17,8 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/param"
 	"github.com/satimoto/go-datastore/pkg/util"
+	"github.com/satimoto/go-lsp/lsprpc"
+	"github.com/satimoto/go-lsp/pkg/lsp"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -45,6 +47,24 @@ func (r *channelRequestResolver) PendingChanID(ctx context.Context, obj *db.Chan
 	bigInt.SetBytes(obj.PendingChanID)
 
 	return bigInt.Text(10), nil
+}
+
+func (r *channelRequestResolver) Scid(ctx context.Context, obj *db.ChannelRequest) (string, error) {
+	scid := binary.LittleEndian.Uint64(obj.Scid)
+
+	return strconv.FormatUint(scid, 10), nil
+}
+
+func (r *channelRequestResolver) FeeBaseMsat(ctx context.Context, obj *db.ChannelRequest) (int, error) {
+	return int(obj.FeeBaseMsat), nil
+}
+
+func (r *channelRequestResolver) FeeProportionalMillionths(ctx context.Context, obj *db.ChannelRequest) (int, error) {
+	return int(obj.FeeProportionalMillionths), nil
+}
+
+func (r *channelRequestResolver) CltvExpiryDelta(ctx context.Context, obj *db.ChannelRequest) (int, error) {
+	return int(obj.CltvExpiryDelta), nil
 }
 
 func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
@@ -101,23 +121,48 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 				r.UserRepository.UpdateUser(ctx, userUpdateParams)
 			}
 
-			pendingChanId := r.generatePendingChanId(ctx)
+			lspService := lsp.NewService(node.LspAddr)
 
-			channelRequest, err := r.ChannelRequestRepository.CreateChannelRequest(ctx, db.CreateChannelRequestParams{
-				UserID:        u.ID,
-				NodeID:        node.ID,
-				Status:        db.ChannelRequestStatusREQUESTED,
-				Pubkey:        u.Pubkey,
-				PaymentHash:   paymentHashBytes[:],
-				PaymentAddr:   paymentAddrBytes,
-				Amount:        amount,
-				AmountMsat:    amountMsat,
-				SettledMsat:   0,
-				PendingChanID: pendingChanId,
-			})
+			openChannelRequest := &lsprpc.OpenChannelRequest{
+				Pubkey:     u.Pubkey,
+				Amount:     amount,
+				AmountMsat: amountMsat,
+			}
+
+			openChannelResponse, err := lspService.OpenChannel(ctx, openChannelRequest)
 
 			if err != nil {
-				log.Printf("CreateChannelRequest error: %v", err)
+				util.LogOnError("API009", "Error allocating scid", err)
+				log.Printf("API009: OpenChannelRequest=%#v", openChannelRequest)
+				return nil, gqlerror.Errorf("Error allocating scid")
+			}
+
+			// Convert uint64 into bytes
+			scidBytes := make([]byte, 8)
+			binary.LittleEndian.PutUint64(scidBytes, openChannelResponse.Scid)
+
+			createChannelRequestParams := db.CreateChannelRequestParams{
+				UserID:                    u.ID,
+				NodeID:                    node.ID,
+				Status:                    db.ChannelRequestStatusREQUESTED,
+				Pubkey:                    u.Pubkey,
+				PaymentHash:               paymentHashBytes[:],
+				PaymentAddr:               paymentAddrBytes,
+				Amount:                    amount,
+				AmountMsat:                amountMsat,
+				SettledMsat:               0,
+				PendingChanID:             openChannelResponse.PendingChanId,
+				Scid:                      scidBytes,
+				FeeBaseMsat:               openChannelResponse.FeeBaseMsat,
+				FeeProportionalMillionths: int64(openChannelResponse.FeeProportionalMillionths),
+				CltvExpiryDelta:           int64(openChannelResponse.CltvExpiryDelta),
+			}
+
+			channelRequest, err := r.ChannelRequestRepository.CreateChannelRequest(ctx, createChannelRequestParams)
+
+			if err != nil {
+				util.LogOnError("API010", "Error creating channel request", err)
+				log.Printf("API010: CreateChannelRequestParams=%#v", createChannelRequestParams)
 				return nil, gqlerror.Errorf("Channel request already exists")
 			}
 
@@ -126,18 +171,6 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 	}
 
 	return nil, gqlerror.Errorf("Not Authenticated")
-}
-
-func (r *mutationResolver) generatePendingChanId(ctx context.Context) []byte {
-	pendingChanId := make([]byte, 32)
-
-	for {
-		if _, err := rand.Read(pendingChanId); err == nil {
-			if _, err := r.ChannelRequestRepository.GetChannelRequestByPendingChanId(ctx, pendingChanId); err != nil {
-				return pendingChanId
-			}
-		}
-	}
 }
 
 // ChannelRequest returns graph.ChannelRequestResolver implementation.

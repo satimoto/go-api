@@ -14,6 +14,7 @@ import (
 	"github.com/satimoto/go-api/internal/lnurl"
 	"github.com/satimoto/go-api/internal/lnurl/auth"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -25,7 +26,7 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, action grap
 	})
 
 	if err != nil {
-		log.Printf("Error creating authentication: %s", err.Error())
+		util.LogOnError("API003", "Error creating authentication", err)
 		return nil, gqlerror.Errorf("Error creating authentication")
 	}
 
@@ -36,7 +37,7 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, action grap
 	callbackUrl, err := auth.GenerateLnUrl("v1", authentication.Challenge)
 
 	if err != nil {
-		log.Printf("Error generating LNURL: %s", err.Error())
+		util.LogOnError("API004", "Error generating LNURL", err)
 		return nil, gqlerror.Errorf("Error creating authentication")
 	}
 
@@ -50,26 +51,28 @@ func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code stri
 	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, code)
 
 	if err != nil {
-		log.Printf("Authentication not found: code %s: %s", code, err.Error())
+		util.LogOnError("API005", "Authentication not found", err)
+		log.Printf("API005: Code=%v", code)
 		return nil, gqlerror.Errorf("Authentication not found")
 	}
 
 	if !auth.Signature.Valid {
-		log.Printf("Authentication not yet verified: %s", auth.Challenge)
+		log.Printf("API006: Authentication not yet verified")
+		log.Printf("API006: AuthChallenge=%v", auth.Challenge)
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
 	user, err := r.UserRepository.GetUserByLinkingPubkey(ctx, auth.LinkingPubkey.String)
 
 	if err != nil {
-		log.Printf("No linked user: %s", err.Error())
+		util.LogOnError("API007", "No linked user", err)
 		return nil, gqlerror.Errorf("No linked user")
 	}
 
 	token, err := authentication.SignToken(user)
 
 	if err != nil {
-		log.Printf("Error signing token: %s", err.Error())
+		util.LogOnError("API008", "Error signing token", err)
 		return nil, gqlerror.Errorf("Error signing token")
 	}
 

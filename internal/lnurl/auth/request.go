@@ -17,7 +17,8 @@ func (r *LnUrlAuthResolver) GetLnUrlAuth(rw http.ResponseWriter, request *http.R
 	key := request.URL.Query().Get("key")
 
 	if ok, _ := lnurl.VerifySignature(k1, sig, key); !ok {
-		log.Printf("Error verifying signature: k1: %s sig: %s key: %s", k1, sig, key)
+		log.Printf("API021: Error verifying signature")
+		log.Printf("API021: K1=%v Sig=%v Key=%v", k1, sig, key)
 		render.JSON(rw, request, lnurl.ErrorResponse("Error verifying signature"))
 		return
 	}
@@ -25,7 +26,8 @@ func (r *LnUrlAuthResolver) GetLnUrlAuth(rw http.ResponseWriter, request *http.R
 	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByChallenge(ctx, k1)
 
 	if err != nil {
-		log.Printf("Authentication not found: k1: %s sig: %s key: %s", k1, sig, key)
+		log.Printf("API022: Authentication not found")
+		log.Printf("API022: K1=%v Sig=%v Key=%v", k1, sig, key)
 		render.JSON(rw, request, lnurl.ErrorResponse("Error verifying signature"))
 		return
 	}
