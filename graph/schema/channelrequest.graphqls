@@ -11,6 +11,10 @@ type ChannelRequest {
     amountMsat: String!
     node: Node!
     pendingChanId: String!
+    scid: String!
+    feeBaseMsat: Int!
+    feeProportionalMillionths: Int!
+    cltvExpiryDelta: Int!
 }
 
 input CreateChannelRequestInput {
