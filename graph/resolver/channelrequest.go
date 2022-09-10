@@ -16,9 +16,10 @@ import (
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/param"
-	"github.com/satimoto/go-datastore/pkg/util"
+	dbUtil "github.com/satimoto/go-datastore/pkg/util"
 	"github.com/satimoto/go-lsp/lsprpc"
 	"github.com/satimoto/go-lsp/pkg/lsp"
+	"github.com/satimoto/go-lsp/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -89,7 +90,7 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 			}
 
 			amount := int64(lnwire.MilliSatoshi(amountMsat).ToSatoshis())
-			channelRequestMaxAmount := int64(util.GetEnvInt32("CHANNEL_REQUEST_MAX_AMOUNT", 200000))
+			channelRequestMaxAmount := int64(dbUtil.GetEnvInt32("CHANNEL_REQUEST_MAX_AMOUNT", 200000))
 
 			if amount > channelRequestMaxAmount {
 				return nil, gqlerror.Errorf("Amount exceeds %v limit", channelRequestMaxAmount)
@@ -116,7 +117,7 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 				return nil, gqlerror.Errorf("No node available")
 			} else if !u.NodeID.Valid || u.NodeID.Int64 != node.ID {
 				userUpdateParams := param.NewUpdateUserParams(u)
-				userUpdateParams.NodeID = util.SqlNullInt64(node.ID)
+				userUpdateParams.NodeID = dbUtil.SqlNullInt64(node.ID)
 
 				r.UserRepository.UpdateUser(ctx, userUpdateParams)
 			}
@@ -132,14 +133,12 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 			openChannelResponse, err := lspService.OpenChannel(ctx, openChannelRequest)
 
 			if err != nil {
-				util.LogOnError("API009", "Error allocating scid", err)
+				dbUtil.LogOnError("API009", "Error allocating scid", err)
 				log.Printf("API009: OpenChannelRequest=%#v", openChannelRequest)
-				return nil, gqlerror.Errorf("Error allocating scid")
+				return nil, gqlerror.Errorf("Error requesting payment channel")
 			}
 
-			// Convert uint64 into bytes
-			scidBytes := make([]byte, 8)
-			binary.LittleEndian.PutUint64(scidBytes, openChannelResponse.Scid)
+			scidBytes := util.Uint64ToBytes(openChannelResponse.Scid)
 
 			createChannelRequestParams := db.CreateChannelRequestParams{
 				UserID:                    u.ID,
@@ -161,7 +160,7 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 			channelRequest, err := r.ChannelRequestRepository.CreateChannelRequest(ctx, createChannelRequestParams)
 
 			if err != nil {
-				util.LogOnError("API010", "Error creating channel request", err)
+				dbUtil.LogOnError("API010", "Error creating channel request", err)
 				log.Printf("API010: CreateChannelRequestParams=%#v", createChannelRequestParams)
 				return nil, gqlerror.Errorf("Channel request already exists")
 			}

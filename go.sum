@@ -647,6 +647,8 @@ github.com/satimoto/go-lsp v0.1.1-0.20220908195954-f81b0c6a2c31 h1:qm/yJ4sCgHdRc
 github.com/satimoto/go-lsp v0.1.1-0.20220908195954-f81b0c6a2c31/go.mod h1:X/AXpdjor29h7A1C9cVkJzfsJSuHX+NmmyVeFsiE8QI=
 github.com/satimoto/go-lsp v0.1.1-0.20220909113519-7f771fea0fb2 h1:nYhsXoUWDQP6rj9CfZGvt8jMpdGr71RnVmkfTX4UX5w=
 github.com/satimoto/go-lsp v0.1.1-0.20220909113519-7f771fea0fb2/go.mod h1:tit5pUnRQ+7QvuoBr0TwM+K7zvLYgF4SWJdPlLmWju4=
+github.com/satimoto/go-lsp v0.1.1-0.20220910190547-fc41f26e7e1e h1:yhB6lYOZvHngZjXkETjy33PzUwIrCdC6IE1j9oL8p2A=
+github.com/satimoto/go-lsp v0.1.1-0.20220910190547-fc41f26e7e1e/go.mod h1:tit5pUnRQ+7QvuoBr0TwM+K7zvLYgF4SWJdPlLmWju4=
 github.com/satimoto/go-ocpi v0.0.3-0.20220718065459-d1352ae31bf1 h1:4RsDh1SvctTf9VoDuY63ZUdn3S+MwX7wjFiVN8lFlm0=
 github.com/satimoto/go-ocpi v0.0.3-0.20220718065459-d1352ae31bf1/go.mod h1:sXxH0RJgoZK8kNCOPkm3sUri5diFfx7/468f5dluC9s=
 github.com/satori/go.uuid v1.2.0/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdhQKdks0=

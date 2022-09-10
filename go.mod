@@ -62,7 +62,7 @@ require (
 	github.com/lightningnetwork/lnd v0.15.1-beta.rc2
 	github.com/prometheus/client_golang v1.12.2
 	github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f
-	github.com/satimoto/go-lsp v0.1.1-0.20220909113519-7f771fea0fb2
+	github.com/satimoto/go-lsp v0.1.1-0.20220910190547-fc41f26e7e1e
 	github.com/satimoto/go-ocpi v0.0.3-0.20220718065459-d1352ae31bf1
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect
