@@ -20,6 +20,7 @@ import (
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/ferp"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/user"
 	"github.com/satimoto/go-datastore/pkg/util"
 )
 
@@ -30,13 +31,17 @@ type Rest interface {
 
 type RestService struct {
 	RepositoryService *db.RepositoryService
+	UserRepository    user.UserRepository
 	FerpService       ferp.Ferp
 	Server            *http.Server
 }
 
 func NewRest(d *sql.DB, ferpService ferp.Ferp) Rest {
+	repositoryService := db.NewRepositoryService(d)
+
 	return &RestService{
-		RepositoryService: db.NewRepositoryService(d),
+		RepositoryService: repositoryService,
+		UserRepository:    user.NewRepository(repositoryService),
 		FerpService:       ferpService,
 	}
 }
@@ -92,7 +97,7 @@ func (rs *RestService) listenAndServe() {
 	err := rs.Server.ListenAndServe()
 
 	if err != nil && err != http.ErrServerClosed {
-		log.Printf("Error in Rest service: %v", err)
+		util.LogOnError("API023", "Error in Rest service", err)
 	}
 }
 
@@ -104,6 +109,6 @@ func (rs *RestService) shutdown() {
 	err := rs.Server.Shutdown(ctx)
 
 	if err != nil {
-		log.Printf("Error shutting down Rest service: %v", err)
+		util.LogOnError("API024", "Error shutting down Rest service", err)
 	}
 }

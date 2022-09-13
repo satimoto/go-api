@@ -74,6 +74,10 @@ variable "subdomain_name" {
   description = "The subdomain name of the service"
 }
 
+variable "env_channel_request_max_amount" {
+  description = "The maximum channel size in satoshis for a channel request"
+}
+
 variable "env_default_commission_percent" {
   description = "The environment variable to set the default commission percent"
 }

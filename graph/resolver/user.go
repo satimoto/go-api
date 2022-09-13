@@ -19,12 +19,14 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, input.Code)
 
 	if err != nil {
-		log.Printf("Authentication not found: code %s: %s", input.Code, err.Error())
+		util.LogOnError("API016", "Authentication not found", err)
+		log.Printf("API016: Code=%v", input.Code)
 		return nil, gqlerror.Errorf("Authentication not found")
 	}
 
 	if !auth.Signature.Valid {
-		log.Printf("Authentication not yet verified: %s", auth.Challenge)
+		log.Printf("API017: Authentication not yet verified")
+		log.Printf("API017: Challenge=%v", auth.Challenge)
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
@@ -36,7 +38,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 	})
 
 	if err != nil {
-		log.Printf("User already exists: %s", err.Error())
+		util.LogOnError("API018", "User already exists", err)
 		return nil, gqlerror.Errorf("User already exists")
 	}
 
@@ -54,7 +56,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 		u, err := r.UserRepository.GetUser(ctx, *userId)
 
 		if err != nil {
-			log.Printf("Error updating user: %s", err.Error())
+			util.LogOnError("API019", "Error retrieving user", err)
 			return nil, gqlerror.Errorf("Error updating user")
 		}
 
@@ -64,7 +66,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 		u, err = r.UserRepository.UpdateUser(ctx, updateUserParams)
 
 		if err != nil {
-			log.Printf("Error updating user: %s", err.Error())
+			util.LogOnError("API020", "Error updating user", err)
 			return nil, gqlerror.Errorf("Error updating user")
 		}
 

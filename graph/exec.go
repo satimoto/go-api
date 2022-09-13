@@ -76,11 +76,16 @@ type ComplexityRoot struct {
 	}
 
 	ChannelRequest struct {
-		AmountMsat  func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Node        func(childComplexity int) int
-		PaymentAddr func(childComplexity int) int
-		PaymentHash func(childComplexity int) int
+		AmountMsat                func(childComplexity int) int
+		CltvExpiryDelta           func(childComplexity int) int
+		FeeBaseMsat               func(childComplexity int) int
+		FeeProportionalMillionths func(childComplexity int) int
+		ID                        func(childComplexity int) int
+		Node                      func(childComplexity int) int
+		PaymentAddr               func(childComplexity int) int
+		PaymentHash               func(childComplexity int) int
+		PendingChanID             func(childComplexity int) int
+		Scid                      func(childComplexity int) int
 	}
 
 	Connector struct {
@@ -267,9 +272,12 @@ type ComplexityRoot struct {
 	}
 
 	PriceComponent struct {
-		Price    func(childComplexity int) int
-		StepSize func(childComplexity int) int
-		Type     func(childComplexity int) int
+		CommissionMsat func(childComplexity int) int
+		Price          func(childComplexity int) int
+		PriceMsat      func(childComplexity int) int
+		StepSize       func(childComplexity int) int
+		TaxMsat        func(childComplexity int) int
+		Type           func(childComplexity int) int
 	}
 
 	Query struct {
@@ -353,13 +361,15 @@ type ComplexityRoot struct {
 	}
 
 	Tariff struct {
-		Currency         func(childComplexity int) int
-		CurrencyRate     func(childComplexity int) int
-		CurrencyRateMsat func(childComplexity int) int
-		Elements         func(childComplexity int) int
-		EnergyMix        func(childComplexity int) int
-		ID               func(childComplexity int) int
-		Uid              func(childComplexity int) int
+		CommissionPercent func(childComplexity int) int
+		Currency          func(childComplexity int) int
+		CurrencyRate      func(childComplexity int) int
+		CurrencyRateMsat  func(childComplexity int) int
+		Elements          func(childComplexity int) int
+		EnergyMix         func(childComplexity int) int
+		ID                func(childComplexity int) int
+		TaxPercent        func(childComplexity int) int
+		Uid               func(childComplexity int) int
 	}
 
 	TariffElement struct {
@@ -392,6 +402,11 @@ type ChannelRequestResolver interface {
 	PaymentAddr(ctx context.Context, obj *db.ChannelRequest) (string, error)
 	AmountMsat(ctx context.Context, obj *db.ChannelRequest) (string, error)
 	Node(ctx context.Context, obj *db.ChannelRequest) (*db.Node, error)
+	PendingChanID(ctx context.Context, obj *db.ChannelRequest) (string, error)
+	Scid(ctx context.Context, obj *db.ChannelRequest) (string, error)
+	FeeBaseMsat(ctx context.Context, obj *db.ChannelRequest) (int, error)
+	FeeProportionalMillionths(ctx context.Context, obj *db.ChannelRequest) (int, error)
+	CltvExpiryDelta(ctx context.Context, obj *db.ChannelRequest) (int, error)
 }
 type ConnectorResolver interface {
 	Identifier(ctx context.Context, obj *db.Connector) (*string, error)
@@ -499,6 +514,10 @@ type OpeningTimeResolver interface {
 }
 type PriceComponentResolver interface {
 	Type(ctx context.Context, obj *db.PriceComponent) (string, error)
+
+	PriceMsat(ctx context.Context, obj *db.PriceComponent) (int, error)
+	CommissionMsat(ctx context.Context, obj *db.PriceComponent) (int, error)
+	TaxMsat(ctx context.Context, obj *db.PriceComponent) (*int, error)
 }
 type QueryResolver interface {
 	VerifyAuthentication(ctx context.Context, code string) (*VerifyAuthentication, error)
@@ -537,6 +556,8 @@ type StatusScheduleResolver interface {
 type TariffResolver interface {
 	CurrencyRate(ctx context.Context, obj *db.Tariff) (int, error)
 	CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (int, error)
+	CommissionPercent(ctx context.Context, obj *db.Tariff) (float64, error)
+	TaxPercent(ctx context.Context, obj *db.Tariff) (*float64, error)
 	Elements(ctx context.Context, obj *db.Tariff) ([]TariffElement, error)
 	EnergyMix(ctx context.Context, obj *db.Tariff) (*db.EnergyMix, error)
 }
@@ -605,6 +626,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ChannelRequest.AmountMsat(childComplexity), true
 
+	case "ChannelRequest.cltvExpiryDelta":
+		if e.complexity.ChannelRequest.CltvExpiryDelta == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.CltvExpiryDelta(childComplexity), true
+
+	case "ChannelRequest.feeBaseMsat":
+		if e.complexity.ChannelRequest.FeeBaseMsat == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.FeeBaseMsat(childComplexity), true
+
+	case "ChannelRequest.feeProportionalMillionths":
+		if e.complexity.ChannelRequest.FeeProportionalMillionths == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.FeeProportionalMillionths(childComplexity), true
+
 	case "ChannelRequest.id":
 		if e.complexity.ChannelRequest.ID == nil {
 			break
@@ -632,6 +674,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ChannelRequest.PaymentHash(childComplexity), true
+
+	case "ChannelRequest.pendingChanId":
+		if e.complexity.ChannelRequest.PendingChanID == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.PendingChanID(childComplexity), true
+
+	case "ChannelRequest.scid":
+		if e.complexity.ChannelRequest.Scid == nil {
+			break
+		}
+
+		return e.complexity.ChannelRequest.Scid(childComplexity), true
 
 	case "Connector.amperage":
 		if e.complexity.Connector.Amperage == nil {
@@ -1575,6 +1631,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OpeningTime.Twentyfourseven(childComplexity), true
 
+	case "PriceComponent.commissionMsat":
+		if e.complexity.PriceComponent.CommissionMsat == nil {
+			break
+		}
+
+		return e.complexity.PriceComponent.CommissionMsat(childComplexity), true
+
 	case "PriceComponent.price":
 		if e.complexity.PriceComponent.Price == nil {
 			break
@@ -1582,12 +1645,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PriceComponent.Price(childComplexity), true
 
+	case "PriceComponent.priceMsat":
+		if e.complexity.PriceComponent.PriceMsat == nil {
+			break
+		}
+
+		return e.complexity.PriceComponent.PriceMsat(childComplexity), true
+
 	case "PriceComponent.stepSize":
 		if e.complexity.PriceComponent.StepSize == nil {
 			break
 		}
 
 		return e.complexity.PriceComponent.StepSize(childComplexity), true
+
+	case "PriceComponent.taxMsat":
+		if e.complexity.PriceComponent.TaxMsat == nil {
+			break
+		}
+
+		return e.complexity.PriceComponent.TaxMsat(childComplexity), true
 
 	case "PriceComponent.type":
 		if e.complexity.PriceComponent.Type == nil {
@@ -2002,6 +2079,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StopSession.Status(childComplexity), true
 
+	case "Tariff.commissionPercent":
+		if e.complexity.Tariff.CommissionPercent == nil {
+			break
+		}
+
+		return e.complexity.Tariff.CommissionPercent(childComplexity), true
+
 	case "Tariff.currency":
 		if e.complexity.Tariff.Currency == nil {
 			break
@@ -2043,6 +2127,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tariff.ID(childComplexity), true
+
+	case "Tariff.taxPercent":
+		if e.complexity.Tariff.TaxPercent == nil {
+			break
+		}
+
+		return e.complexity.Tariff.TaxPercent(childComplexity), true
 
 	case "Tariff.uid":
 		if e.complexity.Tariff.Uid == nil {
@@ -2229,6 +2320,11 @@ input CreateBusinessDetailInput {
     paymentAddr: String!
     amountMsat: String!
     node: Node!
+    pendingChanId: String!
+    scid: String!
+    feeBaseMsat: Int!
+    feeProportionalMillionths: Int!
+    cltvExpiryDelta: Int!
 }
 
 input CreateChannelRequestInput {
@@ -2500,6 +2596,9 @@ scalar Geometry`, BuiltIn: false},
 	{Name: "graph/schema/pricecomponent.graphqls", Input: `type PriceComponent {
     type: String!
     price: Float!
+    priceMsat: Int!
+    commissionMsat: Int!
+    taxMsat: Int
     stepSize: Int!
 }`, BuiltIn: false},
 	{Name: "graph/schema/rate.graphqls", Input: `type Rate {
@@ -2578,6 +2677,8 @@ extend type Query {
     currency: String!
     currencyRate: Int!
     currencyRateMsat: Int!
+    commissionPercent: Float!
+    taxPercent: Float
     elements: [TariffElement!]!
     energyMix: EnergyMix
 }
@@ -2585,6 +2686,7 @@ extend type Query {
 input GetTariffInput {
     id: ID
     uid: String
+    country: String
 }
 
 extend type Query {
@@ -3339,6 +3441,181 @@ func (ec *executionContext) _ChannelRequest_node(ctx context.Context, field grap
 	res := resTmp.(*db.Node)
 	fc.Result = res
 	return ec.marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐNode(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelRequest_pendingChanId(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ChannelRequest().PendingChanID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelRequest_scid(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ChannelRequest().Scid(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelRequest_feeBaseMsat(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ChannelRequest().FeeBaseMsat(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelRequest_feeProportionalMillionths(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ChannelRequest().FeeProportionalMillionths(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChannelRequest_cltvExpiryDelta(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ChannelRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ChannelRequest().CltvExpiryDelta(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Connector_id(ctx context.Context, field graphql.CollectedField, obj *db.Connector) (ret graphql.Marshaler) {
@@ -7809,6 +8086,108 @@ func (ec *executionContext) _PriceComponent_price(ctx context.Context, field gra
 	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _PriceComponent_priceMsat(ctx context.Context, field graphql.CollectedField, obj *db.PriceComponent) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PriceComponent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PriceComponent().PriceMsat(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PriceComponent_commissionMsat(ctx context.Context, field graphql.CollectedField, obj *db.PriceComponent) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PriceComponent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PriceComponent().CommissionMsat(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PriceComponent_taxMsat(ctx context.Context, field graphql.CollectedField, obj *db.PriceComponent) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PriceComponent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PriceComponent().TaxMsat(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PriceComponent_stepSize(ctx context.Context, field graphql.CollectedField, obj *db.PriceComponent) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -9973,6 +10352,73 @@ func (ec *executionContext) _Tariff_currencyRateMsat(ctx context.Context, field 
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Tariff_commissionPercent(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tariff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tariff().CommissionPercent(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tariff_taxPercent(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tariff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tariff().TaxPercent(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Tariff_elements(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11805,6 +12251,14 @@ func (ec *executionContext) unmarshalInputGetTariffInput(ctx context.Context, ob
 			if err != nil {
 				return it, err
 			}
+		case "country":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("country"))
+			it.Country, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -12186,6 +12640,76 @@ func (ec *executionContext) _ChannelRequest(ctx context.Context, sel ast.Selecti
 					}
 				}()
 				res = ec._ChannelRequest_node(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "pendingChanId":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelRequest_pendingChanId(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "scid":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelRequest_scid(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "feeBaseMsat":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelRequest_feeBaseMsat(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "feeProportionalMillionths":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelRequest_feeProportionalMillionths(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "cltvExpiryDelta":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelRequest_cltvExpiryDelta(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -13737,6 +14261,45 @@ func (ec *executionContext) _PriceComponent(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "priceMsat":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PriceComponent_priceMsat(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "commissionMsat":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PriceComponent_commissionMsat(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "taxMsat":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PriceComponent_taxMsat(ctx, field, obj)
+				return res
+			})
 		case "stepSize":
 			out.Values[i] = ec._PriceComponent_stepSize(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -14462,6 +15025,31 @@ func (ec *executionContext) _Tariff(ctx context.Context, sel ast.SelectionSet, o
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
+				return res
+			})
+		case "commissionPercent":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tariff_commissionPercent(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "taxPercent":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tariff_taxPercent(ctx, field, obj)
 				return res
 			})
 		case "elements":

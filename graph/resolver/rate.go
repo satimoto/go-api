@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/satimoto/go-api/graph"
+	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -17,7 +18,8 @@ func (r *queryResolver) GetRate(ctx context.Context, currency string) (*graph.Ra
 	currencyRate, err := r.FerpService.GetRate(currency)
 
 	if err != nil {
-		log.Printf("Error retrieving rate: %s", err.Error())
+		util.LogOnError("API015", "Error retrieving rate", err)
+		log.Printf("API015: Currency=%v", currency)
 		return nil, gqlerror.Errorf("Error retrieving rate")
 	}
 
