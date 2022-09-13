@@ -5,13 +5,13 @@ package resolver
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/credential"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -21,9 +21,9 @@ func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.Cre
 		credentialResponse, err := r.OcpiService.CreateCredential(ctx, credentialRequest)
 
 		if err != nil {
-			log.Printf("Error CreateCredential CreateCredential: %v", err)
-			log.Printf("%#v", credentialRequest)
-			return nil, errors.New("Error creating credential")
+			util.LogOnError("API012", "Error creating credential", err)
+			log.Printf("API012: CreateCredentialRequest=%#v", credentialRequest)
+			return nil, gqlerror.Errorf("Error creating credential")
 		}
 
 		return credential.NewCreateCredential(*credentialResponse), nil
@@ -38,9 +38,9 @@ func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.R
 		credentialResponse, err := r.OcpiService.RegisterCredential(ctx, credentialRequest)
 
 		if err != nil {
-			log.Printf("Error RegisterCredential RegisterCredential: %v", err)
-			log.Printf("%#v", credentialRequest)
-			return nil, errors.New("Error registering credential")
+			util.LogOnError("API013", "Error registering credential", err)
+			log.Printf("API013: RegisterCredentialRequest=%#v", credentialRequest)
+			return nil, gqlerror.Errorf("Error registering credential")
 		}
 
 		return &graph.Result{ID: credentialResponse.Id}, nil
@@ -55,9 +55,9 @@ func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph
 		credentialResponse, err := r.OcpiService.UnregisterCredential(ctx, credentialRequest)
 
 		if err != nil {
-			log.Printf("Error UnregisterCredential UnregisterCredential: %v", err)
-			log.Printf("%#v", credentialRequest)
-			return nil, errors.New("Error unregistering credential")
+			util.LogOnError("API014", "Error unregistering credential", err)
+			log.Printf("API014: UnregisterCredentialRequest=%#v", credentialRequest)
+			return nil, gqlerror.Errorf("Error unregistering credential")
 		}
 
 		return &graph.Result{ID: credentialResponse.Id}, nil

@@ -1,10 +1,13 @@
 package resolver
 
 import (
+	"context"
 	"os"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/aws/email"
+	"github.com/satimoto/go-api/internal/countryaccount"
 	"github.com/satimoto/go-api/internal/ferp"
 	"github.com/satimoto/go-api/internal/token"
 	"github.com/satimoto/go-datastore/pkg/businessdetail"
@@ -21,7 +24,9 @@ import (
 	"github.com/satimoto/go-datastore/pkg/session"
 	"github.com/satimoto/go-datastore/pkg/tariff"
 	"github.com/satimoto/go-datastore/pkg/user"
+	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/satimoto/go-ocpi/pkg/ocpi"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // This file will not be regenerated automatically.
@@ -38,6 +43,7 @@ type Resolver struct {
 	AuthenticationResolver      *authentication.AuthenticationResolver
 	BusinessDetailRepository    businessdetail.BusinessDetailRepository
 	ChannelRequestRepository    channelrequest.ChannelRequestRepository
+	CountryAccountResolver      *countryaccount.CountryAccountResolver
 	DisplayTextRepository       displaytext.DisplayTextRepository
 	EmailSubscriptionRepository emailsubscription.EmailSubscriptionRepository
 	EnergyMixRepository         energymix.EnergyMixRepository
@@ -50,6 +56,7 @@ type Resolver struct {
 	TariffRepository            tariff.TariffRepository
 	TokenResolver               *token.TokenResolver
 	UserRepository              user.UserRepository
+	defaultTaxPercent           float64
 }
 
 func NewResolver(repositoryService *db.RepositoryService) *Resolver {
@@ -62,6 +69,7 @@ func NewResolver(repositoryService *db.RepositoryService) *Resolver {
 func NewResolverWithServices(repositoryService *db.RepositoryService, ferpService ferp.Ferp, ocpiService ocpi.Ocpi) *Resolver {
 	repo := Repository(repositoryService)
 	emailer := email.New(os.Getenv("REPLY_TO_EMAIL"))
+	defaultTaxPercent := util.GetEnvFloat64("DEFAULT_TAX_PERCENT", 19)
 
 	return &Resolver{
 		Repository:                  repo,
@@ -71,6 +79,7 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 		AuthenticationResolver:      authentication.NewResolver(repositoryService),
 		BusinessDetailRepository:    businessdetail.NewRepository(repositoryService),
 		ChannelRequestRepository:    channelrequest.NewRepository(repositoryService),
+		CountryAccountResolver:      countryaccount.NewResolver(repositoryService),
 		DisplayTextRepository:       displaytext.NewRepository(repositoryService),
 		EmailSubscriptionRepository: emailsubscription.NewRepository(repositoryService),
 		EnergyMixRepository:         energymix.NewRepository(repositoryService),
@@ -83,5 +92,23 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 		TariffRepository:            tariff.NewRepository(repositoryService),
 		TokenResolver:               token.NewResolver(repositoryService),
 		UserRepository:              user.NewRepository(repositoryService),
+		defaultTaxPercent:           defaultTaxPercent,
 	}
+}
+
+func (r *Resolver) calculateTaxPercent(ctx context.Context) (*float64, error) {
+	operationCtx := graphql.GetOperationContext(ctx)
+	input := operationCtx.Variables["input"]
+
+	if input != nil {
+		inputVariables := input.(map[string]interface{})
+
+		if country, ok := inputVariables["country"]; ok {
+			taxPercent := r.CountryAccountResolver.GetTaxPercentByCountry(ctx, country.(string), r.defaultTaxPercent)
+
+			return &taxPercent, nil
+		}
+	}
+
+	return nil, gqlerror.Errorf("Error retrieving tax by country")
 }

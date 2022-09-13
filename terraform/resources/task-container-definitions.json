@@ -43,6 +43,10 @@
         "value": "${env_db_name}"
       },
       {
+        "name": "CHANNEL_REQUEST_MAX_AMOUNT",
+        "value": "${env_channel_request_max_amount}"
+      },
+      {
         "name": "DEFAULT_COMMISSION_PERCENT",
         "value": "${env_default_commission_percent}"
       },

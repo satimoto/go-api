@@ -36,6 +36,8 @@ target_health_matcher = "200"
 
 subdomain_name = "api"
 
+env_channel_request_max_amount = 450000
+
 env_default_commission_percent = 7
 
 env_ferp_rpc_port = 50000

@@ -23,7 +23,7 @@ func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInpu
 				return &t, nil
 			}
 		}
-		
+
 		return nil, gqlerror.Errorf("Tariff not found")
 	}
 
@@ -48,6 +48,26 @@ func (r *tariffResolver) CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (
 	}
 
 	return int(currencyRate.RateMsat), nil
+}
+
+func (r *tariffResolver) CommissionPercent(ctx context.Context, obj *db.Tariff) (float64, error) {
+	user := authentication.GetUser(ctx, r.UserRepository)
+
+	if user == nil {
+		return 0, gqlerror.Errorf("Error retrieving user commission")
+	}
+
+	return user.CommissionPercent, nil
+}
+
+func (r *tariffResolver) TaxPercent(ctx context.Context, obj *db.Tariff) (*float64, error) {
+	taxPercent, err := r.calculateTaxPercent(ctx)
+
+	if err != nil {
+		return nil, nil
+	}
+
+	return taxPercent, nil
 }
 
 func (r *tariffResolver) Elements(ctx context.Context, obj *db.Tariff) ([]graph.TariffElement, error) {
@@ -85,9 +105,6 @@ func (r *tariffResolver) EnergyMix(ctx context.Context, obj *db.Tariff) (*db.Ene
 }
 
 // Tariff returns graph.TariffResolver implementation.
-func (r *Resolver) Tariff() graph.TariffResolver {
-	return &tariffResolver{r}
-}
+func (r *Resolver) Tariff() graph.TariffResolver { return &tariffResolver{r} }
 
 type tariffResolver struct{ *Resolver }
-
