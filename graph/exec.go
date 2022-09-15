@@ -404,9 +404,6 @@ type ChannelRequestResolver interface {
 	Node(ctx context.Context, obj *db.ChannelRequest) (*db.Node, error)
 	PendingChanID(ctx context.Context, obj *db.ChannelRequest) (string, error)
 	Scid(ctx context.Context, obj *db.ChannelRequest) (string, error)
-	FeeBaseMsat(ctx context.Context, obj *db.ChannelRequest) (int, error)
-	FeeProportionalMillionths(ctx context.Context, obj *db.ChannelRequest) (int, error)
-	CltvExpiryDelta(ctx context.Context, obj *db.ChannelRequest) (int, error)
 }
 type ConnectorResolver interface {
 	Identifier(ctx context.Context, obj *db.Connector) (*string, error)
@@ -2571,7 +2568,7 @@ input ListLocationsInput {
     yMin: Float!
     xMax: Float!
     yMax: Float!
-    lastUpdate: String
+    interval: Int
 }
 
 extend type Query {
@@ -3524,14 +3521,14 @@ func (ec *executionContext) _ChannelRequest_feeBaseMsat(ctx context.Context, fie
 		Object:     "ChannelRequest",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ChannelRequest().FeeBaseMsat(rctx, obj)
+		return obj.FeeBaseMsat, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3543,9 +3540,9 @@ func (ec *executionContext) _ChannelRequest_feeBaseMsat(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ChannelRequest_feeProportionalMillionths(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
@@ -3559,14 +3556,14 @@ func (ec *executionContext) _ChannelRequest_feeProportionalMillionths(ctx contex
 		Object:     "ChannelRequest",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ChannelRequest().FeeProportionalMillionths(rctx, obj)
+		return obj.FeeProportionalMillionths, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3578,9 +3575,9 @@ func (ec *executionContext) _ChannelRequest_feeProportionalMillionths(ctx contex
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ChannelRequest_cltvExpiryDelta(ctx context.Context, field graphql.CollectedField, obj *db.ChannelRequest) (ret graphql.Marshaler) {
@@ -3594,14 +3591,14 @@ func (ec *executionContext) _ChannelRequest_cltvExpiryDelta(ctx context.Context,
 		Object:     "ChannelRequest",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ChannelRequest().CltvExpiryDelta(rctx, obj)
+		return obj.CltvExpiryDelta, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3613,9 +3610,9 @@ func (ec *executionContext) _ChannelRequest_cltvExpiryDelta(ctx context.Context,
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Connector_id(ctx context.Context, field graphql.CollectedField, obj *db.Connector) (ret graphql.Marshaler) {
@@ -12306,11 +12303,11 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 			if err != nil {
 				return it, err
 			}
-		case "lastUpdate":
+		case "interval":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastUpdate"))
-			it.LastUpdate, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("interval"))
+			it.Interval, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12674,47 +12671,20 @@ func (ec *executionContext) _ChannelRequest(ctx context.Context, sel ast.Selecti
 				return res
 			})
 		case "feeBaseMsat":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ChannelRequest_feeBaseMsat(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._ChannelRequest_feeBaseMsat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "feeProportionalMillionths":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ChannelRequest_feeProportionalMillionths(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._ChannelRequest_feeProportionalMillionths(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "cltvExpiryDelta":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ChannelRequest_cltvExpiryDelta(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._ChannelRequest_cltvExpiryDelta(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

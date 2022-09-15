@@ -103,11 +103,11 @@ type ListLocation struct {
 }
 
 type ListLocationsInput struct {
-	XMin       float64 `json:"xMin"`
-	YMin       float64 `json:"yMin"`
-	XMax       float64 `json:"xMax"`
-	YMax       float64 `json:"yMax"`
-	LastUpdate *string `json:"lastUpdate"`
+	XMin     float64 `json:"xMin"`
+	YMin     float64 `json:"yMin"`
+	XMax     float64 `json:"xMax"`
+	YMax     float64 `json:"yMax"`
+	Interval *int    `json:"interval"`
 }
 
 type Rate struct {
