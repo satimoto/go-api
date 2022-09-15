@@ -641,6 +641,12 @@ github.com/satimoto/go-datastore v0.2.1-0.20220908204239-b431699d8e29 h1:oaQqzAi
 github.com/satimoto/go-datastore v0.2.1-0.20220908204239-b431699d8e29/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
 github.com/satimoto/go-datastore v0.2.1-0.20220909113251-cd5afc82f45d h1:/GKM9moe1Zu/IR0pYJezR1CGUbDycSa+kW/cdsKIXhQ=
 github.com/satimoto/go-datastore v0.2.1-0.20220909113251-cd5afc82f45d/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
+github.com/satimoto/go-datastore v0.3.1-0.20220913192348-54b6b204f971 h1:QK7WLvgQ92z+KKzU1A6WrC65vQYEwSDhXjz+Nv7X9GA=
+github.com/satimoto/go-datastore v0.3.1-0.20220913192348-54b6b204f971/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
+github.com/satimoto/go-datastore v0.3.1-0.20220914214546-40fc25a69ff7 h1:hnvf72sST7ZB3Vd5XkoJrbGzNltvk/WXLiuE1FklAAc=
+github.com/satimoto/go-datastore v0.3.1-0.20220914214546-40fc25a69ff7/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
+github.com/satimoto/go-datastore v0.3.1-0.20220915183717-06f735c0d779 h1:/OCOrMeEM9MzRE4m98W2nudo6VrqnwmTyCEUc2oWQeU=
+github.com/satimoto/go-datastore v0.3.1-0.20220915183717-06f735c0d779/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
 github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f h1:emb13r6KZW3+8sUySFsfdK63+r6MVyoF+uvX+9KzsLQ=
 github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f/go.mod h1:GQdhGMwlWYwyFMO/cLhl1dRrHbKhQxKeuiPs35amvV4=
 github.com/satimoto/go-lsp v0.1.1-0.20220908195954-f81b0c6a2c31 h1:qm/yJ4sCgHdRcIxKwDDbu/LwYHbLw5eBbkKM2hPtC2E=

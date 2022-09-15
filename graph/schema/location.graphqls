@@ -47,7 +47,7 @@ input ListLocationsInput {
     yMin: Float!
     xMax: Float!
     yMax: Float!
-    lastUpdate: String
+    interval: Int
 }
 
 extend type Query {

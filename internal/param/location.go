@@ -8,11 +8,11 @@ import (
 
 func NewListLocationsByGeomParams(input graph.ListLocationsInput) db.ListLocationsByGeomParams {
 	return db.ListLocationsByGeomParams{
-		XMin: input.XMin,
-		YMin: input.YMin,
-		XMax: input.XMax,
-		YMax: input.YMax,
-		LastUpdate: util.DefaultString(input.LastUpdate, ""),
+		XMin:     input.XMin,
+		YMin:     input.YMin,
+		XMax:     input.XMax,
+		YMax:     input.YMax,
+		Interval: int32(util.DefaultInt(input.Interval, 0)),
 	}
 }
 
