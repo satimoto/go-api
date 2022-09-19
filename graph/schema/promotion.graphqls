@@ -1,0 +1,4 @@
+type Promotion {
+    code: String!
+    description: String!
+}

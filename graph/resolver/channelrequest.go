@@ -69,107 +69,106 @@ func (r *channelRequestResolver) CltvExpiryDelta(ctx context.Context, obj *db.Ch
 }
 
 func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
-		if u, err := r.UserRepository.GetUser(ctx, *userId); err == nil {
-			paymentHashBytes, err := base64.StdEncoding.DecodeString(input.PaymentHash)
+	if user := authentication.GetUser(ctx, r.UserRepository); user != nil {
+		paymentHashBytes, err := base64.StdEncoding.DecodeString(input.PaymentHash)
 
-			if err != nil {
-				return nil, gqlerror.Errorf("Error decoding paymentHash")
-			}
-
-			paymentAddrBytes, err := base64.StdEncoding.DecodeString(input.PaymentAddr)
-
-			if err != nil {
-				return nil, gqlerror.Errorf("Error decoding paymentAddr")
-			}
-
-			amountMsat, err := strconv.ParseInt(input.AmountMsat, 10, 64)
-
-			if err != nil {
-				return nil, gqlerror.Errorf("Error decoding amountMsat")
-			}
-
-			amount := int64(lnwire.MilliSatoshi(amountMsat).ToSatoshis())
-			channelRequestMaxAmount := int64(dbUtil.GetEnvInt32("CHANNEL_REQUEST_MAX_AMOUNT", 200000))
-
-			if amount > channelRequestMaxAmount {
-				return nil, gqlerror.Errorf("Amount exceeds %v limit", channelRequestMaxAmount)
-			}
-
-			// TODO: Improve node selection
-			// Could be by number of peers or available liquidity
-			var node *db.Node
-
-			if u.NodeID.Valid {
-				if n, err := r.NodeRepository.GetNode(ctx, u.NodeID.Int64); err == nil {
-					node = &n
-				}
-			} else {
-				if nodes, err := r.NodeRepository.ListActiveNodes(ctx); err == nil && len(nodes) > 0 {
-					for _, n := range nodes {
-						node = &n
-						break
-					}
-				}
-			}
-
-			if node == nil {
-				return nil, gqlerror.Errorf("No node available")
-			} else if !u.NodeID.Valid || u.NodeID.Int64 != node.ID {
-				userUpdateParams := param.NewUpdateUserParams(u)
-				userUpdateParams.NodeID = dbUtil.SqlNullInt64(node.ID)
-
-				r.UserRepository.UpdateUser(ctx, userUpdateParams)
-			}
-
-			lspService := lsp.NewService(node.LspAddr)
-
-			openChannelRequest := &lsprpc.OpenChannelRequest{
-				Pubkey:     u.Pubkey,
-				Amount:     amount,
-				AmountMsat: amountMsat,
-			}
-
-			openChannelResponse, err := lspService.OpenChannel(ctx, openChannelRequest)
-
-			if err != nil {
-				dbUtil.LogOnError("API009", "Error allocating scid", err)
-				log.Printf("API009: OpenChannelRequest=%#v", openChannelRequest)
-				return nil, gqlerror.Errorf("Error requesting payment channel")
-			}
-
-			scidBytes := util.Uint64ToBytes(openChannelResponse.Scid)
-
-			createChannelRequestParams := db.CreateChannelRequestParams{
-				UserID:                    u.ID,
-				NodeID:                    node.ID,
-				Status:                    db.ChannelRequestStatusREQUESTED,
-				Pubkey:                    u.Pubkey,
-				PaymentHash:               paymentHashBytes[:],
-				PaymentAddr:               paymentAddrBytes,
-				Amount:                    amount,
-				AmountMsat:                amountMsat,
-				SettledMsat:               0,
-				PendingChanID:             openChannelResponse.PendingChanId,
-				Scid:                      scidBytes,
-				FeeBaseMsat:               openChannelResponse.FeeBaseMsat,
-				FeeProportionalMillionths: int64(openChannelResponse.FeeProportionalMillionths),
-				CltvExpiryDelta:           int64(openChannelResponse.CltvExpiryDelta),
-			}
-
-			channelRequest, err := r.ChannelRequestRepository.CreateChannelRequest(ctx, createChannelRequestParams)
-
-			if err != nil {
-				dbUtil.LogOnError("API010", "Error creating channel request", err)
-				log.Printf("API010: CreateChannelRequestParams=%#v", createChannelRequestParams)
-				return nil, gqlerror.Errorf("Channel request already exists")
-			}
-
-			return &channelRequest, nil
+		if err != nil {
+			return nil, gqlerror.Errorf("Error decoding paymentHash")
 		}
+
+		paymentAddrBytes, err := base64.StdEncoding.DecodeString(input.PaymentAddr)
+
+		if err != nil {
+			return nil, gqlerror.Errorf("Error decoding paymentAddr")
+		}
+
+		amountMsat, err := strconv.ParseInt(input.AmountMsat, 10, 64)
+
+		if err != nil {
+			return nil, gqlerror.Errorf("Error decoding amountMsat")
+		}
+
+		amount := int64(lnwire.MilliSatoshi(amountMsat).ToSatoshis())
+		channelRequestMaxAmount := int64(dbUtil.GetEnvInt32("CHANNEL_REQUEST_MAX_AMOUNT", 200000))
+
+		if amount > channelRequestMaxAmount {
+			return nil, gqlerror.Errorf("Amount exceeds %v limit", channelRequestMaxAmount)
+		}
+
+		// TODO: Improve node selection
+		// Could be by number of peers or available liquidity
+		var node *db.Node
+
+		if user.NodeID.Valid {
+			if n, err := r.NodeRepository.GetNode(ctx, user.NodeID.Int64); err == nil {
+				node = &n
+			}
+		} else {
+			if nodes, err := r.NodeRepository.ListActiveNodes(ctx); err == nil && len(nodes) > 0 {
+				for _, n := range nodes {
+					node = &n
+					break
+				}
+			}
+		}
+
+		if node == nil {
+			return nil, gqlerror.Errorf("No node available")
+		} else if !user.NodeID.Valid || user.NodeID.Int64 != node.ID {
+			userUpdateParams := param.NewUpdateUserParams(*user)
+			userUpdateParams.NodeID = dbUtil.SqlNullInt64(node.ID)
+
+			r.UserRepository.UpdateUser(ctx, userUpdateParams)
+		}
+
+		// TODO: This request should be a non-blocking goroutine
+		lspService := lsp.NewService(node.LspAddr)
+
+		openChannelRequest := &lsprpc.OpenChannelRequest{
+			Pubkey:     user.Pubkey,
+			Amount:     amount,
+			AmountMsat: amountMsat,
+		}
+
+		openChannelResponse, err := lspService.OpenChannel(ctx, openChannelRequest)
+
+		if err != nil {
+			dbUtil.LogOnError("API009", "Error allocating scid", err)
+			log.Printf("API009: OpenChannelRequest=%#v", openChannelRequest)
+			return nil, gqlerror.Errorf("Error requesting payment channel")
+		}
+
+		scidBytes := util.Uint64ToBytes(openChannelResponse.Scid)
+
+		createChannelRequestParams := db.CreateChannelRequestParams{
+			UserID:                    user.ID,
+			NodeID:                    node.ID,
+			Status:                    db.ChannelRequestStatusREQUESTED,
+			Pubkey:                    user.Pubkey,
+			PaymentHash:               paymentHashBytes[:],
+			PaymentAddr:               paymentAddrBytes,
+			Amount:                    amount,
+			AmountMsat:                amountMsat,
+			SettledMsat:               0,
+			PendingChanID:             openChannelResponse.PendingChanId,
+			Scid:                      scidBytes,
+			FeeBaseMsat:               openChannelResponse.FeeBaseMsat,
+			FeeProportionalMillionths: int64(openChannelResponse.FeeProportionalMillionths),
+			CltvExpiryDelta:           int64(openChannelResponse.CltvExpiryDelta),
+		}
+
+		channelRequest, err := r.ChannelRequestRepository.CreateChannelRequest(ctx, createChannelRequestParams)
+
+		if err != nil {
+			dbUtil.LogOnError("API010", "Error creating channel request", err)
+			log.Printf("API010: CreateChannelRequestParams=%#v", createChannelRequestParams)
+			return nil, gqlerror.Errorf("Channel request already exists")
+		}
+
+		return &channelRequest, nil
 	}
 
-	return nil, gqlerror.Errorf("Not Authenticated")
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
 // ChannelRequest returns graph.ChannelRequestResolver implementation.

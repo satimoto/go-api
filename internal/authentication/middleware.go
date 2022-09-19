@@ -2,12 +2,14 @@ package authentication
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/user"
+	"github.com/satimoto/go-datastore/pkg/util"
 )
 
 func AuthorizationContext() func(http.Handler) http.Handler {
@@ -51,10 +53,16 @@ func GetUser(ctx context.Context, r user.UserRepository) *db.User {
 	userId := GetUserId(ctx)
 
 	if userId != nil {
-		if user, err := r.GetUser(ctx, *userId); err == nil {
-			operationCtx.Variables["user"] = &user
-			return &user
+		user, err := r.GetUser(ctx, *userId)
+
+		if err != nil {
+			util.LogOnError("API019", "Error retrieving user", err)
+			log.Printf("API019: UserID=%v", userId)
+			return nil
 		}
+
+		operationCtx.Variables["user"] = &user
+		return &user
 	}
 
 	return nil

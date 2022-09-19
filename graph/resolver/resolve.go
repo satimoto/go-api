@@ -18,9 +18,11 @@ import (
 	"github.com/satimoto/go-datastore/pkg/energymix"
 	"github.com/satimoto/go-datastore/pkg/evse"
 	"github.com/satimoto/go-datastore/pkg/image"
+	"github.com/satimoto/go-datastore/pkg/invoicerequest"
 	"github.com/satimoto/go-datastore/pkg/location"
 	"github.com/satimoto/go-datastore/pkg/node"
 	"github.com/satimoto/go-datastore/pkg/openingtime"
+	"github.com/satimoto/go-datastore/pkg/promotion"
 	"github.com/satimoto/go-datastore/pkg/session"
 	"github.com/satimoto/go-datastore/pkg/tariff"
 	"github.com/satimoto/go-datastore/pkg/user"
@@ -49,9 +51,11 @@ type Resolver struct {
 	EnergyMixRepository         energymix.EnergyMixRepository
 	EvseRepository              evse.EvseRepository
 	ImageRepository             image.ImageRepository
+	InvoiceRequestRepository    invoicerequest.InvoiceRequestRepository
 	LocationRepository          location.LocationRepository
 	NodeRepository              node.NodeRepository
 	OpeningTimeRepository       openingtime.OpeningTimeRepository
+	PromotionRepository         promotion.PromotionRepository
 	SessionRepository           session.SessionRepository
 	TariffRepository            tariff.TariffRepository
 	TokenResolver               *token.TokenResolver
@@ -85,9 +89,11 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 		EnergyMixRepository:         energymix.NewRepository(repositoryService),
 		EvseRepository:              evse.NewRepository(repositoryService),
 		ImageRepository:             image.NewRepository(repositoryService),
+		InvoiceRequestRepository:    invoicerequest.NewRepository(repositoryService),
 		LocationRepository:          location.NewRepository(repositoryService),
 		NodeRepository:              node.NewRepository(repositoryService),
 		OpeningTimeRepository:       openingtime.NewRepository(repositoryService),
+		PromotionRepository:         promotion.NewRepository(repositoryService),
 		SessionRepository:           session.NewRepository(repositoryService),
 		TariffRepository:            tariff.NewRepository(repositoryService),
 		TokenResolver:               token.NewResolver(repositoryService),

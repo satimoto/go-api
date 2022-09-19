@@ -9,8 +9,8 @@ import (
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/authentication"
-	"github.com/satimoto/go-datastore/pkg/param"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/param"
 	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -52,26 +52,19 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUserInput) (*db.User, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
-		u, err := r.UserRepository.GetUser(ctx, *userId)
-
-		if err != nil {
-			util.LogOnError("API019", "Error retrieving user", err)
-			return nil, gqlerror.Errorf("Error updating user")
-		}
-
-		updateUserParams := param.NewUpdateUserParams(u)
+	if user := authentication.GetUser(ctx, r.UserRepository); user != nil {
+		updateUserParams := param.NewUpdateUserParams(*user)
 		updateUserParams.DeviceToken = input.DeviceToken
 
-		u, err = r.UserRepository.UpdateUser(ctx, updateUserParams)
+		updatedUser, err := r.UserRepository.UpdateUser(ctx, updateUserParams)
 
 		if err != nil {
 			util.LogOnError("API020", "Error updating user", err)
 			return nil, gqlerror.Errorf("Error updating user")
 		}
 
-		return &u, nil
+		return &updatedUser, nil
 	}
 
-	return nil, gqlerror.Errorf("Not Authenticated")
+	return nil, gqlerror.Errorf("Not authenticated")
 }

@@ -162,6 +162,11 @@ type UnregisterCredentialInput struct {
 	ID int64 `json:"id"`
 }
 
+type UpdateInvoiceRequestInput struct {
+	ID             int64  `json:"id"`
+	PaymentRequest string `json:"paymentRequest"`
+}
+
 type UpdateUserInput struct {
 	DeviceToken string `json:"deviceToken"`
 }
