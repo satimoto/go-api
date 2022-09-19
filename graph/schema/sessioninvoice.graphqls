@@ -3,12 +3,14 @@ type SessionInvoice {
     currency: String!
     currencyRate: Int!
     currencyRateMsat: Int!
-    amountFiat: Float!
-    amountMsat: Int!
+    priceFiat: Float!
+    priceMsat: Int!
     commissionFiat: Float!
     commissionMsat: Int!
     taxFiat: Float!
     taxMsat: Int!
+    totalFiat: Float!
+    totalMsat: Int!
     paymentRequest: String!
     isSettled: Boolean!
     isExpired: Boolean!

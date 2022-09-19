@@ -28,7 +28,7 @@ func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSe
 		return command.NewStartSession(*startSessionResponse), nil
 	}
 
-	return nil, gqlerror.Errorf("Not Authenticated")
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
 func (r *mutationResolver) StopSession(ctx context.Context, input graph.StopSessionInput) (*graph.StopSession, error) {
@@ -45,5 +45,5 @@ func (r *mutationResolver) StopSession(ctx context.Context, input graph.StopSess
 		return command.NewStopSession(*stopSessionResponse), nil
 	}
 
-	return nil, gqlerror.Errorf("Not Authenticated")
+	return nil, gqlerror.Errorf("Not authenticated")
 }

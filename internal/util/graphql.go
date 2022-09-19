@@ -14,10 +14,26 @@ func NullGeometry(value geom.NullGeometry4326) (*geom.Geometry4326, error) {
 	return nil, nil
 }
 
-func NullInt(value sql.NullInt32) (*int, error) {
+func NullFloat(value sql.NullFloat64) (*float64, error) {
 	if value.Valid {
-		val := int(value.Int32)
-		return &val, nil
+		return &value.Float64, nil
+	}
+
+	return nil, nil
+}
+
+func NullInt(i interface{}) (*int, error) {
+	switch t := i.(type) {
+	case sql.NullInt32:
+		if t.Valid {
+			val := int(t.Int32)
+			return &val, nil
+		}
+	case sql.NullInt64:
+		if t.Valid {
+			val := int(t.Int64)
+			return &val, nil
+		}
 	}
 
 	return nil, nil

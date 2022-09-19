@@ -29,7 +29,7 @@ func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.Cre
 		return credential.NewCreateCredential(*credentialResponse), nil
 	}
 
-	return nil, gqlerror.Errorf("Not Authenticated")
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
 func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.RegisterCredentialInput) (*graph.Result, error) {
@@ -46,7 +46,7 @@ func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.R
 		return &graph.Result{ID: credentialResponse.Id}, nil
 	}
 
-	return nil, gqlerror.Errorf("Not Authenticated")
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
 func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph.UnregisterCredentialInput) (*graph.Result, error) {
@@ -63,5 +63,5 @@ func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph
 		return &graph.Result{ID: credentialResponse.Id}, nil
 	}
 
-	return nil, gqlerror.Errorf("Not Authenticated")
+	return nil, gqlerror.Errorf("Not authenticated")
 }
