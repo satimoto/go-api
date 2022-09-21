@@ -1,6 +1,7 @@
 type InvoiceRequest {
     id: ID!
     promotion: Promotion!
+    currency: String!
     memo: String!
     priceFiat: Float
     priceMsat: Int
@@ -18,7 +19,7 @@ input UpdateInvoiceRequestInput {
 }
 
 extend type Query {
-    listInvoiceRequests: [InvoiceRequest!]
+    listInvoiceRequests: [InvoiceRequest!]!
 }
 
 extend type Mutation {

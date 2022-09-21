@@ -208,6 +208,7 @@ type ComplexityRoot struct {
 	InvoiceRequest struct {
 		CommissionFiat func(childComplexity int) int
 		CommissionMsat func(childComplexity int) int
+		Currency       func(childComplexity int) int
 		ID             func(childComplexity int) int
 		Memo           func(childComplexity int) int
 		PriceFiat      func(childComplexity int) int
@@ -1253,6 +1254,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.InvoiceRequest.CommissionMsat(childComplexity), true
+
+	case "InvoiceRequest.currency":
+		if e.complexity.InvoiceRequest.Currency == nil {
+			break
+		}
+
+		return e.complexity.InvoiceRequest.Currency(childComplexity), true
 
 	case "InvoiceRequest.id":
 		if e.complexity.InvoiceRequest.ID == nil {
@@ -2682,6 +2690,7 @@ input CreateImageInput {
 	{Name: "graph/schema/invoicerequest.graphqls", Input: `type InvoiceRequest {
     id: ID!
     promotion: Promotion!
+    currency: String!
     memo: String!
     priceFiat: Float
     priceMsat: Int
@@ -2699,7 +2708,7 @@ input UpdateInvoiceRequestInput {
 }
 
 extend type Query {
-    listInvoiceRequests: [InvoiceRequest!]
+    listInvoiceRequests: [InvoiceRequest!]!
 }
 
 extend type Mutation {
@@ -6408,6 +6417,41 @@ func (ec *executionContext) _InvoiceRequest_promotion(ctx context.Context, field
 	return ec.marshalNPromotion2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPromotion(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _InvoiceRequest_currency(ctx context.Context, field graphql.CollectedField, obj *db.InvoiceRequest) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "InvoiceRequest",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Currency, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _InvoiceRequest_memo(ctx context.Context, field graphql.CollectedField, obj *db.InvoiceRequest) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8974,11 +9018,14 @@ func (ec *executionContext) _Query_listInvoiceRequests(ctx context.Context, fiel
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]db.InvoiceRequest)
 	fc.Result = res
-	return ec.marshalOInvoiceRequest2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐInvoiceRequestᚄ(ctx, field.Selections, res)
+	return ec.marshalNInvoiceRequest2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐInvoiceRequestᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getLocation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -14536,6 +14583,11 @@ func (ec *executionContext) _InvoiceRequest(ctx context.Context, sel ast.Selecti
 				}
 				return res
 			})
+		case "currency":
+			out.Values[i] = ec._InvoiceRequest_currency(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "memo":
 			out.Values[i] = ec._InvoiceRequest_memo(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -15303,6 +15355,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_listInvoiceRequests(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "getLocation":
@@ -17063,6 +17118,50 @@ func (ec *executionContext) marshalNInvoiceRequest2githubᚗcomᚋsatimotoᚋgo�
 	return ec._InvoiceRequest(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNInvoiceRequest2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐInvoiceRequestᚄ(ctx context.Context, sel ast.SelectionSet, v []db.InvoiceRequest) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNInvoiceRequest2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐInvoiceRequest(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNInvoiceRequest2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐInvoiceRequest(ctx context.Context, sel ast.SelectionSet, v *db.InvoiceRequest) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -17942,53 +18041,6 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 		return graphql.Null
 	}
 	return graphql.MarshalInt(*v)
-}
-
-func (ec *executionContext) marshalOInvoiceRequest2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐInvoiceRequestᚄ(ctx context.Context, sel ast.SelectionSet, v []db.InvoiceRequest) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNInvoiceRequest2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐInvoiceRequest(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐOpeningTime(ctx context.Context, sel ast.SelectionSet, v *db.OpeningTime) graphql.Marshaler {
