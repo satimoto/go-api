@@ -371,6 +371,7 @@ type ComplexityRoot struct {
 		ID              func(childComplexity int) int
 		LocationUID     func(childComplexity int) int
 		Status          func(childComplexity int) int
+		VerificationKey func(childComplexity int) int
 	}
 
 	StatusSchedule struct {
@@ -2202,6 +2203,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StartSession.Status(childComplexity), true
 
+	case "StartSession.verificationKey":
+		if e.complexity.StartSession.VerificationKey == nil {
+			break
+		}
+
+		return e.complexity.StartSession.VerificationKey(childComplexity), true
+
 	case "StatusSchedule.periodBegin":
 		if e.complexity.StatusSchedule.PeriodBegin == nil {
 			break
@@ -2512,6 +2520,7 @@ extend type Mutation {
     id: ID!
     status: String!
     authorizationId: String!
+    verificationKey: String!
     locationUid: String!
     evseUid: String
 }
@@ -10736,6 +10745,41 @@ func (ec *executionContext) _StartSession_authorizationId(ctx context.Context, f
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _StartSession_verificationKey(ctx context.Context, field graphql.CollectedField, obj *StartSession) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StartSession",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VerificationKey, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _StartSession_locationUid(ctx context.Context, field graphql.CollectedField, obj *StartSession) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15879,6 +15923,11 @@ func (ec *executionContext) _StartSession(ctx context.Context, sel ast.Selection
 			}
 		case "authorizationId":
 			out.Values[i] = ec._StartSession_authorizationId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "verificationKey":
+			out.Values[i] = ec._StartSession_verificationKey(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
