@@ -12,6 +12,7 @@ type SessionInvoice {
     totalFiat: Float!
     totalMsat: Int!
     paymentRequest: String!
+    signature: String!
     isSettled: Boolean!
     isExpired: Boolean!
     lastUpdated: String!

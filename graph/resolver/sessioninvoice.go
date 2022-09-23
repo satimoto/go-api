@@ -5,6 +5,7 @@ package resolver
 
 import (
 	"context"
+	"encoding/hex"
 	"time"
 
 	"github.com/satimoto/go-api/graph"
@@ -23,6 +24,10 @@ func (r *queryResolver) GetSessionInvoice(ctx context.Context, id int64) (*db.Se
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+func (r *sessionInvoiceResolver) Signature(ctx context.Context, obj *db.SessionInvoice) (string, error) {
+	return hex.EncodeToString(obj.Signature), nil
 }
 
 func (r *sessionInvoiceResolver) LastUpdated(ctx context.Context, obj *db.SessionInvoice) (string, error) {

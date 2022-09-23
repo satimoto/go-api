@@ -359,6 +359,7 @@ type ComplexityRoot struct {
 		PaymentRequest   func(childComplexity int) int
 		PriceFiat        func(childComplexity int) int
 		PriceMsat        func(childComplexity int) int
+		Signature        func(childComplexity int) int
 		TaxFiat          func(childComplexity int) int
 		TaxMsat          func(childComplexity int) int
 		TotalFiat        func(childComplexity int) int
@@ -581,6 +582,8 @@ type SessionResolver interface {
 	LastUpdated(ctx context.Context, obj *db.Session) (string, error)
 }
 type SessionInvoiceResolver interface {
+	Signature(ctx context.Context, obj *db.SessionInvoice) (string, error)
+
 	LastUpdated(ctx context.Context, obj *db.SessionInvoice) (string, error)
 }
 type StatusScheduleResolver interface {
@@ -2140,6 +2143,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SessionInvoice.PriceMsat(childComplexity), true
 
+	case "SessionInvoice.signature":
+		if e.complexity.SessionInvoice.Signature == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.Signature(childComplexity), true
+
 	case "SessionInvoice.taxFiat":
 		if e.complexity.SessionInvoice.TaxFiat == nil {
 			break
@@ -2866,6 +2876,7 @@ extend type Query {
     totalFiat: Float!
     totalMsat: Int!
     paymentRequest: String!
+    signature: String!
     isSettled: Boolean!
     isExpired: Boolean!
     lastUpdated: String!
@@ -10535,6 +10546,41 @@ func (ec *executionContext) _SessionInvoice_paymentRequest(ctx context.Context, 
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _SessionInvoice_signature(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SessionInvoice().Signature(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _SessionInvoice_isSettled(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15865,6 +15911,20 @@ func (ec *executionContext) _SessionInvoice(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "signature":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SessionInvoice_signature(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "isSettled":
 			out.Values[i] = ec._SessionInvoice_isSettled(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
