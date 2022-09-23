@@ -11,6 +11,7 @@ func NewStartSession(response ocpirpc.StartSessionResponse) *graph.StartSession 
 		ID:              response.Id,
 		Status:          response.Status,
 		AuthorizationID: response.AuthorizationId,
+		VerificationKey: response.VerificationKey,
 		LocationUID:     response.LocationUid,
 		EvseUID:         util.NilString(response.EvseUid),
 	}
