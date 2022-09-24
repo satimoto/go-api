@@ -32,7 +32,7 @@ func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.Cre
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
-func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.RegisterCredentialInput) (*graph.Result, error) {
+func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.RegisterCredentialInput) (*graph.ResultID, error) {
 	if userId := authentication.GetUserId(ctx); userId != nil {
 		credentialRequest := credential.NewRegisterCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.RegisterCredential(ctx, credentialRequest)
@@ -43,13 +43,13 @@ func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.R
 			return nil, gqlerror.Errorf("Error registering credential")
 		}
 
-		return &graph.Result{ID: credentialResponse.Id}, nil
+		return &graph.ResultID{ID: credentialResponse.Id}, nil
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
-func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph.UnregisterCredentialInput) (*graph.Result, error) {
+func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph.UnregisterCredentialInput) (*graph.ResultID, error) {
 	if userId := authentication.GetUserId(ctx); userId != nil {
 		credentialRequest := credential.NewUnregisterCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.UnregisterCredential(ctx, credentialRequest)
@@ -60,7 +60,7 @@ func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph
 			return nil, gqlerror.Errorf("Error unregistering credential")
 		}
 
-		return &graph.Result{ID: credentialResponse.Id}, nil
+		return &graph.ResultID{ID: credentialResponse.Id}, nil
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")

@@ -50,9 +50,21 @@ input ListLocationsInput {
     interval: Int
 }
 
+input PublishLocationInput {
+    id: ID
+    credentialId: ID
+    countryCode: String
+    partyId: String
+    publish: Boolean!
+}
+
 extend type Query {
     getLocation(input: GetLocationInput!): Location!
     listLocations(input: ListLocationsInput!): [ListLocation!]!
+}
+
+extend type Mutation {
+    publishLocation(input: PublishLocationInput!): ResultOk!
 }
 
 scalar Geometry

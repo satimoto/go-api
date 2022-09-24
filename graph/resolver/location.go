@@ -12,6 +12,7 @@ import (
 	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
+	dbUtil "github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -46,6 +47,42 @@ func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocat
 		}
 
 		return list, nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
+	if userId := authentication.GetUserId(ctx); userId != nil {
+		if input.ID != nil {
+			updateLocationPublishParams := db.UpdateLocationPublishParams{
+				ID:      *input.ID,
+				Publish: input.Publish,
+			}
+
+			if err := r.LocationRepository.UpdateLocationPublish(ctx, updateLocationPublishParams); err == nil {
+				return &graph.ResultOk{Ok: true}, nil
+			}
+		} else if input.CredentialID != nil {
+			updateLocationsPublishByCredentialParams := db.UpdateLocationsPublishByCredentialParams{
+				CredentialID: *input.CredentialID,
+				Publish:      input.Publish,
+			}
+
+			if err := r.LocationRepository.UpdateLocationsPublishByCredential(ctx, updateLocationsPublishByCredentialParams); err == nil {
+				return &graph.ResultOk{Ok: true}, nil
+			}
+		} else if input.PartyID != nil && input.CountryCode != nil {
+			updateLocationsPublishByPartyAndCountryCodeParams := db.UpdateLocationsPublishByPartyAndCountryCodeParams{
+				CountryCode: dbUtil.SqlNullString(input.CountryCode),
+				PartyID:     dbUtil.SqlNullString(input.PartyID),
+				Publish:     input.Publish,
+			}
+
+			if err := r.LocationRepository.UpdateLocationsPublishByPartyAndCountryCode(ctx, updateLocationsPublishByPartyAndCountryCodeParams); err == nil {
+				return &graph.ResultOk{Ok: true}, nil
+			}
+		}
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")

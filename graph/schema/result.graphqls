@@ -1,3 +1,7 @@
-type Result {
+type ResultId {
     id: ID!
+}
+
+type ResultOk {
+    ok: Boolean!
 }
