@@ -266,6 +266,7 @@ type ComplexityRoot struct {
 		CreateEmailSubscription func(childComplexity int, input CreateEmailSubscriptionInput) int
 		CreateUser              func(childComplexity int, input CreateUserInput) int
 		ExchangeAuthentication  func(childComplexity int, code string) int
+		PublishLocation         func(childComplexity int, input PublishLocationInput) int
 		RegisterCredential      func(childComplexity int, input RegisterCredentialInput) int
 		StartSession            func(childComplexity int, input StartSessionInput) int
 		StopSession             func(childComplexity int, input StopSessionInput) int
@@ -325,8 +326,12 @@ type ComplexityRoot struct {
 		Weekday     func(childComplexity int) int
 	}
 
-	Result struct {
+	ResultID struct {
 		ID func(childComplexity int) int
+	}
+
+	ResultOk struct {
+		Ok func(childComplexity int) int
 	}
 
 	Session struct {
@@ -530,11 +535,12 @@ type MutationResolver interface {
 	StartSession(ctx context.Context, input StartSessionInput) (*StartSession, error)
 	StopSession(ctx context.Context, input StopSessionInput) (*StopSession, error)
 	CreateCredential(ctx context.Context, input CreateCredentialInput) (*db.Credential, error)
-	RegisterCredential(ctx context.Context, input RegisterCredentialInput) (*Result, error)
-	UnregisterCredential(ctx context.Context, input UnregisterCredentialInput) (*Result, error)
+	RegisterCredential(ctx context.Context, input RegisterCredentialInput) (*ResultID, error)
+	UnregisterCredential(ctx context.Context, input UnregisterCredentialInput) (*ResultID, error)
 	CreateEmailSubscription(ctx context.Context, input CreateEmailSubscriptionInput) (*db.EmailSubscription, error)
 	VerifyEmailSubscription(ctx context.Context, input VerifyEmailSubscriptionInput) (*db.EmailSubscription, error)
 	UpdateInvoiceRequest(ctx context.Context, input UpdateInvoiceRequestInput) (*db.InvoiceRequest, error)
+	PublishLocation(ctx context.Context, input PublishLocationInput) (*ResultOk, error)
 	CreateUser(ctx context.Context, input CreateUserInput) (*db.User, error)
 	UpdateUser(ctx context.Context, input UpdateUserInput) (*db.User, error)
 }
@@ -1632,6 +1638,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.ExchangeAuthentication(childComplexity, args["code"].(string)), true
 
+	case "Mutation.publishLocation":
+		if e.complexity.Mutation.PublishLocation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_publishLocation_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PublishLocation(childComplexity, args["input"].(PublishLocationInput)), true
+
 	case "Mutation.registerCredential":
 		if e.complexity.Mutation.RegisterCredential == nil {
 			break
@@ -1954,12 +1972,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RegularHour.Weekday(childComplexity), true
 
-	case "Result.id":
-		if e.complexity.Result.ID == nil {
+	case "ResultId.id":
+		if e.complexity.ResultID.ID == nil {
 			break
 		}
 
-		return e.complexity.Result.ID(childComplexity), true
+		return e.complexity.ResultID.ID(childComplexity), true
+
+	case "ResultOk.ok":
+		if e.complexity.ResultOk.Ok == nil {
+			break
+		}
+
+		return e.complexity.ResultOk.Ok(childComplexity), true
 
 	case "Session.authMethod":
 		if e.complexity.Session.AuthMethod == nil {
@@ -2598,8 +2623,8 @@ input UnregisterCredentialInput {
 
 extend type Mutation {
     createCredential(input: CreateCredentialInput!): Credential!
-    registerCredential(input: RegisterCredentialInput!): Result!
-    unregisterCredential(input: UnregisterCredentialInput!): Result!
+    registerCredential(input: RegisterCredentialInput!): ResultId!
+    unregisterCredential(input: UnregisterCredentialInput!): ResultId!
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/displaytext.graphqls", Input: `type DisplayText {
@@ -2785,9 +2810,21 @@ input ListLocationsInput {
     interval: Int
 }
 
+input PublishLocationInput {
+    id: ID
+    credentialId: ID
+    countryCode: String
+    partyId: String
+    publish: Boolean!
+}
+
 extend type Query {
     getLocation(input: GetLocationInput!): Location!
     listLocations(input: ListLocationsInput!): [ListLocation!]!
+}
+
+extend type Mutation {
+    publishLocation(input: PublishLocationInput!): ResultOk!
 }
 
 scalar Geometry`, BuiltIn: false},
@@ -2833,8 +2870,12 @@ extend type Query {
     periodEnd: String!
 }
 `, BuiltIn: false},
-	{Name: "graph/schema/result.graphqls", Input: `type Result {
+	{Name: "graph/schema/result.graphqls", Input: `type ResultId {
     id: ID!
+}
+
+type ResultOk {
+    ok: Boolean!
 }`, BuiltIn: false},
 	{Name: "graph/schema/session.graphqls", Input: `type Session {
     id: ID!
@@ -3035,6 +3076,21 @@ func (ec *executionContext) field_Mutation_exchangeAuthentication_args(ctx conte
 		}
 	}
 	args["code"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_publishLocation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 PublishLocationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNPublishLocationInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐPublishLocationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -8192,9 +8248,9 @@ func (ec *executionContext) _Mutation_registerCredential(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Result)
+	res := resTmp.(*ResultID)
 	fc.Result = res
-	return ec.marshalNResult2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResult(ctx, field.Selections, res)
+	return ec.marshalNResultId2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_unregisterCredential(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -8234,9 +8290,9 @@ func (ec *executionContext) _Mutation_unregisterCredential(ctx context.Context, 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Result)
+	res := resTmp.(*ResultID)
 	fc.Result = res
-	return ec.marshalNResult2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResult(ctx, field.Selections, res)
+	return ec.marshalNResultId2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createEmailSubscription(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -8363,6 +8419,48 @@ func (ec *executionContext) _Mutation_updateInvoiceRequest(ctx context.Context, 
 	res := resTmp.(*db.InvoiceRequest)
 	fc.Result = res
 	return ec.marshalNInvoiceRequest2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐInvoiceRequest(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_publishLocation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_publishLocation_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PublishLocation(rctx, args["input"].(PublishLocationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ResultOk)
+	fc.Result = res
+	return ec.marshalNResultOk2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultOk(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -9575,7 +9673,7 @@ func (ec *executionContext) _RegularHour_periodEnd(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Result_id(ctx context.Context, field graphql.CollectedField, obj *Result) (ret graphql.Marshaler) {
+func (ec *executionContext) _ResultId_id(ctx context.Context, field graphql.CollectedField, obj *ResultID) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9583,7 +9681,7 @@ func (ec *executionContext) _Result_id(ctx context.Context, field graphql.Collec
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Result",
+		Object:     "ResultId",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -9608,6 +9706,41 @@ func (ec *executionContext) _Result_id(ctx context.Context, field graphql.Collec
 	res := resTmp.(int64)
 	fc.Result = res
 	return ec.marshalNID2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ResultOk_ok(ctx context.Context, field graphql.CollectedField, obj *ResultOk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ResultOk",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ok, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Session_id(ctx context.Context, field graphql.CollectedField, obj *db.Session) (ret graphql.Marshaler) {
@@ -13243,6 +13376,61 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPublishLocationInput(ctx context.Context, obj interface{}) (PublishLocationInput, error) {
+	var it PublishLocationInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "credentialId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credentialId"))
+			it.CredentialID, err = ec.unmarshalOID2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "countryCode":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("countryCode"))
+			it.CountryCode, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "partyId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partyId"))
+			it.PartyID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publish":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publish"))
+			it.Publish, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputRegisterCredentialInput(ctx context.Context, obj interface{}) (RegisterCredentialInput, error) {
 	var it RegisterCredentialInput
 	asMap := map[string]interface{}{}
@@ -15154,6 +15342,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "publishLocation":
+			out.Values[i] = ec._Mutation_publishLocation(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createUser":
 			out.Values[i] = ec._Mutation_createUser(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -15626,19 +15819,46 @@ func (ec *executionContext) _RegularHour(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
-var resultImplementors = []string{"Result"}
+var resultIdImplementors = []string{"ResultId"}
 
-func (ec *executionContext) _Result(ctx context.Context, sel ast.SelectionSet, obj *Result) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, resultImplementors)
+func (ec *executionContext) _ResultId(ctx context.Context, sel ast.SelectionSet, obj *ResultID) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, resultIdImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Result")
+			out.Values[i] = graphql.MarshalString("ResultId")
 		case "id":
-			out.Values[i] = ec._Result_id(ctx, field, obj)
+			out.Values[i] = ec._ResultId_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var resultOkImplementors = []string{"ResultOk"}
+
+func (ec *executionContext) _ResultOk(ctx context.Context, sel ast.SelectionSet, obj *ResultOk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, resultOkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ResultOk")
+		case "ok":
+			out.Values[i] = ec._ResultOk_ok(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -17380,6 +17600,11 @@ func (ec *executionContext) marshalNPromotion2ᚖgithubᚗcomᚋsatimotoᚋgoᚑ
 	return ec._Promotion(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNPublishLocationInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐPublishLocationInput(ctx context.Context, v interface{}) (PublishLocationInput, error) {
+	res, err := ec.unmarshalInputPublishLocationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNRegisterCredentialInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐRegisterCredentialInput(ctx context.Context, v interface{}) (RegisterCredentialInput, error) {
 	res, err := ec.unmarshalInputRegisterCredentialInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -17433,18 +17658,32 @@ func (ec *executionContext) marshalNRegularHour2ᚕgithubᚗcomᚋsatimotoᚋgo�
 	return ret
 }
 
-func (ec *executionContext) marshalNResult2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResult(ctx context.Context, sel ast.SelectionSet, v Result) graphql.Marshaler {
-	return ec._Result(ctx, sel, &v)
+func (ec *executionContext) marshalNResultId2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultID(ctx context.Context, sel ast.SelectionSet, v ResultID) graphql.Marshaler {
+	return ec._ResultId(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNResult2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResult(ctx context.Context, sel ast.SelectionSet, v *Result) graphql.Marshaler {
+func (ec *executionContext) marshalNResultId2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultID(ctx context.Context, sel ast.SelectionSet, v *ResultID) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._Result(ctx, sel, v)
+	return ec._ResultId(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNResultOk2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultOk(ctx context.Context, sel ast.SelectionSet, v ResultOk) graphql.Marshaler {
+	return ec._ResultOk(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNResultOk2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultOk(ctx context.Context, sel ast.SelectionSet, v *ResultOk) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._ResultOk(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNSession2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSession(ctx context.Context, sel ast.SelectionSet, v db.Session) graphql.Marshaler {

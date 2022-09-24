@@ -110,6 +110,14 @@ type ListLocationsInput struct {
 	Interval *int    `json:"interval"`
 }
 
+type PublishLocationInput struct {
+	ID           *int64  `json:"id"`
+	CredentialID *int64  `json:"credentialId"`
+	CountryCode  *string `json:"countryCode"`
+	PartyID      *string `json:"partyId"`
+	Publish      bool    `json:"publish"`
+}
+
 type Rate struct {
 	Rate        string `json:"rate"`
 	RateMsat    string `json:"rateMsat"`
@@ -121,8 +129,12 @@ type RegisterCredentialInput struct {
 	ClientToken *string `json:"clientToken"`
 }
 
-type Result struct {
+type ResultID struct {
 	ID int64 `json:"id"`
+}
+
+type ResultOk struct {
+	Ok bool `json:"ok"`
 }
 
 type StartSession struct {
