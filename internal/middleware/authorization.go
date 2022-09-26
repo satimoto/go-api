@@ -1,4 +1,4 @@
-package authentication
+package middleware
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/user"
 	"github.com/satimoto/go-datastore/pkg/util"
@@ -21,7 +22,7 @@ func AuthorizationContext() func(http.Handler) http.Handler {
 			if len(authorization) == 2 {
 				token := authorization[1]
 
-				if ok, claims := VerifyToken(token); ok {
+				if ok, claims := authentication.VerifyToken(token); ok {
 					userId := int64(claims["user_id"].(float64))
 					ctx = context.WithValue(ctx, "user_id", &userId)
 				}

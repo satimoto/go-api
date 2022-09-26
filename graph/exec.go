@@ -58,6 +58,7 @@ type ResolverRoot interface {
 	SessionInvoice() SessionInvoiceResolver
 	StatusSchedule() StatusScheduleResolver
 	Tariff() TariffResolver
+	User() UserResolver
 }
 
 type DirectiveRoot struct {
@@ -264,6 +265,7 @@ type ComplexityRoot struct {
 		CreateChannelRequest    func(childComplexity int, input CreateChannelRequestInput) int
 		CreateCredential        func(childComplexity int, input CreateCredentialInput) int
 		CreateEmailSubscription func(childComplexity int, input CreateEmailSubscriptionInput) int
+		CreateReferral          func(childComplexity int, input CreateReferralInput) int
 		CreateUser              func(childComplexity int, input CreateUserInput) int
 		ExchangeAuthentication  func(childComplexity int, code string) int
 		PublishLocation         func(childComplexity int, input PublishLocationInput) int
@@ -415,9 +417,10 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		DeviceToken func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Pubkey      func(childComplexity int) int
+		DeviceToken  func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Pubkey       func(childComplexity int) int
+		ReferralCode func(childComplexity int) int
 	}
 
 	VerifyAuthentication struct {
@@ -541,6 +544,7 @@ type MutationResolver interface {
 	VerifyEmailSubscription(ctx context.Context, input VerifyEmailSubscriptionInput) (*db.EmailSubscription, error)
 	UpdateInvoiceRequest(ctx context.Context, input UpdateInvoiceRequestInput) (*db.InvoiceRequest, error)
 	PublishLocation(ctx context.Context, input PublishLocationInput) (*ResultOk, error)
+	CreateReferral(ctx context.Context, input CreateReferralInput) (*ResultID, error)
 	CreateUser(ctx context.Context, input CreateUserInput) (*db.User, error)
 	UpdateUser(ctx context.Context, input UpdateUserInput) (*db.User, error)
 }
@@ -604,6 +608,9 @@ type TariffResolver interface {
 	TaxPercent(ctx context.Context, obj *db.Tariff) (*float64, error)
 	Elements(ctx context.Context, obj *db.Tariff) ([]TariffElement, error)
 	EnergyMix(ctx context.Context, obj *db.Tariff) (*db.EnergyMix, error)
+}
+type UserResolver interface {
+	ReferralCode(ctx context.Context, obj *db.User) (*string, error)
 }
 
 type executableSchema struct {
@@ -1614,6 +1621,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateEmailSubscription(childComplexity, args["input"].(CreateEmailSubscriptionInput)), true
 
+	case "Mutation.createReferral":
+		if e.complexity.Mutation.CreateReferral == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createReferral_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateReferral(childComplexity, args["input"].(CreateReferralInput)), true
+
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
 			break
@@ -2399,6 +2418,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Pubkey(childComplexity), true
 
+	case "User.referralCode":
+		if e.complexity.User.ReferralCode == nil {
+			break
+		}
+
+		return e.complexity.User.ReferralCode(childComplexity), true
+
 	case "VerifyAuthentication.verified":
 		if e.complexity.VerifyAuthentication.Verified == nil {
 			break
@@ -2864,6 +2890,15 @@ extend type Query {
     getRate(currency: String!): Rate
 }
 `, BuiltIn: false},
+	{Name: "graph/schema/referral.graphqls", Input: `input CreateReferralInput {
+    code: String!
+    referrer: String!
+}
+
+extend type Mutation {
+    createReferral(input: CreateReferralInput!): ResultId!
+}
+`, BuiltIn: false},
 	{Name: "graph/schema/regularhour.graphqls", Input: `type RegularHour {
     weekday: Int!
     periodBegin: String!
@@ -2965,6 +3000,7 @@ extend type Query {
     id: ID!
     pubkey: String!
     deviceToken: String!
+    referralCode: String
 }
 
 input CreateUserInput {
@@ -3041,6 +3077,21 @@ func (ec *executionContext) field_Mutation_createEmailSubscription_args(ctx cont
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateEmailSubscriptionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateEmailSubscriptionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createReferral_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 CreateReferralInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateReferralInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateReferralInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -8463,6 +8514,48 @@ func (ec *executionContext) _Mutation_publishLocation(ctx context.Context, field
 	return ec.marshalNResultOk2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultOk(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createReferral(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createReferral_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateReferral(rctx, args["input"].(CreateReferralInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ResultID)
+	fc.Result = res
+	return ec.marshalNResultId2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultID(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11781,6 +11874,38 @@ func (ec *executionContext) _User_deviceToken(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _User_referralCode(ctx context.Context, field graphql.CollectedField, obj *db.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().ReferralCode(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _VerifyAuthentication_verified(ctx context.Context, field graphql.CollectedField, obj *VerifyAuthentication) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -13164,6 +13289,37 @@ func (ec *executionContext) unmarshalInputCreateImageInput(ctx context.Context, 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("height"))
 			it.Height, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateReferralInput(ctx context.Context, obj interface{}) (CreateReferralInput, error) {
+	var it CreateReferralInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "code":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			it.Code, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "referrer":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("referrer"))
+			it.Referrer, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15347,6 +15503,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createReferral":
+			out.Values[i] = ec._Mutation_createReferral(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createUser":
 			out.Values[i] = ec._Mutation_createUser(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -16514,18 +16675,29 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		case "id":
 			out.Values[i] = ec._User_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "pubkey":
 			out.Values[i] = ec._User_pubkey(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "deviceToken":
 			out.Values[i] = ec._User_deviceToken(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "referralCode":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_referralCode(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -16990,6 +17162,11 @@ func (ec *executionContext) unmarshalNCreateCredentialInput2githubᚗcomᚋsatim
 
 func (ec *executionContext) unmarshalNCreateEmailSubscriptionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateEmailSubscriptionInput(ctx context.Context, v interface{}) (CreateEmailSubscriptionInput, error) {
 	res, err := ec.unmarshalInputCreateEmailSubscriptionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateReferralInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateReferralInput(ctx context.Context, v interface{}) (CreateReferralInput, error) {
+	res, err := ec.unmarshalInputCreateReferralInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

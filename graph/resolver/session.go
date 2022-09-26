@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func (r *queryResolver) GetSession(ctx context.Context, input graph.GetSessionInput) (*db.Session, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		if input.ID != nil {
 			if s, err := r.SessionRepository.GetSession(ctx, *input.ID); err == nil && userId == &s.UserID {
 				return &s, nil

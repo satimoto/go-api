@@ -8,14 +8,14 @@ import (
 	"log"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/command"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSessionInput) (*graph.StartSession, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		startSessionRequest := command.NewStartSessionRequest(*userId, input)
 		startSessionResponse, err := r.OcpiService.StartSession(ctx, startSessionRequest)
 
@@ -32,7 +32,7 @@ func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSe
 }
 
 func (r *mutationResolver) StopSession(ctx context.Context, input graph.StopSessionInput) (*graph.StopSession, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		stopSessionRequest := command.NewStopSessionRequest(*userId, input)
 		stopSessionResponse, err := r.OcpiService.StopSession(ctx, stopSessionRequest)
 

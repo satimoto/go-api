@@ -13,7 +13,7 @@ import (
 
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/param"
 	dbUtil "github.com/satimoto/go-datastore/pkg/util"
@@ -69,7 +69,7 @@ func (r *channelRequestResolver) CltvExpiryDelta(ctx context.Context, obj *db.Ch
 }
 
 func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
-	if user := authentication.GetUser(ctx, r.UserRepository); user != nil {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
 		paymentHashBytes, err := base64.StdEncoding.DecodeString(input.PaymentHash)
 
 		if err != nil {

@@ -7,13 +7,13 @@ import (
 	"context"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInput) (*db.Tariff, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		if input.ID != nil {
 			if t, err := r.TariffRepository.GetTariff(ctx, *input.ID); err == nil {
 				return &t, nil
@@ -51,7 +51,7 @@ func (r *tariffResolver) CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (
 }
 
 func (r *tariffResolver) CommissionPercent(ctx context.Context, obj *db.Tariff) (float64, error) {
-	user := authentication.GetUser(ctx, r.UserRepository)
+	user := middleware.GetUser(ctx, r.UserRepository)
 
 	if user == nil {
 		return 0, gqlerror.Errorf("Error retrieving user commission")
