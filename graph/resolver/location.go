@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
@@ -17,7 +17,7 @@ import (
 )
 
 func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocationInput) (*db.Location, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		if input.ID != nil {
 			if l, err := r.LocationRepository.GetLocation(ctx, *input.ID); err == nil {
 				return &l, nil
@@ -35,7 +35,7 @@ func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocation
 }
 
 func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		var list []graph.ListLocation
 
 		params := param.NewListLocationsByGeomParams(input)
@@ -53,7 +53,7 @@ func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocat
 }
 
 func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		if input.ID != nil {
 			updateLocationPublishParams := db.UpdateLocationPublishParams{
 				ID:      *input.ID,

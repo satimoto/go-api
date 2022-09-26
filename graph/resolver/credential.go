@@ -8,7 +8,7 @@ import (
 	"log"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/credential"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/util"
@@ -16,7 +16,7 @@ import (
 )
 
 func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.CreateCredentialInput) (*db.Credential, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		credentialRequest := credential.NewCreateCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.CreateCredential(ctx, credentialRequest)
 
@@ -33,7 +33,7 @@ func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.Cre
 }
 
 func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.RegisterCredentialInput) (*graph.ResultID, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		credentialRequest := credential.NewRegisterCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.RegisterCredential(ctx, credentialRequest)
 
@@ -50,7 +50,7 @@ func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.R
 }
 
 func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph.UnregisterCredentialInput) (*graph.ResultID, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		credentialRequest := credential.NewUnregisterCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.UnregisterCredential(ctx, credentialRequest)
 

@@ -7,7 +7,7 @@ import (
 	"context"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-ferp/pkg/rate"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -83,7 +83,7 @@ func (r *Resolver) PriceComponent() graph.PriceComponentResolver {
 type priceComponentResolver struct{ *Resolver }
 
 func (r *priceComponentResolver) calculateCommissionMsat(ctx context.Context, currencyRate *rate.CurrencyRate, obj *db.PriceComponent) (*int, error) {
-	user := authentication.GetUser(ctx, r.Resolver.UserRepository)
+	user := middleware.GetUser(ctx, r.Resolver.UserRepository)
 
 	if user == nil {
 		// Error retrieving user

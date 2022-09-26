@@ -17,7 +17,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/satimoto/go-api/internal/authentication"
+	apiMiddleware "github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/ferp"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/user"
@@ -52,7 +52,7 @@ func (rs *RestService) Handler() *chi.Mux {
 	// Set middleware
 	router.Use(render.SetContentType(render.ContentTypeJSON), middleware.RedirectSlashes, middleware.Recoverer)
 	router.Use(middleware.Timeout(120 * time.Second))
-	router.Use(authentication.AuthorizationContext())
+	router.Use(apiMiddleware.AuthorizationContext())
 	router.Use(chiprometheus.NewMiddleware("api"))
 
 	router.Use(cors.Handler(cors.Options{

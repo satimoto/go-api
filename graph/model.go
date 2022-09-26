@@ -59,6 +59,11 @@ type CreateImageInput struct {
 	Height    *int    `json:"height"`
 }
 
+type CreateReferralInput struct {
+	Code     string `json:"code"`
+	Referrer string `json:"referrer"`
+}
+
 type CreateUserInput struct {
 	Code        string `json:"code"`
 	Pubkey      string `json:"pubkey"`

@@ -8,7 +8,7 @@ import (
 	"log"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
 	dbUtil "github.com/satimoto/go-datastore/pkg/util"
@@ -18,7 +18,7 @@ import (
 )
 
 func (r *queryResolver) ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRequest, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userId := middleware.GetUserId(ctx); userId != nil {
 		if invoiceRequests, err := r.InvoiceRequestRepository.ListUnsettledInvoiceRequests(ctx, *userId); err == nil {
 			return invoiceRequests, nil
 		}
@@ -28,7 +28,7 @@ func (r *queryResolver) ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRe
 }
 
 func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph.UpdateInvoiceRequestInput) (*db.InvoiceRequest, error) {
-	if user := authentication.GetUser(ctx, r.UserRepository); user != nil {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
 		if !user.NodeID.Valid {
 			log.Printf("API026: Error user has no node")
 			log.Printf("API026: Input=%#v", input)

@@ -2,6 +2,7 @@ type User {
     id: ID!
     pubkey: String!
     deviceToken: String!
+    referralCode: String
 }
 
 input CreateUserInput {

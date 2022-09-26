@@ -23,6 +23,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/node"
 	"github.com/satimoto/go-datastore/pkg/openingtime"
 	"github.com/satimoto/go-datastore/pkg/promotion"
+	"github.com/satimoto/go-datastore/pkg/referral"
 	"github.com/satimoto/go-datastore/pkg/session"
 	"github.com/satimoto/go-datastore/pkg/tariff"
 	"github.com/satimoto/go-datastore/pkg/user"
@@ -55,6 +56,7 @@ type Resolver struct {
 	LocationRepository          location.LocationRepository
 	NodeRepository              node.NodeRepository
 	OpeningTimeRepository       openingtime.OpeningTimeRepository
+	ReferralRepository          referral.ReferralRepository
 	PromotionRepository         promotion.PromotionRepository
 	SessionRepository           session.SessionRepository
 	TariffRepository            tariff.TariffRepository
@@ -94,6 +96,7 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 		NodeRepository:              node.NewRepository(repositoryService),
 		OpeningTimeRepository:       openingtime.NewRepository(repositoryService),
 		PromotionRepository:         promotion.NewRepository(repositoryService),
+		ReferralRepository:          referral.NewRepository(repositoryService),
 		SessionRepository:           session.NewRepository(repositoryService),
 		TariffRepository:            tariff.NewRepository(repositoryService),
 		TokenResolver:               token.NewResolver(repositoryService),
