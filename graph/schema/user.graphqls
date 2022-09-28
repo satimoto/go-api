@@ -15,6 +15,10 @@ input UpdateUserInput {
     deviceToken: String!
 }
 
+extend type Query {
+    getUser: User!
+}
+
 extend type Mutation {
     createUser(input: CreateUserInput!): User!
     updateUser(input: UpdateUserInput!): User!
