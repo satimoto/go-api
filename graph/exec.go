@@ -311,6 +311,7 @@ type ComplexityRoot struct {
 		GetSession           func(childComplexity int, input GetSessionInput) int
 		GetSessionInvoice    func(childComplexity int, id int64) int
 		GetTariff            func(childComplexity int, input GetTariffInput) int
+		GetUser              func(childComplexity int) int
 		ListInvoiceRequests  func(childComplexity int) int
 		ListLocations        func(childComplexity int, input ListLocationsInput) int
 		VerifyAuthentication func(childComplexity int, code string) int
@@ -573,6 +574,7 @@ type QueryResolver interface {
 	GetSession(ctx context.Context, input GetSessionInput) (*db.Session, error)
 	GetSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error)
 	GetTariff(ctx context.Context, input GetTariffInput) (*db.Tariff, error)
+	GetUser(ctx context.Context) (*db.User, error)
 }
 type RegularHourResolver interface {
 	Weekday(ctx context.Context, obj *db.RegularHour) (int, error)
@@ -1918,6 +1920,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetTariff(childComplexity, args["input"].(GetTariffInput)), true
 
+	case "Query.getUser":
+		if e.complexity.Query.GetUser == nil {
+			break
+		}
+
+		return e.complexity.Query.GetUser(childComplexity), true
+
 	case "Query.listInvoiceRequests":
 		if e.complexity.Query.ListInvoiceRequests == nil {
 			break
@@ -3011,6 +3020,10 @@ input CreateUserInput {
 
 input UpdateUserInput {
     deviceToken: String!
+}
+
+extend type Query {
+    getUser: User!
 }
 
 extend type Mutation {
@@ -9485,6 +9498,41 @@ func (ec *executionContext) _Query_getTariff(ctx context.Context, field graphql.
 	return ec.marshalNTariff2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTariff(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetUser(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐUser(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15877,6 +15925,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getTariff(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "getUser":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getUser(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

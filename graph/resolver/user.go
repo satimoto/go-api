@@ -16,6 +16,16 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+func (r *queryResolver) GetUser(ctx context.Context) (*db.User, error) {
+	user := middleware.GetUser(ctx, r.UserRepository)
+	
+	if user != nil {
+		return user, nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
 func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUserInput) (*db.User, error) {
 	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, input.Code)
 
@@ -34,7 +44,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 	var circuitUserId *int64
 	ipAddress := middleware.GetIPAddress(ctx)
 
-	if len(*ipAddress) > 0 {
+	if ipAddress != nil && len(*ipAddress) > 0 {
 		if referral, err := r.ReferralRepository.GetReferralByIpAddress(ctx, *ipAddress); err == nil {
 			circuitUserId = &referral.UserID
 		}
