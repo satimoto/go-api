@@ -53,7 +53,7 @@ func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocat
 }
 
 func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
-	if userId := middleware.GetUserId(ctx); userId != nil {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		if input.ID != nil {
 			updateLocationPublishParams := db.UpdateLocationPublishParams{
 				ID:      *input.ID,
