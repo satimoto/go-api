@@ -22,6 +22,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/location"
 	"github.com/satimoto/go-datastore/pkg/node"
 	"github.com/satimoto/go-datastore/pkg/openingtime"
+	"github.com/satimoto/go-datastore/pkg/pendingnotification"
 	"github.com/satimoto/go-datastore/pkg/promotion"
 	"github.com/satimoto/go-datastore/pkg/referral"
 	"github.com/satimoto/go-datastore/pkg/session"
@@ -40,29 +41,30 @@ type Repository interface{}
 
 type Resolver struct {
 	Repository
-	FerpService                 ferp.Ferp
-	OcpiService                 ocpi.Ocpi
-	Emailer                     email.Emailer
-	AuthenticationResolver      *authentication.AuthenticationResolver
-	BusinessDetailRepository    businessdetail.BusinessDetailRepository
-	ChannelRequestRepository    channelrequest.ChannelRequestRepository
-	CountryAccountResolver      *countryaccount.CountryAccountResolver
-	DisplayTextRepository       displaytext.DisplayTextRepository
-	EmailSubscriptionRepository emailsubscription.EmailSubscriptionRepository
-	EnergyMixRepository         energymix.EnergyMixRepository
-	EvseRepository              evse.EvseRepository
-	ImageRepository             image.ImageRepository
-	InvoiceRequestRepository    invoicerequest.InvoiceRequestRepository
-	LocationRepository          location.LocationRepository
-	NodeRepository              node.NodeRepository
-	OpeningTimeRepository       openingtime.OpeningTimeRepository
-	ReferralRepository          referral.ReferralRepository
-	PromotionRepository         promotion.PromotionRepository
-	SessionRepository           session.SessionRepository
-	TariffRepository            tariff.TariffRepository
-	TokenResolver               *token.TokenResolver
-	UserRepository              user.UserRepository
-	defaultTaxPercent           float64
+	FerpService                   ferp.Ferp
+	OcpiService                   ocpi.Ocpi
+	Emailer                       email.Emailer
+	AuthenticationResolver        *authentication.AuthenticationResolver
+	BusinessDetailRepository      businessdetail.BusinessDetailRepository
+	ChannelRequestRepository      channelrequest.ChannelRequestRepository
+	CountryAccountResolver        *countryaccount.CountryAccountResolver
+	DisplayTextRepository         displaytext.DisplayTextRepository
+	EmailSubscriptionRepository   emailsubscription.EmailSubscriptionRepository
+	EnergyMixRepository           energymix.EnergyMixRepository
+	EvseRepository                evse.EvseRepository
+	ImageRepository               image.ImageRepository
+	InvoiceRequestRepository      invoicerequest.InvoiceRequestRepository
+	LocationRepository            location.LocationRepository
+	NodeRepository                node.NodeRepository
+	OpeningTimeRepository         openingtime.OpeningTimeRepository
+	ReferralRepository            referral.ReferralRepository
+	PendingNotificationRepository pendingnotification.PendingNotificationRepository
+	PromotionRepository           promotion.PromotionRepository
+	SessionRepository             session.SessionRepository
+	TariffRepository              tariff.TariffRepository
+	TokenResolver                 *token.TokenResolver
+	UserRepository                user.UserRepository
+	defaultTaxPercent             float64
 }
 
 func NewResolver(repositoryService *db.RepositoryService) *Resolver {
@@ -78,30 +80,31 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 	defaultTaxPercent := util.GetEnvFloat64("DEFAULT_TAX_PERCENT", 19)
 
 	return &Resolver{
-		Repository:                  repo,
-		FerpService:                 ferpService,
-		OcpiService:                 ocpiService,
-		Emailer:                     emailer,
-		AuthenticationResolver:      authentication.NewResolver(repositoryService),
-		BusinessDetailRepository:    businessdetail.NewRepository(repositoryService),
-		ChannelRequestRepository:    channelrequest.NewRepository(repositoryService),
-		CountryAccountResolver:      countryaccount.NewResolver(repositoryService),
-		DisplayTextRepository:       displaytext.NewRepository(repositoryService),
-		EmailSubscriptionRepository: emailsubscription.NewRepository(repositoryService),
-		EnergyMixRepository:         energymix.NewRepository(repositoryService),
-		EvseRepository:              evse.NewRepository(repositoryService),
-		ImageRepository:             image.NewRepository(repositoryService),
-		InvoiceRequestRepository:    invoicerequest.NewRepository(repositoryService),
-		LocationRepository:          location.NewRepository(repositoryService),
-		NodeRepository:              node.NewRepository(repositoryService),
-		OpeningTimeRepository:       openingtime.NewRepository(repositoryService),
-		PromotionRepository:         promotion.NewRepository(repositoryService),
-		ReferralRepository:          referral.NewRepository(repositoryService),
-		SessionRepository:           session.NewRepository(repositoryService),
-		TariffRepository:            tariff.NewRepository(repositoryService),
-		TokenResolver:               token.NewResolver(repositoryService),
-		UserRepository:              user.NewRepository(repositoryService),
-		defaultTaxPercent:           defaultTaxPercent,
+		Repository:                    repo,
+		FerpService:                   ferpService,
+		OcpiService:                   ocpiService,
+		Emailer:                       emailer,
+		AuthenticationResolver:        authentication.NewResolver(repositoryService),
+		BusinessDetailRepository:      businessdetail.NewRepository(repositoryService),
+		ChannelRequestRepository:      channelrequest.NewRepository(repositoryService),
+		CountryAccountResolver:        countryaccount.NewResolver(repositoryService),
+		DisplayTextRepository:         displaytext.NewRepository(repositoryService),
+		EmailSubscriptionRepository:   emailsubscription.NewRepository(repositoryService),
+		EnergyMixRepository:           energymix.NewRepository(repositoryService),
+		EvseRepository:                evse.NewRepository(repositoryService),
+		ImageRepository:               image.NewRepository(repositoryService),
+		InvoiceRequestRepository:      invoicerequest.NewRepository(repositoryService),
+		LocationRepository:            location.NewRepository(repositoryService),
+		NodeRepository:                node.NewRepository(repositoryService),
+		OpeningTimeRepository:         openingtime.NewRepository(repositoryService),
+		PendingNotificationRepository: pendingnotification.NewRepository(repositoryService),
+		PromotionRepository:           promotion.NewRepository(repositoryService),
+		ReferralRepository:            referral.NewRepository(repositoryService),
+		SessionRepository:             session.NewRepository(repositoryService),
+		TariffRepository:              tariff.NewRepository(repositoryService),
+		TokenResolver:                 token.NewResolver(repositoryService),
+		UserRepository:                user.NewRepository(repositoryService),
+		defaultTaxPercent:             defaultTaxPercent,
 	}
 }
 
