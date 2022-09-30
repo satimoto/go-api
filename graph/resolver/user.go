@@ -51,18 +51,20 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 	}
 
 	referralCode := r.generateReferralCode(ctx)
-
-	user, err := r.UserRepository.CreateUser(ctx, db.CreateUserParams{
+	createUserParams := db.CreateUserParams{
 		CommissionPercent: dbUtil.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
 		DeviceToken:       input.DeviceToken,
 		LinkingPubkey:     auth.LinkingPubkey.String,
 		Pubkey:            input.Pubkey,
 		ReferralCode:      dbUtil.SqlNullString(referralCode),
 		CircuitUserID:     dbUtil.SqlNullInt64(circuitUserId),
-	})
+	}
+
+	user, err := r.UserRepository.CreateUser(ctx, createUserParams)
 
 	if err != nil {
 		dbUtil.LogOnError("API018", "User already exists", err)
+		log.Printf("API018: Params=%#v", createUserParams)
 		return nil, gqlerror.Errorf("User already exists")
 	}
 
@@ -84,7 +86,21 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 
 		if err != nil {
 			dbUtil.LogOnError("API020", "Error updating user", err)
+			log.Printf("API020: Params=%#v", updateUserParams)
 			return nil, gqlerror.Errorf("Error updating user")
+		}
+
+		updatePendingNotificationByUserParams := db.UpdatePendingNotificationsByUserParams{
+			DeviceToken: input.DeviceToken,
+			UserID: user.ID,
+		}
+
+		err = r.PendingNotificationRepository.UpdatePendingNotificationsByUser(ctx, updatePendingNotificationByUserParams)
+
+		if err != nil {
+			dbUtil.LogOnError("API027", "Error updating pending notifications", err)
+			log.Printf("API027: Params=%#v", updatePendingNotificationByUserParams)
+			return nil, gqlerror.Errorf("Error updating pending notifications")
 		}
 
 		return &updatedUser, nil
