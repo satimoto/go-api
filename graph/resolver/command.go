@@ -14,6 +14,7 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// StartSession is the resolver for the startSession field.
 func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSessionInput) (*graph.StartSession, error) {
 	if userId := middleware.GetUserId(ctx); userId != nil {
 		startSessionRequest := command.NewStartSessionRequest(*userId, input)
@@ -31,6 +32,7 @@ func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSe
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
+// StopSession is the resolver for the stopSession field.
 func (r *mutationResolver) StopSession(ctx context.Context, input graph.StopSessionInput) (*graph.StopSession, error) {
 	if userId := middleware.GetUserId(ctx); userId != nil {
 		stopSessionRequest := command.NewStopSessionRequest(*userId, input)

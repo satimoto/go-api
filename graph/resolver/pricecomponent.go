@@ -13,12 +13,12 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-type OperationalContextVariable map[string]interface{}
-
+// Type is the resolver for the type field.
 func (r *priceComponentResolver) Type(ctx context.Context, obj *db.PriceComponent) (string, error) {
 	return string(obj.Type), nil
 }
 
+// PriceMsat is the resolver for the priceMsat field.
 func (r *priceComponentResolver) PriceMsat(ctx context.Context, obj *db.PriceComponent) (int, error) {
 	currencyRate, err := r.FerpService.GetRate(obj.Currency)
 
@@ -32,6 +32,7 @@ func (r *priceComponentResolver) PriceMsat(ctx context.Context, obj *db.PriceCom
 	return priceMsat, nil
 }
 
+// CommissionMsat is the resolver for the commissionMsat field.
 func (r *priceComponentResolver) CommissionMsat(ctx context.Context, obj *db.PriceComponent) (int, error) {
 	currencyRate, err := r.FerpService.GetRate(obj.Currency)
 
@@ -48,6 +49,7 @@ func (r *priceComponentResolver) CommissionMsat(ctx context.Context, obj *db.Pri
 	return *commissionMsat, nil
 }
 
+// TaxMsat is the resolver for the taxMsat field.
 func (r *priceComponentResolver) TaxMsat(ctx context.Context, obj *db.PriceComponent) (*int, error) {
 	taxPercent, err := r.calculateTaxPercent(ctx)
 
@@ -76,11 +78,17 @@ func (r *priceComponentResolver) TaxMsat(ctx context.Context, obj *db.PriceCompo
 }
 
 // PriceComponent returns graph.PriceComponentResolver implementation.
-func (r *Resolver) PriceComponent() graph.PriceComponentResolver {
-	return &priceComponentResolver{r}
-}
+func (r *Resolver) PriceComponent() graph.PriceComponentResolver { return &priceComponentResolver{r} }
 
 type priceComponentResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+type OperationalContextVariable map[string]interface{}
 
 func (r *priceComponentResolver) calculateCommissionMsat(ctx context.Context, currencyRate *rate.CurrencyRate, obj *db.PriceComponent) (*int, error) {
 	user := middleware.GetUser(ctx, r.Resolver.UserRepository)

@@ -53,6 +53,15 @@ func NewRegisterCredentialRequest(input graph.RegisterCredentialInput) *ocpirpc.
 	}
 }
 
+func NewSyncCredentialRequest(input graph.SyncCredentialInput) *ocpirpc.SyncCredentialRequest {
+	return &ocpirpc.SyncCredentialRequest{
+		Id:          input.ID,
+		FromDate:    util.DefaultString(input.FromDate, ""),
+		CountryCode: util.DefaultString(input.CountryCode, ""),
+		PartyId:     util.DefaultString(input.PartyID, ""),
+	}
+}
+
 func NewUnregisterCredentialRequest(input graph.UnregisterCredentialInput) *ocpirpc.UnregisterCredentialRequest {
 	return &ocpirpc.UnregisterCredentialRequest{
 		Id: input.ID,

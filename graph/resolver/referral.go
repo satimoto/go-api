@@ -15,7 +15,8 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *mutationResolver) CreateReferral(ctx context.Context, input graph.CreateReferralInput) (*graph.ResultID, error) {	
+// CreateReferral is the resolver for the createReferral field.
+func (r *mutationResolver) CreateReferral(ctx context.Context, input graph.CreateReferralInput) (*graph.ResultID, error) {
 	user, err := r.UserRepository.GetUserByReferralCode(ctx, util.SqlNullString(input.Referrer))
 
 	if err != nil {
@@ -41,9 +42,9 @@ func (r *mutationResolver) CreateReferral(ctx context.Context, input graph.Creat
 	}
 
 	createReferralParams := db.CreateReferralParams{
-		UserID: user.ID,
+		UserID:      user.ID,
 		PromotionID: promotion.ID,
-		IpAddress: *ipAddress,
+		IpAddress:   *ipAddress,
 		LastUpdated: time.Now(),
 	}
 

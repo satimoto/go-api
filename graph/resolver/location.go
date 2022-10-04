@@ -16,42 +16,137 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocationInput) (*db.Location, error) {
-	if userId := middleware.GetUserId(ctx); userId != nil {
-		if input.ID != nil {
-			if l, err := r.LocationRepository.GetLocation(ctx, *input.ID); err == nil {
-				return &l, nil
-			}
-		} else if input.UID != nil {
-			if l, err := r.LocationRepository.GetLocationByUid(ctx, *input.UID); err == nil {
-				return &l, nil
-			}
-		}
-
-		return nil, gqlerror.Errorf("Location not found")
-	}
-
-	return nil, gqlerror.Errorf("Not authenticated")
+// Type is the resolver for the type field.
+func (r *locationResolver) Type(ctx context.Context, obj *db.Location) (string, error) {
+	return string(obj.Type), nil
 }
 
-func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
-	if userId := middleware.GetUserId(ctx); userId != nil {
-		var list []graph.ListLocation
-
-		params := param.NewListLocationsByGeomParams(input)
-
-		if locations, err := r.LocationRepository.ListLocationsByGeom(ctx, params); err == nil {
-			for _, l := range locations {
-				list = append(list, param.NewListLocation(l))
-			}
-		}
-
-		return list, nil
-	}
-
-	return nil, gqlerror.Errorf("Not authenticated")
+// Name is the resolver for the name field.
+func (r *locationResolver) Name(ctx context.Context, obj *db.Location) (*string, error) {
+	return util.NullString(obj.Name)
 }
 
+// RelatedLocations is the resolver for the relatedLocations field.
+func (r *locationResolver) RelatedLocations(ctx context.Context, obj *db.Location) ([]graph.AddtionalGeoLocation, error) {
+	list := []graph.AddtionalGeoLocation{}
+
+	if additionalGeoLocations, err := r.LocationRepository.ListAdditionalGeoLocations(ctx, obj.ID); err == nil {
+		for _, additionalGeoLocation := range additionalGeoLocations {
+			agl := graph.AddtionalGeoLocation{
+				Latitude:  additionalGeoLocation.LatitudeFloat,
+				Longitude: additionalGeoLocation.LongitudeFloat,
+			}
+
+			if additionalGeoLocation.DisplayTextID.Valid {
+				if displayText, err := r.DisplayTextRepository.GetDisplayText(ctx, additionalGeoLocation.DisplayTextID.Int64); err == nil {
+					agl.Name = &displayText
+				}
+			}
+
+			list = append(list, agl)
+		}
+	}
+
+	return list, nil
+}
+
+// Evses is the resolver for the evses field.
+func (r *locationResolver) Evses(ctx context.Context, obj *db.Location) ([]db.Evse, error) {
+	return r.LocationRepository.ListActiveEvses(ctx, obj.ID)
+}
+
+// Directions is the resolver for the directions field.
+func (r *locationResolver) Directions(ctx context.Context, obj *db.Location) ([]db.DisplayText, error) {
+	return r.LocationRepository.ListLocationDirections(ctx, obj.ID)
+}
+
+// Operator is the resolver for the operator field.
+func (r *locationResolver) Operator(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
+	if obj.OperatorID.Valid {
+		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.OperatorID.Int64); err == nil {
+			return &businessDetail, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// Suboperator is the resolver for the suboperator field.
+func (r *locationResolver) Suboperator(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
+	if obj.SuboperatorID.Valid {
+		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.SuboperatorID.Int64); err == nil {
+			return &businessDetail, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// Owner is the resolver for the owner field.
+func (r *locationResolver) Owner(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
+	if obj.OwnerID.Valid {
+		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.OwnerID.Int64); err == nil {
+			return &businessDetail, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// Facilities is the resolver for the facilities field.
+func (r *locationResolver) Facilities(ctx context.Context, obj *db.Location) ([]graph.TextDescription, error) {
+	list := []graph.TextDescription{}
+
+	if facilities, err := r.LocationRepository.ListLocationFacilities(ctx, obj.ID); err == nil {
+		for _, facility := range facilities {
+			list = append(list, graph.TextDescription{
+				Text:        facility.Text,
+				Description: facility.Description,
+			})
+		}
+	}
+
+	return list, nil
+}
+
+// TimeZone is the resolver for the timeZone field.
+func (r *locationResolver) TimeZone(ctx context.Context, obj *db.Location) (*string, error) {
+	return util.NullString(obj.TimeZone)
+}
+
+// OpeningTime is the resolver for the openingTime field.
+func (r *locationResolver) OpeningTime(ctx context.Context, obj *db.Location) (*db.OpeningTime, error) {
+	if obj.OpeningTimeID.Valid {
+		if openingTime, err := r.OpeningTimeRepository.GetOpeningTime(ctx, obj.OpeningTimeID.Int64); err == nil {
+			return &openingTime, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// Images is the resolver for the images field.
+func (r *locationResolver) Images(ctx context.Context, obj *db.Location) ([]db.Image, error) {
+	return r.LocationRepository.ListLocationImages(ctx, obj.ID)
+}
+
+// EnergyMix is the resolver for the energyMix field.
+func (r *locationResolver) EnergyMix(ctx context.Context, obj *db.Location) (*db.EnergyMix, error) {
+	if obj.EnergyMixID.Valid {
+		if energyMix, err := r.EnergyMixRepository.GetEnergyMix(ctx, obj.EnergyMixID.Int64); err == nil {
+			return &energyMix, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// LastUpdated is the resolver for the lastUpdated field.
+func (r *locationResolver) LastUpdated(ctx context.Context, obj *db.Location) (string, error) {
+	return obj.LastUpdated.Format(time.RFC3339), nil
+}
+
+// PublishLocation is the resolver for the publishLocation field.
 func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		if input.ID != nil {
@@ -88,120 +183,42 @@ func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.Publ
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
-func (r *locationResolver) Type(ctx context.Context, obj *db.Location) (string, error) {
-	return string(obj.Type), nil
-}
-
-func (r *locationResolver) Name(ctx context.Context, obj *db.Location) (*string, error) {
-	return util.NullString(obj.Name)
-}
-
-func (r *locationResolver) RelatedLocations(ctx context.Context, obj *db.Location) ([]graph.AddtionalGeoLocation, error) {
-	list := []graph.AddtionalGeoLocation{}
-
-	if additionalGeoLocations, err := r.LocationRepository.ListAdditionalGeoLocations(ctx, obj.ID); err == nil {
-		for _, additionalGeoLocation := range additionalGeoLocations {
-			agl := graph.AddtionalGeoLocation{
-				Latitude:  additionalGeoLocation.LatitudeFloat,
-				Longitude: additionalGeoLocation.LongitudeFloat,
+// GetLocation is the resolver for the getLocation field.
+func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocationInput) (*db.Location, error) {
+	if userId := middleware.GetUserId(ctx); userId != nil {
+		if input.ID != nil {
+			if l, err := r.LocationRepository.GetLocation(ctx, *input.ID); err == nil {
+				return &l, nil
 			}
-
-			if additionalGeoLocation.DisplayTextID.Valid {
-				if displayText, err := r.DisplayTextRepository.GetDisplayText(ctx, additionalGeoLocation.DisplayTextID.Int64); err == nil {
-					agl.Name = &displayText
-				}
+		} else if input.UID != nil {
+			if l, err := r.LocationRepository.GetLocationByUid(ctx, *input.UID); err == nil {
+				return &l, nil
 			}
-
-			list = append(list, agl)
 		}
+
+		return nil, gqlerror.Errorf("Location not found")
 	}
 
-	return list, nil
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
-func (r *locationResolver) Evses(ctx context.Context, obj *db.Location) ([]db.Evse, error) {
-	return r.LocationRepository.ListActiveEvses(ctx, obj.ID)
-}
+// ListLocations is the resolver for the listLocations field.
+func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
+	if userId := middleware.GetUserId(ctx); userId != nil {
+		var list []graph.ListLocation
 
-func (r *locationResolver) Directions(ctx context.Context, obj *db.Location) ([]db.DisplayText, error) {
-	return r.LocationRepository.ListLocationDirections(ctx, obj.ID)
-}
+		params := param.NewListLocationsByGeomParams(input)
 
-func (r *locationResolver) Operator(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
-	if obj.OperatorID.Valid {
-		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.OperatorID.Int64); err == nil {
-			return &businessDetail, nil
+		if locations, err := r.LocationRepository.ListLocationsByGeom(ctx, params); err == nil {
+			for _, l := range locations {
+				list = append(list, param.NewListLocation(l))
+			}
 		}
+
+		return list, nil
 	}
 
-	return nil, nil
-}
-
-func (r *locationResolver) Suboperator(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
-	if obj.SuboperatorID.Valid {
-		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.SuboperatorID.Int64); err == nil {
-			return &businessDetail, nil
-		}
-	}
-
-	return nil, nil
-}
-
-func (r *locationResolver) Owner(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
-	if obj.OwnerID.Valid {
-		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.OwnerID.Int64); err == nil {
-			return &businessDetail, nil
-		}
-	}
-
-	return nil, nil
-}
-
-func (r *locationResolver) Facilities(ctx context.Context, obj *db.Location) ([]graph.TextDescription, error) {
-	list := []graph.TextDescription{}
-
-	if facilities, err := r.LocationRepository.ListLocationFacilities(ctx, obj.ID); err == nil {
-		for _, facility := range facilities {
-			list = append(list, graph.TextDescription{
-				Text:        facility.Text,
-				Description: facility.Description,
-			})
-		}
-	}
-
-	return list, nil
-}
-
-func (r *locationResolver) TimeZone(ctx context.Context, obj *db.Location) (*string, error) {
-	return util.NullString(obj.TimeZone)
-}
-
-func (r *locationResolver) OpeningTime(ctx context.Context, obj *db.Location) (*db.OpeningTime, error) {
-	if obj.OpeningTimeID.Valid {
-		if openingTime, err := r.OpeningTimeRepository.GetOpeningTime(ctx, obj.OpeningTimeID.Int64); err == nil {
-			return &openingTime, nil
-		}
-	}
-
-	return nil, nil
-}
-
-func (r *locationResolver) Images(ctx context.Context, obj *db.Location) ([]db.Image, error) {
-	return r.LocationRepository.ListLocationImages(ctx, obj.ID)
-}
-
-func (r *locationResolver) EnergyMix(ctx context.Context, obj *db.Location) (*db.EnergyMix, error) {
-	if obj.EnergyMixID.Valid {
-		if energyMix, err := r.EnergyMixRepository.GetEnergyMix(ctx, obj.EnergyMixID.Int64); err == nil {
-			return &energyMix, nil
-		}
-	}
-
-	return nil, nil
-}
-
-func (r *locationResolver) LastUpdated(ctx context.Context, obj *db.Location) (string, error) {
-	return obj.LastUpdated.Format(time.RFC3339), nil
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
 // Location returns graph.LocationResolver implementation.

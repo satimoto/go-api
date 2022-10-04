@@ -18,6 +18,7 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// CreateAuthentication is the resolver for the createAuthentication field.
 func (r *mutationResolver) CreateAuthentication(ctx context.Context, action graph.AuthenticationAction) (*graph.CreateAuthentication, error) {
 	authentication, err := r.AuthenticationResolver.Repository.CreateAuthentication(ctx, db.CreateAuthenticationParams{
 		Action:    db.AuthenticationActions(action),
@@ -47,6 +48,7 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, action grap
 	}, nil
 }
 
+// ExchangeAuthentication is the resolver for the exchangeAuthentication field.
 func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code string) (*graph.ExchangeAuthentication, error) {
 	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, code)
 
@@ -83,6 +85,7 @@ func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code stri
 	}, nil
 }
 
+// VerifyAuthentication is the resolver for the verifyAuthentication field.
 func (r *queryResolver) VerifyAuthentication(ctx context.Context, code string) (*graph.VerifyAuthentication, error) {
 	authentication, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, code)
 

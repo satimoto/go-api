@@ -14,6 +14,33 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// Website is the resolver for the website field.
+func (r *businessDetailResolver) Website(ctx context.Context, obj *db.BusinessDetail) (*string, error) {
+	return util.NullString(obj.Website)
+}
+
+// Logo is the resolver for the logo field.
+func (r *businessDetailResolver) Logo(ctx context.Context, obj *db.BusinessDetail) (*db.Image, error) {
+	if obj.LogoID.Valid {
+		if image, err := r.ImageRepository.GetImage(ctx, obj.LogoID.Int64); err == nil {
+			return &image, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// BusinessDetail returns graph.BusinessDetailResolver implementation.
+func (r *Resolver) BusinessDetail() graph.BusinessDetailResolver { return &businessDetailResolver{r} }
+
+type businessDetailResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
 func (r *mutationResolver) CreateBusinessDetail(ctx context.Context, input graph.CreateBusinessDetailInput) (*db.BusinessDetail, error) {
 	params := param.NewCreateBusinessDetailParams(input)
 
@@ -31,22 +58,3 @@ func (r *mutationResolver) CreateBusinessDetail(ctx context.Context, input graph
 
 	return &businessDetail, nil
 }
-
-func (r *businessDetailResolver) Website(ctx context.Context, obj *db.BusinessDetail) (*string, error) {
-	return util.NullString(obj.Website)
-}
-
-func (r *businessDetailResolver) Logo(ctx context.Context, obj *db.BusinessDetail) (*db.Image, error) {
-	if obj.LogoID.Valid {
-		if image, err := r.ImageRepository.GetImage(ctx, obj.LogoID.Int64); err == nil {
-			return &image, nil
-		}
-	}
-
-	return nil, nil
-}
-
-// BusinessDetail returns graph.BusinessDetailResolver implementation.
-func (r *Resolver) BusinessDetail() graph.BusinessDetailResolver { return &businessDetailResolver{r} }
-
-type businessDetailResolver struct{ *Resolver }

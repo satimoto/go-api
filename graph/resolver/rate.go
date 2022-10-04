@@ -14,6 +14,7 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// GetRate is the resolver for the getRate field.
 func (r *queryResolver) GetRate(ctx context.Context, currency string) (*graph.Rate, error) {
 	currencyRate, err := r.FerpService.GetRate(currency)
 
@@ -24,8 +25,8 @@ func (r *queryResolver) GetRate(ctx context.Context, currency string) (*graph.Ra
 	}
 
 	return &graph.Rate{
-		Rate:  strconv.FormatInt(currencyRate.Rate, 10),
-		RateMsat: strconv.FormatInt(currencyRate.RateMsat, 10),
+		Rate:        strconv.FormatInt(currencyRate.Rate, 10),
+		RateMsat:    strconv.FormatInt(currencyRate.RateMsat, 10),
 		LastUpdated: currencyRate.LastUpdated.Format(time.RFC3339),
 	}, nil
 }
