@@ -5,7 +5,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/satimoto/go-api/graph"
