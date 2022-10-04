@@ -14,6 +14,7 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// GetSessionInvoice is the resolver for the getSessionInvoice field.
 func (r *queryResolver) GetSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error) {
 	if userId := middleware.GetUserId(ctx); userId != nil {
 		if s, err := r.SessionRepository.GetSessionInvoice(ctx, id); err == nil && userId == &s.UserID {
@@ -26,15 +27,17 @@ func (r *queryResolver) GetSessionInvoice(ctx context.Context, id int64) (*db.Se
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
+// Signature is the resolver for the signature field.
 func (r *sessionInvoiceResolver) Signature(ctx context.Context, obj *db.SessionInvoice) (string, error) {
 	return hex.EncodeToString(obj.Signature), nil
 }
 
+// LastUpdated is the resolver for the lastUpdated field.
 func (r *sessionInvoiceResolver) LastUpdated(ctx context.Context, obj *db.SessionInvoice) (string, error) {
 	return obj.LastUpdated.Format(time.RFC3339), nil
 }
 
-// Session returns graph.SessioInvoicenResolver implementation.
+// SessionInvoice returns graph.SessionInvoiceResolver implementation.
 func (r *Resolver) SessionInvoice() graph.SessionInvoiceResolver { return &sessionInvoiceResolver{r} }
 
 type sessionInvoiceResolver struct{ *Resolver }

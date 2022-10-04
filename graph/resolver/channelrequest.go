@@ -23,18 +23,22 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// PaymentHash is the resolver for the paymentHash field.
 func (r *channelRequestResolver) PaymentHash(ctx context.Context, obj *db.ChannelRequest) (string, error) {
 	return base64.StdEncoding.EncodeToString(obj.PaymentHash), nil
 }
 
+// PaymentAddr is the resolver for the paymentAddr field.
 func (r *channelRequestResolver) PaymentAddr(ctx context.Context, obj *db.ChannelRequest) (string, error) {
 	return base64.StdEncoding.EncodeToString(obj.PaymentAddr), nil
 }
 
+// AmountMsat is the resolver for the amountMsat field.
 func (r *channelRequestResolver) AmountMsat(ctx context.Context, obj *db.ChannelRequest) (string, error) {
 	return strconv.FormatInt(obj.AmountMsat, 10), nil
 }
 
+// Node is the resolver for the node field.
 func (r *channelRequestResolver) Node(ctx context.Context, obj *db.ChannelRequest) (*db.Node, error) {
 	if node, err := r.NodeRepository.GetNode(ctx, obj.NodeID); err == nil {
 		return &node, nil
@@ -43,6 +47,7 @@ func (r *channelRequestResolver) Node(ctx context.Context, obj *db.ChannelReques
 	return nil, gqlerror.Errorf("Node not found")
 }
 
+// PendingChanID is the resolver for the pendingChanId field.
 func (r *channelRequestResolver) PendingChanID(ctx context.Context, obj *db.ChannelRequest) (string, error) {
 	bigInt := new(big.Int)
 	bigInt.SetBytes(obj.PendingChanID)
@@ -50,24 +55,14 @@ func (r *channelRequestResolver) PendingChanID(ctx context.Context, obj *db.Chan
 	return bigInt.Text(10), nil
 }
 
+// Scid is the resolver for the scid field.
 func (r *channelRequestResolver) Scid(ctx context.Context, obj *db.ChannelRequest) (string, error) {
 	scid := binary.LittleEndian.Uint64(obj.Scid)
 
 	return strconv.FormatUint(scid, 10), nil
 }
 
-func (r *channelRequestResolver) FeeBaseMsat(ctx context.Context, obj *db.ChannelRequest) (int, error) {
-	return int(obj.FeeBaseMsat), nil
-}
-
-func (r *channelRequestResolver) FeeProportionalMillionths(ctx context.Context, obj *db.ChannelRequest) (int, error) {
-	return int(obj.FeeProportionalMillionths), nil
-}
-
-func (r *channelRequestResolver) CltvExpiryDelta(ctx context.Context, obj *db.ChannelRequest) (int, error) {
-	return int(obj.CltvExpiryDelta), nil
-}
-
+// CreateChannelRequest is the resolver for the createChannelRequest field.
 func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
 		paymentHashBytes, err := base64.StdEncoding.DecodeString(input.PaymentHash)
@@ -175,3 +170,19 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 func (r *Resolver) ChannelRequest() graph.ChannelRequestResolver { return &channelRequestResolver{r} }
 
 type channelRequestResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *channelRequestResolver) FeeBaseMsat(ctx context.Context, obj *db.ChannelRequest) (int, error) {
+	return int(obj.FeeBaseMsat), nil
+}
+func (r *channelRequestResolver) FeeProportionalMillionths(ctx context.Context, obj *db.ChannelRequest) (int, error) {
+	return int(obj.FeeProportionalMillionths), nil
+}
+func (r *channelRequestResolver) CltvExpiryDelta(ctx context.Context, obj *db.ChannelRequest) (int, error) {
+	return int(obj.CltvExpiryDelta), nil
+}

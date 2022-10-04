@@ -5,16 +5,18 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/credential"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// CreateCredential is the resolver for the createCredential field.
 func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.CreateCredentialInput) (*db.Credential, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewCreateCredentialRequest(input)
@@ -32,6 +34,7 @@ func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.Cre
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
+// RegisterCredential is the resolver for the registerCredential field.
 func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.RegisterCredentialInput) (*graph.ResultID, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewRegisterCredentialRequest(input)
@@ -49,6 +52,25 @@ func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.R
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
+// SyncCredential is the resolver for the syncCredential field.
+func (r *mutationResolver) SyncCredential(ctx context.Context, input graph.SyncCredentialInput) (*graph.ResultID, error) {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+		credentialRequest := credential.NewSyncCredentialRequest(input)
+		credentialResponse, err := r.OcpiService.SyncCredential(ctx, credentialRequest)
+
+		if err != nil {
+			util.LogOnError("API028", "Error syncing credential", err)
+			log.Printf("API028: SyncCredentialRequest=%#v", credentialRequest)
+			return nil, gqlerror.Errorf("Error syncing credential")
+		}
+
+		return &graph.ResultID{ID: credentialResponse.Id}, nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// UnregisterCredential is the resolver for the unregisterCredential field.
 func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph.UnregisterCredentialInput) (*graph.ResultID, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewUnregisterCredentialRequest(input)

@@ -16,16 +16,7 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *queryResolver) GetUser(ctx context.Context) (*db.User, error) {
-	user := middleware.GetUser(ctx, r.UserRepository)
-	
-	if user != nil {
-		return user, nil
-	}
-
-	return nil, gqlerror.Errorf("Not authenticated")
-}
-
+// CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUserInput) (*db.User, error) {
 	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, input.Code)
 
@@ -77,6 +68,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 	return &user, nil
 }
 
+// UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUserInput) (*db.User, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
 		updateUserParams := param.NewUpdateUserParams(*user)
@@ -92,7 +84,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 
 		updatePendingNotificationByUserParams := db.UpdatePendingNotificationsByUserParams{
 			DeviceToken: input.DeviceToken,
-			UserID: user.ID,
+			UserID:      user.ID,
 		}
 
 		err = r.PendingNotificationRepository.UpdatePendingNotificationsByUser(ctx, updatePendingNotificationByUserParams)
@@ -109,10 +101,33 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
+// GetUser is the resolver for the getUser field.
+func (r *queryResolver) GetUser(ctx context.Context) (*db.User, error) {
+	user := middleware.GetUser(ctx, r.UserRepository)
+
+	if user != nil {
+		return user, nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// ReferralCode is the resolver for the referralCode field.
 func (r *userResolver) ReferralCode(ctx context.Context, obj *db.User) (*string, error) {
 	return util.NullString(obj.ReferralCode)
 }
 
+// User returns graph.UserResolver implementation.
+func (r *Resolver) User() graph.UserResolver { return &userResolver{r} }
+
+type userResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
 func (r *mutationResolver) generateReferralCode(ctx context.Context) string {
 	for {
 		referralCode := util.RandomString(8)
@@ -122,9 +137,3 @@ func (r *mutationResolver) generateReferralCode(ctx context.Context) string {
 		}
 	}
 }
-
-// User returns graph.UserResolver implementation.
-func (r *Resolver) User() graph.UserResolver { return &userResolver{r} }
-
-type userResolver struct{ *Resolver }
-

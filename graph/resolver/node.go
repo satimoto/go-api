@@ -10,6 +10,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 )
 
+// Addr is the resolver for the addr field.
 func (r *nodeResolver) Addr(ctx context.Context, obj *db.Node) (string, error) {
 	return obj.NodeAddr, nil
 }

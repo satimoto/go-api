@@ -17,16 +17,46 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *queryResolver) ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRequest, error) {
-	if userId := middleware.GetUserId(ctx); userId != nil {
-		if invoiceRequests, err := r.InvoiceRequestRepository.ListUnsettledInvoiceRequests(ctx, *userId); err == nil {
-			return invoiceRequests, nil
-		}
+// Promotion is the resolver for the promotion field.
+func (r *invoiceRequestResolver) Promotion(ctx context.Context, obj *db.InvoiceRequest) (*db.Promotion, error) {
+	if promotion, err := r.PromotionRepository.GetPromotion(ctx, obj.PromotionID); err == nil {
+		return &promotion, nil
 	}
 
-	return nil, gqlerror.Errorf("Not authenticated")
+	return nil, gqlerror.Errorf("Promotion not found")
 }
 
+// PriceFiat is the resolver for the priceFiat field.
+func (r *invoiceRequestResolver) PriceFiat(ctx context.Context, obj *db.InvoiceRequest) (*float64, error) {
+	return util.NullFloat(obj.PriceFiat)
+}
+
+// PriceMsat is the resolver for the priceMsat field.
+func (r *invoiceRequestResolver) PriceMsat(ctx context.Context, obj *db.InvoiceRequest) (*int, error) {
+	return util.NullInt(obj.PriceMsat)
+}
+
+// CommissionFiat is the resolver for the commissionFiat field.
+func (r *invoiceRequestResolver) CommissionFiat(ctx context.Context, obj *db.InvoiceRequest) (*float64, error) {
+	return util.NullFloat(obj.CommissionFiat)
+}
+
+// CommissionMsat is the resolver for the commissionMsat field.
+func (r *invoiceRequestResolver) CommissionMsat(ctx context.Context, obj *db.InvoiceRequest) (*int, error) {
+	return util.NullInt(obj.CommissionMsat)
+}
+
+// TaxFiat is the resolver for the taxFiat field.
+func (r *invoiceRequestResolver) TaxFiat(ctx context.Context, obj *db.InvoiceRequest) (*float64, error) {
+	return util.NullFloat(obj.TaxFiat)
+}
+
+// TaxMsat is the resolver for the taxMsat field.
+func (r *invoiceRequestResolver) TaxMsat(ctx context.Context, obj *db.InvoiceRequest) (*int, error) {
+	return util.NullInt(obj.TaxMsat)
+}
+
+// UpdateInvoiceRequest is the resolver for the updateInvoiceRequest field.
 func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph.UpdateInvoiceRequestInput) (*db.InvoiceRequest, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
 		if !user.NodeID.Valid {
@@ -75,39 +105,18 @@ func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
-func (r *invoiceRequestResolver) CommissionFiat(ctx context.Context, obj *db.InvoiceRequest) (*float64, error) {
-	return util.NullFloat(obj.CommissionFiat)
-}
-
-func (r *invoiceRequestResolver) CommissionMsat(ctx context.Context, obj *db.InvoiceRequest) (*int, error) {
-	return util.NullInt(obj.CommissionMsat)
-}
-
-func (r *invoiceRequestResolver) PriceFiat(ctx context.Context, obj *db.InvoiceRequest) (*float64, error) {
-	return util.NullFloat(obj.PriceFiat)
-}
-
-func (r *invoiceRequestResolver) PriceMsat(ctx context.Context, obj *db.InvoiceRequest) (*int, error) {
-	return util.NullInt(obj.PriceMsat)
-}
-
-func (r *invoiceRequestResolver) Promotion(ctx context.Context, obj *db.InvoiceRequest) (*db.Promotion, error) {
-	if promotion, err := r.PromotionRepository.GetPromotion(ctx, obj.PromotionID); err == nil {
-		return &promotion, nil
+// ListInvoiceRequests is the resolver for the listInvoiceRequests field.
+func (r *queryResolver) ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRequest, error) {
+	if userId := middleware.GetUserId(ctx); userId != nil {
+		if invoiceRequests, err := r.InvoiceRequestRepository.ListUnsettledInvoiceRequests(ctx, *userId); err == nil {
+			return invoiceRequests, nil
+		}
 	}
 
-	return nil, gqlerror.Errorf("Promotion not found")
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
-func (r *invoiceRequestResolver) TaxFiat(ctx context.Context, obj *db.InvoiceRequest) (*float64, error) {
-	return util.NullFloat(obj.TaxFiat)
-}
-
-func (r *invoiceRequestResolver) TaxMsat(ctx context.Context, obj *db.InvoiceRequest) (*int, error) {
-	return util.NullInt(obj.TaxMsat)
-}
-
-// Session returns graph.SessioInvoicenResolver implementation.
+// InvoiceRequest returns graph.InvoiceRequestResolver implementation.
 func (r *Resolver) InvoiceRequest() graph.InvoiceRequestResolver { return &invoiceRequestResolver{r} }
 
 type invoiceRequestResolver struct{ *Resolver }

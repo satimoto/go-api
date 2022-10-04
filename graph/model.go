@@ -166,6 +166,13 @@ type StopSessionInput struct {
 	SessionUID string `json:"sessionUid"`
 }
 
+type SyncCredentialInput struct {
+	ID          int64   `json:"id"`
+	FromDate    *string `json:"fromDate"`
+	CountryCode *string `json:"countryCode"`
+	PartyID     *string `json:"partyId"`
+}
+
 type TariffElement struct {
 	PriceComponents []db.PriceComponent    `json:"priceComponents"`
 	Restrictions    *db.ElementRestriction `json:"restrictions"`

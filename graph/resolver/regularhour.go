@@ -10,6 +10,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 )
 
+// Weekday is the resolver for the weekday field.
 func (r *regularHourResolver) Weekday(ctx context.Context, obj *db.RegularHour) (int, error) {
 	return int(obj.Weekday), nil
 }

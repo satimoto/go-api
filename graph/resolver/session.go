@@ -14,6 +14,7 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// GetSession is the resolver for the getSession field.
 func (r *queryResolver) GetSession(ctx context.Context, input graph.GetSessionInput) (*db.Session, error) {
 	if userId := middleware.GetUserId(ctx); userId != nil {
 		if input.ID != nil {
@@ -36,22 +37,27 @@ func (r *queryResolver) GetSession(ctx context.Context, input graph.GetSessionIn
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
+// AuthorizationID is the resolver for the authorizationId field.
 func (r *sessionResolver) AuthorizationID(ctx context.Context, obj *db.Session) (*string, error) {
 	return util.NullString(obj.AuthorizationID)
 }
 
-func (r *sessionResolver) AuthMethod(ctx context.Context, obj *db.Session) (string, error) {
-	return string(obj.AuthMethod), nil
-}
-
+// StartDatetime is the resolver for the startDatetime field.
 func (r *sessionResolver) StartDatetime(ctx context.Context, obj *db.Session) (string, error) {
 	return obj.StartDatetime.Format(time.RFC3339), nil
 }
 
+// EndDatetime is the resolver for the endDatetime field.
 func (r *sessionResolver) EndDatetime(ctx context.Context, obj *db.Session) (*string, error) {
 	return util.NullTime(obj.EndDatetime, time.RFC3339)
 }
 
+// AuthMethod is the resolver for the authMethod field.
+func (r *sessionResolver) AuthMethod(ctx context.Context, obj *db.Session) (string, error) {
+	return string(obj.AuthMethod), nil
+}
+
+// Location is the resolver for the location field.
 func (r *sessionResolver) Location(ctx context.Context, obj *db.Session) (*db.Location, error) {
 	if location, err := r.LocationRepository.GetLocation(ctx, obj.LocationID); err == nil {
 		return &location, nil
@@ -60,6 +66,7 @@ func (r *sessionResolver) Location(ctx context.Context, obj *db.Session) (*db.Lo
 	return nil, gqlerror.Errorf("Location not found")
 }
 
+// Evse is the resolver for the evse field.
 func (r *sessionResolver) Evse(ctx context.Context, obj *db.Session) (*db.Evse, error) {
 	if evse, err := r.LocationRepository.GetEvse(ctx, obj.EvseID); err == nil {
 		return &evse, nil
@@ -68,6 +75,7 @@ func (r *sessionResolver) Evse(ctx context.Context, obj *db.Session) (*db.Evse, 
 	return nil, gqlerror.Errorf("Evse not found")
 }
 
+// Connector is the resolver for the connector field.
 func (r *sessionResolver) Connector(ctx context.Context, obj *db.Session) (*db.Connector, error) {
 	if connector, err := r.LocationRepository.GetConnector(ctx, obj.ConnectorID); err == nil {
 		return &connector, nil
@@ -76,18 +84,22 @@ func (r *sessionResolver) Connector(ctx context.Context, obj *db.Session) (*db.C
 	return nil, gqlerror.Errorf("Connector not found")
 }
 
+// MeterID is the resolver for the meterId field.
 func (r *sessionResolver) MeterID(ctx context.Context, obj *db.Session) (*string, error) {
 	return util.NullString(obj.MeterID)
 }
 
+// SessionInvoices is the resolver for the sessionInvoices field.
 func (r *sessionResolver) SessionInvoices(ctx context.Context, obj *db.Session) ([]db.SessionInvoice, error) {
 	return r.SessionRepository.ListSessionInvoices(ctx, obj.ID)
 }
 
+// Status is the resolver for the status field.
 func (r *sessionResolver) Status(ctx context.Context, obj *db.Session) (string, error) {
 	return string(obj.Status), nil
 }
 
+// LastUpdated is the resolver for the lastUpdated field.
 func (r *sessionResolver) LastUpdated(ctx context.Context, obj *db.Session) (string, error) {
 	return obj.LastUpdated.Format(time.RFC3339), nil
 }
