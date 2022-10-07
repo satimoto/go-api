@@ -60,6 +60,7 @@ type ResolverRoot interface {
 	SessionInvoice() SessionInvoiceResolver
 	StatusSchedule() StatusScheduleResolver
 	Tariff() TariffResolver
+	Token() TokenResolver
 	User() UserResolver
 }
 
@@ -270,6 +271,7 @@ type ComplexityRoot struct {
 		CreateCredential        func(childComplexity int, input CreateCredentialInput) int
 		CreateEmailSubscription func(childComplexity int, input CreateEmailSubscriptionInput) int
 		CreateReferral          func(childComplexity int, input CreateReferralInput) int
+		CreateToken             func(childComplexity int, input CreateTokenInput) int
 		CreateUser              func(childComplexity int, input CreateUserInput) int
 		ExchangeAuthentication  func(childComplexity int, code string) int
 		PublishLocation         func(childComplexity int, input PublishLocationInput) int
@@ -319,6 +321,7 @@ type ComplexityRoot struct {
 		GetUser              func(childComplexity int) int
 		ListInvoiceRequests  func(childComplexity int) int
 		ListLocations        func(childComplexity int, input ListLocationsInput) int
+		ListTokens           func(childComplexity int) int
 		VerifyAuthentication func(childComplexity int, code string) int
 	}
 
@@ -421,6 +424,15 @@ type ComplexityRoot struct {
 	TextDescription struct {
 		Description func(childComplexity int) int
 		Text        func(childComplexity int) int
+	}
+
+	Token struct {
+		AuthID       func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Language     func(childComplexity int) int
+		Type         func(childComplexity int) int
+		Uid          func(childComplexity int) int
+		VisualNumber func(childComplexity int) int
 	}
 
 	User struct {
@@ -555,6 +567,7 @@ type MutationResolver interface {
 	UpdateInvoiceRequest(ctx context.Context, input UpdateInvoiceRequestInput) (*db.InvoiceRequest, error)
 	PublishLocation(ctx context.Context, input PublishLocationInput) (*ResultOk, error)
 	CreateReferral(ctx context.Context, input CreateReferralInput) (*ResultID, error)
+	CreateToken(ctx context.Context, input CreateTokenInput) (*db.Token, error)
 	CreateUser(ctx context.Context, input CreateUserInput) (*db.User, error)
 	UpdateUser(ctx context.Context, input UpdateUserInput) (*db.User, error)
 }
@@ -583,6 +596,7 @@ type QueryResolver interface {
 	GetSession(ctx context.Context, input GetSessionInput) (*db.Session, error)
 	GetSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error)
 	GetTariff(ctx context.Context, input GetTariffInput) (*db.Tariff, error)
+	ListTokens(ctx context.Context) ([]db.Token, error)
 	GetUser(ctx context.Context) (*db.User, error)
 }
 type RegularHourResolver interface {
@@ -620,6 +634,12 @@ type TariffResolver interface {
 	TaxPercent(ctx context.Context, obj *db.Tariff) (*float64, error)
 	Elements(ctx context.Context, obj *db.Tariff) ([]TariffElement, error)
 	EnergyMix(ctx context.Context, obj *db.Tariff) (*db.EnergyMix, error)
+}
+type TokenResolver interface {
+	Type(ctx context.Context, obj *db.Token) (string, error)
+
+	VisualNumber(ctx context.Context, obj *db.Token) (*string, error)
+	Language(ctx context.Context, obj *db.Token) (*string, error)
 }
 type UserResolver interface {
 	ReferralCode(ctx context.Context, obj *db.User) (*string, error)
@@ -1659,6 +1679,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateReferral(childComplexity, args["input"].(CreateReferralInput)), true
 
+	case "Mutation.createToken":
+		if e.complexity.Mutation.CreateToken == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createToken_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateToken(childComplexity, args["input"].(CreateTokenInput)), true
+
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
 			break
@@ -1981,6 +2013,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ListLocations(childComplexity, args["input"].(ListLocationsInput)), true
+
+	case "Query.listTokens":
+		if e.complexity.Query.ListTokens == nil {
+			break
+		}
+
+		return e.complexity.Query.ListTokens(childComplexity), true
 
 	case "Query.verifyAuthentication":
 		if e.complexity.Query.VerifyAuthentication == nil {
@@ -2449,6 +2488,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TextDescription.Text(childComplexity), true
 
+	case "Token.authId":
+		if e.complexity.Token.AuthID == nil {
+			break
+		}
+
+		return e.complexity.Token.AuthID(childComplexity), true
+
+	case "Token.id":
+		if e.complexity.Token.ID == nil {
+			break
+		}
+
+		return e.complexity.Token.ID(childComplexity), true
+
+	case "Token.language":
+		if e.complexity.Token.Language == nil {
+			break
+		}
+
+		return e.complexity.Token.Language(childComplexity), true
+
+	case "Token.type":
+		if e.complexity.Token.Type == nil {
+			break
+		}
+
+		return e.complexity.Token.Type(childComplexity), true
+
+	case "Token.uid":
+		if e.complexity.Token.Uid == nil {
+			break
+		}
+
+		return e.complexity.Token.Uid(childComplexity), true
+
+	case "Token.visualNumber":
+		if e.complexity.Token.VisualNumber == nil {
+			break
+		}
+
+		return e.complexity.Token.VisualNumber(childComplexity), true
+
 	case "User.deviceToken":
 		if e.complexity.User.DeviceToken == nil {
 			break
@@ -2498,6 +2579,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateEmailSubscriptionInput,
 		ec.unmarshalInputCreateImageInput,
 		ec.unmarshalInputCreateReferralInput,
+		ec.unmarshalInputCreateTokenInput,
 		ec.unmarshalInputCreateUserInput,
 		ec.unmarshalInputGetLocationInput,
 		ec.unmarshalInputGetSessionInput,
@@ -2571,7 +2653,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
-//go:embed "schema/additionalgeolocation.graphqls" "schema/authentication.graphqls" "schema/businessdetail.graphqls" "schema/channelrequest.graphqls" "schema/command.graphqls" "schema/connector.graphqls" "schema/credential.graphqls" "schema/displaytext.graphqls" "schema/elementrestriction.graphqls" "schema/emailsubscription.graphqls" "schema/energymix.graphqls" "schema/energysource.graphqls" "schema/environmentalimpact.graphqls" "schema/evse.graphqls" "schema/exceptionalperiod.graphqls" "schema/geolocation.graphqls" "schema/image.graphqls" "schema/invoicerequest.graphqls" "schema/location.graphqls" "schema/node.graphqls" "schema/openingtime.graphqls" "schema/pricecomponent.graphqls" "schema/promotion.graphqls" "schema/rate.graphqls" "schema/referral.graphqls" "schema/regularhour.graphqls" "schema/result.graphqls" "schema/session.graphqls" "schema/sessioninvoice.graphqls" "schema/statusschedule.graphqls" "schema/tariff.graphqls" "schema/tariffelement.graphqls" "schema/textdescription.graphqls" "schema/user.graphqls"
+//go:embed "schema/additionalgeolocation.graphqls" "schema/authentication.graphqls" "schema/businessdetail.graphqls" "schema/channelrequest.graphqls" "schema/command.graphqls" "schema/connector.graphqls" "schema/credential.graphqls" "schema/displaytext.graphqls" "schema/elementrestriction.graphqls" "schema/emailsubscription.graphqls" "schema/energymix.graphqls" "schema/energysource.graphqls" "schema/environmentalimpact.graphqls" "schema/evse.graphqls" "schema/exceptionalperiod.graphqls" "schema/geolocation.graphqls" "schema/image.graphqls" "schema/invoicerequest.graphqls" "schema/location.graphqls" "schema/node.graphqls" "schema/openingtime.graphqls" "schema/pricecomponent.graphqls" "schema/promotion.graphqls" "schema/rate.graphqls" "schema/referral.graphqls" "schema/regularhour.graphqls" "schema/result.graphqls" "schema/session.graphqls" "schema/sessioninvoice.graphqls" "schema/statusschedule.graphqls" "schema/tariff.graphqls" "schema/tariffelement.graphqls" "schema/textdescription.graphqls" "schema/token.graphqls" "schema/user.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -2616,6 +2698,7 @@ var sources = []*ast.Source{
 	{Name: "schema/tariff.graphqls", Input: sourceData("schema/tariff.graphqls"), BuiltIn: false},
 	{Name: "schema/tariffelement.graphqls", Input: sourceData("schema/tariffelement.graphqls"), BuiltIn: false},
 	{Name: "schema/textdescription.graphqls", Input: sourceData("schema/textdescription.graphqls"), BuiltIn: false},
+	{Name: "schema/token.graphqls", Input: sourceData("schema/token.graphqls"), BuiltIn: false},
 	{Name: "schema/user.graphqls", Input: sourceData("schema/user.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -2691,6 +2774,21 @@ func (ec *executionContext) field_Mutation_createReferral_args(ctx context.Conte
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateReferralInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateReferralInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 CreateTokenInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateTokenInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateTokenInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -10078,6 +10176,75 @@ func (ec *executionContext) fieldContext_Mutation_createReferral(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createToken(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateToken(rctx, fc.Args["input"].(CreateTokenInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Token)
+	fc.Result = res
+	return ec.marshalNToken2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐToken(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Token_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Token_uid(ctx, field)
+			case "type":
+				return ec.fieldContext_Token_type(ctx, field)
+			case "authId":
+				return ec.fieldContext_Token_authId(ctx, field)
+			case "visualNumber":
+				return ec.fieldContext_Token_visualNumber(ctx, field)
+			case "language":
+				return ec.fieldContext_Token_language(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Token", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createUser(ctx, field)
 	if err != nil {
@@ -11504,6 +11671,64 @@ func (ec *executionContext) fieldContext_Query_getTariff(ctx context.Context, fi
 	if fc.Args, err = ec.field_Query_getTariff_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_listTokens(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_listTokens(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListTokens(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]db.Token)
+	fc.Result = res
+	return ec.marshalNToken2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTokenᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_listTokens(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Token_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Token_uid(ctx, field)
+			case "type":
+				return ec.fieldContext_Token_type(ctx, field)
+			case "authId":
+				return ec.fieldContext_Token_authId(ctx, field)
+			case "visualNumber":
+				return ec.fieldContext_Token_visualNumber(ctx, field)
+			case "language":
+				return ec.fieldContext_Token_language(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Token", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -14759,6 +14984,264 @@ func (ec *executionContext) fieldContext_TextDescription_description(ctx context
 	return fc, nil
 }
 
+func (ec *executionContext) _Token_id(ctx context.Context, field graphql.CollectedField, obj *db.Token) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Token_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNID2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Token_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Token",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Token_uid(ctx context.Context, field graphql.CollectedField, obj *db.Token) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Token_uid(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Uid, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Token_uid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Token",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Token_type(ctx context.Context, field graphql.CollectedField, obj *db.Token) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Token_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Token().Type(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Token_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Token",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Token_authId(ctx context.Context, field graphql.CollectedField, obj *db.Token) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Token_authId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AuthID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Token_authId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Token",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Token_visualNumber(ctx context.Context, field graphql.CollectedField, obj *db.Token) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Token_visualNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Token().VisualNumber(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Token_visualNumber(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Token",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Token_language(ctx context.Context, field graphql.CollectedField, obj *db.Token) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Token_language(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Token().Language(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Token_language(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Token",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *db.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
@@ -17036,6 +17519,34 @@ func (ec *executionContext) unmarshalInputCreateReferralInput(ctx context.Contex
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("referrer"))
 			it.Referrer, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateTokenInput(ctx context.Context, obj interface{}) (CreateTokenInput, error) {
+	var it CreateTokenInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"uid"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "uid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
+			it.UID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19968,6 +20479,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createToken":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createToken(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createUser":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -20471,6 +20991,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getTariff(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "listTokens":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listTokens(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -21519,6 +22062,102 @@ func (ec *executionContext) _TextDescription(ctx context.Context, sel ast.Select
 	return out
 }
 
+var tokenImplementors = []string{"Token"}
+
+func (ec *executionContext) _Token(ctx context.Context, sel ast.SelectionSet, obj *db.Token) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tokenImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Token")
+		case "id":
+
+			out.Values[i] = ec._Token_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "uid":
+
+			out.Values[i] = ec._Token_uid(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "type":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Token_type(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "authId":
+
+			out.Values[i] = ec._Token_authId(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "visualNumber":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Token_visualNumber(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "language":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Token_language(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var userImplementors = []string{"User"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *db.User) graphql.Marshaler {
@@ -22105,6 +22744,11 @@ func (ec *executionContext) unmarshalNCreateEmailSubscriptionInput2githubᚗcom�
 
 func (ec *executionContext) unmarshalNCreateReferralInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateReferralInput(ctx context.Context, v interface{}) (CreateReferralInput, error) {
 	res, err := ec.unmarshalInputCreateReferralInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateTokenInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateTokenInput(ctx context.Context, v interface{}) (CreateTokenInput, error) {
+	res, err := ec.unmarshalInputCreateTokenInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -23077,6 +23721,64 @@ func (ec *executionContext) marshalNTextDescription2ᚕgithubᚗcomᚋsatimoto�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNToken2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐToken(ctx context.Context, sel ast.SelectionSet, v db.Token) graphql.Marshaler {
+	return ec._Token(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNToken2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTokenᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Token) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNToken2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐToken(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNToken2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐToken(ctx context.Context, sel ast.SelectionSet, v *db.Token) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Token(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUnregisterCredentialInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUnregisterCredentialInput(ctx context.Context, v interface{}) (UnregisterCredentialInput, error) {

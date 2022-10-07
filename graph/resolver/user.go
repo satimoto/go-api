@@ -32,12 +32,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
-	var circuitUserId *int64
+	var circuitUserID *int64
 	ipAddress := middleware.GetIPAddress(ctx)
 
 	if ipAddress != nil && len(*ipAddress) > 0 {
 		if referral, err := r.ReferralRepository.GetReferralByIpAddress(ctx, *ipAddress); err == nil {
-			circuitUserId = &referral.UserID
+			circuitUserID = &referral.UserID
 		}
 	}
 
@@ -48,7 +48,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		LinkingPubkey:     auth.LinkingPubkey.String,
 		Pubkey:            input.Pubkey,
 		ReferralCode:      dbUtil.SqlNullString(referralCode),
-		CircuitUserID:     dbUtil.SqlNullInt64(circuitUserId),
+		CircuitUserID:     dbUtil.SqlNullInt64(circuitUserID),
 	}
 
 	user, err := r.UserRepository.CreateUser(ctx, createUserParams)

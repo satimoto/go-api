@@ -23,8 +23,8 @@ func AuthorizationContext() func(http.Handler) http.Handler {
 				token := authorization[1]
 
 				if ok, claims := authentication.VerifyToken(token); ok {
-					userId := int64(claims["user_id"].(float64))
-					ctx = context.WithValue(ctx, "user_id", &userId)
+					userID := int64(claims["user_id"].(float64))
+					ctx = context.WithValue(ctx, "user_id", &userID)
 				}
 			}
 
@@ -33,11 +33,11 @@ func AuthorizationContext() func(http.Handler) http.Handler {
 	}
 }
 
-func GetUserId(ctx context.Context) *int64 {
-	ctxUserId := ctx.Value("user_id")
+func GetUserID(ctx context.Context) *int64 {
+	ctxUserID := ctx.Value("user_id")
 
-	if ctxUserId != nil {
-		return ctxUserId.(*int64)
+	if ctxUserID != nil {
+		return ctxUserID.(*int64)
 	}
 
 	return nil
@@ -51,14 +51,14 @@ func GetUser(ctx context.Context, r user.UserRepository) *db.User {
 		return ctxUser.(*db.User)
 	}
 
-	userId := GetUserId(ctx)
+	userID := GetUserID(ctx)
 
-	if userId != nil {
-		user, err := r.GetUser(ctx, *userId)
+	if userID != nil {
+		user, err := r.GetUser(ctx, *userID)
 
 		if err != nil {
 			util.LogOnError("API019", "Error retrieving user", err)
-			log.Printf("API019: UserID=%v", userId)
+			log.Printf("API019: UserID=%v", userID)
 			return nil
 		}
 
