@@ -20,10 +20,14 @@ import (
 // CreateToken is the resolver for the createToken field.
 func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTokenInput) (*db.Token, error) {
 	if userID := middleware.GetUserID(ctx); userID != nil {
+		if _, err := r.TokenResolver.Repository.GetTokenByUid(ctx, input.UID); err == nil {
+			return nil, errors.New("Error creating token")
+		}
+
 		createTokenRequest := &ocpirpc.CreateTokenRequest{
 			UserId: *userID,
 			Uid:    input.UID,
-			Type: string(db.TokenTypeRFID),
+			Type:   string(db.TokenTypeRFID),
 		}
 
 		createTokenResponse, err := r.OcpiService.CreateToken(ctx, createTokenRequest)
