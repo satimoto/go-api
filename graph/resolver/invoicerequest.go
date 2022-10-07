@@ -56,6 +56,11 @@ func (r *invoiceRequestResolver) TaxMsat(ctx context.Context, obj *db.InvoiceReq
 	return util.NullInt(obj.TaxMsat)
 }
 
+// PaymentRequest is the resolver for the paymentRequest field.
+func (r *invoiceRequestResolver) PaymentRequest(ctx context.Context, obj *db.InvoiceRequest) (*string, error) {
+	return util.NullString(obj.PaymentRequest)
+}
+
 // UpdateInvoiceRequest is the resolver for the updateInvoiceRequest field.
 func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph.UpdateInvoiceRequestInput) (*db.InvoiceRequest, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {

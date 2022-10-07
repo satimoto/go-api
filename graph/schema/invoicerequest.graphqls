@@ -11,6 +11,8 @@ type InvoiceRequest {
     taxMsat: Int
     totalFiat: Float!
     totalMsat: Int!
+    paymentRequest: String
+    isSettled: Boolean!
 }
 
 input UpdateInvoiceRequestInput {

@@ -94,6 +94,19 @@ func (r *sessionResolver) SessionInvoices(ctx context.Context, obj *db.Session) 
 	return r.SessionRepository.ListSessionInvoices(ctx, obj.ID)
 }
 
+// InvoiceRequest is the resolver for the invoiceRequest field.
+func (r *sessionResolver) InvoiceRequest(ctx context.Context, obj *db.Session) (*db.InvoiceRequest, error) {
+	if obj.InvoiceRequestID.Valid {
+		if invoiceRequest, err := r.InvoiceRequestRepository.GetInvoiceRequest(ctx, obj.InvoiceRequestID.Int64); err == nil {
+			return &invoiceRequest, nil
+		}
+
+		return nil, gqlerror.Errorf("Invoice request not found")
+	}
+
+	return nil, nil
+}
+
 // Status is the resolver for the status field.
 func (r *sessionResolver) Status(ctx context.Context, obj *db.Session) (string, error) {
 	return string(obj.Status), nil
