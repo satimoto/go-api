@@ -14,7 +14,7 @@ import (
 
 // GetTariff is the resolver for the getTariff field.
 func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInput) (*db.Tariff, error) {
-	if userId := middleware.GetUserId(ctx); userId != nil {
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		if input.ID != nil {
 			if t, err := r.TariffRepository.GetTariff(ctx, *input.ID); err == nil {
 				return &t, nil

@@ -112,8 +112,8 @@ func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph
 
 // ListInvoiceRequests is the resolver for the listInvoiceRequests field.
 func (r *queryResolver) ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRequest, error) {
-	if userId := middleware.GetUserId(ctx); userId != nil {
-		if invoiceRequests, err := r.InvoiceRequestRepository.ListUnsettledInvoiceRequests(ctx, *userId); err == nil {
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		if invoiceRequests, err := r.InvoiceRequestRepository.ListUnsettledInvoiceRequests(ctx, *userID); err == nil {
 			return invoiceRequests, nil
 		}
 	}

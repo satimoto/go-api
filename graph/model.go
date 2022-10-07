@@ -64,6 +64,10 @@ type CreateReferralInput struct {
 	Referrer string `json:"referrer"`
 }
 
+type CreateTokenInput struct {
+	UID string `json:"uid"`
+}
+
 type CreateUserInput struct {
 	Code        string `json:"code"`
 	Pubkey      string `json:"pubkey"`

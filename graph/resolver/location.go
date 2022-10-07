@@ -185,7 +185,7 @@ func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.Publ
 
 // GetLocation is the resolver for the getLocation field.
 func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocationInput) (*db.Location, error) {
-	if userId := middleware.GetUserId(ctx); userId != nil {
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		if input.ID != nil {
 			if l, err := r.LocationRepository.GetLocation(ctx, *input.ID); err == nil {
 				return &l, nil
@@ -204,7 +204,7 @@ func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocation
 
 // ListLocations is the resolver for the listLocations field.
 func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
-	if userId := middleware.GetUserId(ctx); userId != nil {
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		var list []graph.ListLocation
 
 		params := param.NewListLocationsByGeomParams(input)

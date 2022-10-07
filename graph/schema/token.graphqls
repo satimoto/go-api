@@ -1,0 +1,19 @@
+type Token {
+    id: ID!
+    uid: String!
+    type: String!
+    authId: String!
+    visualNumber: String
+    language: String
+}
+
+input CreateTokenInput {
+    uid: String!
+}
+
+extend type Query {
+    listTokens: [Token!]!
+}
+extend type Mutation {
+    createToken(input: CreateTokenInput!): Token!
+}
