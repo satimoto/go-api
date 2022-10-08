@@ -84,6 +84,17 @@ type Geolocation struct {
 	Name      *string `json:"name"`
 }
 
+type GetConnectorInput struct {
+	ID         *int64  `json:"id"`
+	Identifier *string `json:"identifier"`
+}
+
+type GetEvseInput struct {
+	ID         *int64  `json:"id"`
+	UID        *string `json:"uid"`
+	Identifier *string `json:"identifier"`
+}
+
 type GetLocationInput struct {
 	ID  *int64  `json:"id"`
 	UID *string `json:"uid"`

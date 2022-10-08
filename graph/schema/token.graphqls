@@ -4,7 +4,6 @@ type Token {
     type: String!
     authId: String!
     visualNumber: String
-    language: String
 }
 
 input CreateTokenInput {
