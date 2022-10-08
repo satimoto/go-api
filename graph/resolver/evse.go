@@ -5,17 +5,31 @@ package resolver
 
 import (
 	"context"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/satimoto/go-api/graph"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/geom"
+	dbUtil "github.com/satimoto/go-datastore/pkg/util"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Identifier is the resolver for the identifier field.
 func (r *evseResolver) Identifier(ctx context.Context, obj *db.Evse) (*string, error) {
 	return util.NullString(obj.Identifier)
+}
+
+// Location is the resolver for the location field.
+func (r *evseResolver) Location(ctx context.Context, obj *db.Evse) (*db.Location, error) {
+	if location, err := r.LocationRepository.GetLocation(ctx, obj.LocationID); err == nil {
+		return &location, nil
+	}
+
+	return nil, gqlerror.Errorf("Location not found")
 }
 
 // Status is the resolver for the status field.
@@ -93,6 +107,32 @@ func (r *evseResolver) Images(ctx context.Context, obj *db.Evse) ([]db.Image, er
 // LastUpdated is the resolver for the lastUpdated field.
 func (r *evseResolver) LastUpdated(ctx context.Context, obj *db.Evse) (string, error) {
 	return obj.LastUpdated.Format(time.RFC3339), nil
+}
+
+// GetEvse is the resolver for the getEvse field.
+func (r *queryResolver) GetEvse(ctx context.Context, input graph.GetEvseInput) (*db.Evse, error) {
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		if input.ID != nil {
+			if evse, err := r.EvseRepository.GetEvse(ctx, *input.ID); err == nil {
+				return &evse, nil
+			}
+		} else if input.UID != nil {
+			if evse, err := r.EvseRepository.GetEvseByUid(ctx, *input.UID); err == nil {
+				return &evse, nil
+			}
+		} else if input.Identifier != nil {
+			dashRegex := regexp.MustCompile(`-`)
+			identifier := strings.ToUpper(dashRegex.ReplaceAllString(*input.Identifier, "*"))
+
+			if evse, err := r.EvseRepository.GetEvseByIdentifier(ctx, dbUtil.SqlNullString(identifier)); err == nil {
+				return &evse, nil
+			}
+		}
+
+		return nil, gqlerror.Errorf("Evse not found")
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
 // Evse returns graph.EvseResolver implementation.

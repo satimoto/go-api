@@ -5,16 +5,30 @@ package resolver
 
 import (
 	"context"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/satimoto/go-api/graph"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
+	dbUtil "github.com/satimoto/go-datastore/pkg/util"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Identifier is the resolver for the identifier field.
 func (r *connectorResolver) Identifier(ctx context.Context, obj *db.Connector) (*string, error) {
 	return util.NullString(obj.Identifier)
+}
+
+// Evse is the resolver for the evse field.
+func (r *connectorResolver) Evse(ctx context.Context, obj *db.Connector) (*db.Evse, error) {
+	if evse, err := r.EvseRepository.GetEvse(ctx, obj.EvseID); err == nil {
+		return &evse, nil
+	}
+
+	return nil, gqlerror.Errorf("Evse not found")
 }
 
 // Standard is the resolver for the standard field.
@@ -56,6 +70,28 @@ func (r *connectorResolver) TermsAndConditions(ctx context.Context, obj *db.Conn
 // LastUpdated is the resolver for the lastUpdated field.
 func (r *connectorResolver) LastUpdated(ctx context.Context, obj *db.Connector) (string, error) {
 	return obj.LastUpdated.Format(time.RFC3339), nil
+}
+
+// GetConnector is the resolver for the getConnector field.
+func (r *queryResolver) GetConnector(ctx context.Context, input graph.GetConnectorInput) (*db.Connector, error) {
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		if input.ID != nil {
+			if connector, err := r.ConnectorRepository.GetConnector(ctx, *input.ID); err == nil {
+				return &connector, nil
+			}
+		} else if input.Identifier != nil {
+			dashRegex := regexp.MustCompile(`-`)
+			identifier := strings.ToUpper(dashRegex.ReplaceAllString(*input.Identifier, "*"))
+
+			if connector, err := r.ConnectorRepository.GetConnectorByIdentifier(ctx, dbUtil.SqlNullString(identifier)); err == nil {
+				return &connector, nil
+			}
+		}
+
+		return nil, gqlerror.Errorf("Connector not found")
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
 // Connector returns graph.ConnectorResolver implementation.

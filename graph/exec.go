@@ -95,6 +95,7 @@ type ComplexityRoot struct {
 
 	Connector struct {
 		Amperage           func(childComplexity int) int
+		Evse               func(childComplexity int) int
 		Format             func(childComplexity int) int
 		ID                 func(childComplexity int) int
 		Identifier         func(childComplexity int) int
@@ -178,6 +179,7 @@ type ComplexityRoot struct {
 		IsRemoteCapable     func(childComplexity int) int
 		IsRfidCapable       func(childComplexity int) int
 		LastUpdated         func(childComplexity int) int
+		Location            func(childComplexity int) int
 		ParkingRestrictions func(childComplexity int) int
 		PhysicalReference   func(childComplexity int) int
 		Status              func(childComplexity int) int
@@ -313,6 +315,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		GetConnector         func(childComplexity int, input GetConnectorInput) int
+		GetEvse              func(childComplexity int, input GetEvseInput) int
 		GetLocation          func(childComplexity int, input GetLocationInput) int
 		GetRate              func(childComplexity int, currency string) int
 		GetSession           func(childComplexity int, input GetSessionInput) int
@@ -429,7 +433,6 @@ type ComplexityRoot struct {
 	Token struct {
 		AuthID       func(childComplexity int) int
 		ID           func(childComplexity int) int
-		Language     func(childComplexity int) int
 		Type         func(childComplexity int) int
 		Uid          func(childComplexity int) int
 		VisualNumber func(childComplexity int) int
@@ -461,6 +464,7 @@ type ChannelRequestResolver interface {
 }
 type ConnectorResolver interface {
 	Identifier(ctx context.Context, obj *db.Connector) (*string, error)
+	Evse(ctx context.Context, obj *db.Connector) (*db.Evse, error)
 	Standard(ctx context.Context, obj *db.Connector) (string, error)
 	Format(ctx context.Context, obj *db.Connector) (string, error)
 	PowerType(ctx context.Context, obj *db.Connector) (string, error)
@@ -497,6 +501,7 @@ type EnvironmentalImpactResolver interface {
 }
 type EvseResolver interface {
 	Identifier(ctx context.Context, obj *db.Evse) (*string, error)
+	Location(ctx context.Context, obj *db.Evse) (*db.Location, error)
 	Status(ctx context.Context, obj *db.Evse) (string, error)
 	StatusSchedule(ctx context.Context, obj *db.Evse) ([]db.StatusSchedule, error)
 	Capabilities(ctx context.Context, obj *db.Evse) ([]TextDescription, error)
@@ -589,6 +594,8 @@ type PriceComponentResolver interface {
 }
 type QueryResolver interface {
 	VerifyAuthentication(ctx context.Context, code string) (*VerifyAuthentication, error)
+	GetConnector(ctx context.Context, input GetConnectorInput) (*db.Connector, error)
+	GetEvse(ctx context.Context, input GetEvseInput) (*db.Evse, error)
 	ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRequest, error)
 	GetLocation(ctx context.Context, input GetLocationInput) (*db.Location, error)
 	ListLocations(ctx context.Context, input ListLocationsInput) ([]ListLocation, error)
@@ -639,7 +646,6 @@ type TokenResolver interface {
 	Type(ctx context.Context, obj *db.Token) (string, error)
 
 	VisualNumber(ctx context.Context, obj *db.Token) (*string, error)
-	Language(ctx context.Context, obj *db.Token) (*string, error)
 }
 type UserResolver interface {
 	ReferralCode(ctx context.Context, obj *db.User) (*string, error)
@@ -778,6 +784,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Connector.Amperage(childComplexity), true
+
+	case "Connector.evse":
+		if e.complexity.Connector.Evse == nil {
+			break
+		}
+
+		return e.complexity.Connector.Evse(childComplexity), true
 
 	case "Connector.format":
 		if e.complexity.Connector.Format == nil {
@@ -1170,6 +1183,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Evse.LastUpdated(childComplexity), true
+
+	case "Evse.location":
+		if e.complexity.Evse.Location == nil {
+			break
+		}
+
+		return e.complexity.Evse.Location(childComplexity), true
 
 	case "Evse.parkingRestrictions":
 		if e.complexity.Evse.ParkingRestrictions == nil {
@@ -1928,6 +1948,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Promotion.Description(childComplexity), true
 
+	case "Query.getConnector":
+		if e.complexity.Query.GetConnector == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getConnector_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetConnector(childComplexity, args["input"].(GetConnectorInput)), true
+
+	case "Query.getEvse":
+		if e.complexity.Query.GetEvse == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getEvse_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetEvse(childComplexity, args["input"].(GetEvseInput)), true
+
 	case "Query.getLocation":
 		if e.complexity.Query.GetLocation == nil {
 			break
@@ -2502,13 +2546,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Token.ID(childComplexity), true
 
-	case "Token.language":
-		if e.complexity.Token.Language == nil {
-			break
-		}
-
-		return e.complexity.Token.Language(childComplexity), true
-
 	case "Token.type":
 		if e.complexity.Token.Type == nil {
 			break
@@ -2581,6 +2618,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateReferralInput,
 		ec.unmarshalInputCreateTokenInput,
 		ec.unmarshalInputCreateUserInput,
+		ec.unmarshalInputGetConnectorInput,
+		ec.unmarshalInputGetEvseInput,
 		ec.unmarshalInputGetLocationInput,
 		ec.unmarshalInputGetSessionInput,
 		ec.unmarshalInputGetTariffInput,
@@ -2974,6 +3013,36 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getConnector_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 GetConnectorInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNGetConnectorInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetConnectorInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getEvse_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 GetEvseInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNGetEvseInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetEvseInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -3967,6 +4036,86 @@ func (ec *executionContext) fieldContext_Connector_identifier(ctx context.Contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Connector_evse(ctx context.Context, field graphql.CollectedField, obj *db.Connector) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Connector_evse(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Connector().Evse(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Evse)
+	fc.Result = res
+	return ec.marshalNEvse2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEvse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Connector_evse(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Connector",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Evse_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Evse_uid(ctx, field)
+			case "identifier":
+				return ec.fieldContext_Evse_identifier(ctx, field)
+			case "location":
+				return ec.fieldContext_Evse_location(ctx, field)
+			case "status":
+				return ec.fieldContext_Evse_status(ctx, field)
+			case "statusSchedule":
+				return ec.fieldContext_Evse_statusSchedule(ctx, field)
+			case "capabilities":
+				return ec.fieldContext_Evse_capabilities(ctx, field)
+			case "connectors":
+				return ec.fieldContext_Evse_connectors(ctx, field)
+			case "floorLevel":
+				return ec.fieldContext_Evse_floorLevel(ctx, field)
+			case "geom":
+				return ec.fieldContext_Evse_geom(ctx, field)
+			case "isRemoteCapable":
+				return ec.fieldContext_Evse_isRemoteCapable(ctx, field)
+			case "isRfidCapable":
+				return ec.fieldContext_Evse_isRfidCapable(ctx, field)
+			case "physicalReference":
+				return ec.fieldContext_Evse_physicalReference(ctx, field)
+			case "directions":
+				return ec.fieldContext_Evse_directions(ctx, field)
+			case "parkingRestrictions":
+				return ec.fieldContext_Evse_parkingRestrictions(ctx, field)
+			case "images":
+				return ec.fieldContext_Evse_images(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_Evse_lastUpdated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Evse", field.Name)
 		},
 	}
 	return fc, nil
@@ -5977,6 +6126,104 @@ func (ec *executionContext) fieldContext_Evse_identifier(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Evse_location(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Evse_location(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Evse().Location(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Location)
+	fc.Result = res
+	return ec.marshalNLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Evse_location(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Evse",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Location_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Location_uid(ctx, field)
+			case "type":
+				return ec.fieldContext_Location_type(ctx, field)
+			case "name":
+				return ec.fieldContext_Location_name(ctx, field)
+			case "address":
+				return ec.fieldContext_Location_address(ctx, field)
+			case "city":
+				return ec.fieldContext_Location_city(ctx, field)
+			case "postalCode":
+				return ec.fieldContext_Location_postalCode(ctx, field)
+			case "country":
+				return ec.fieldContext_Location_country(ctx, field)
+			case "geom":
+				return ec.fieldContext_Location_geom(ctx, field)
+			case "relatedLocations":
+				return ec.fieldContext_Location_relatedLocations(ctx, field)
+			case "evses":
+				return ec.fieldContext_Location_evses(ctx, field)
+			case "availableEvses":
+				return ec.fieldContext_Location_availableEvses(ctx, field)
+			case "totalEvses":
+				return ec.fieldContext_Location_totalEvses(ctx, field)
+			case "isRemoteCapable":
+				return ec.fieldContext_Location_isRemoteCapable(ctx, field)
+			case "isRfidCapable":
+				return ec.fieldContext_Location_isRfidCapable(ctx, field)
+			case "directions":
+				return ec.fieldContext_Location_directions(ctx, field)
+			case "operator":
+				return ec.fieldContext_Location_operator(ctx, field)
+			case "suboperator":
+				return ec.fieldContext_Location_suboperator(ctx, field)
+			case "owner":
+				return ec.fieldContext_Location_owner(ctx, field)
+			case "facilities":
+				return ec.fieldContext_Location_facilities(ctx, field)
+			case "timeZone":
+				return ec.fieldContext_Location_timeZone(ctx, field)
+			case "openingTime":
+				return ec.fieldContext_Location_openingTime(ctx, field)
+			case "chargingWhenClosed":
+				return ec.fieldContext_Location_chargingWhenClosed(ctx, field)
+			case "images":
+				return ec.fieldContext_Location_images(ctx, field)
+			case "energyMix":
+				return ec.fieldContext_Location_energyMix(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_Location_lastUpdated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Location", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Evse_status(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Evse_status(ctx, field)
 	if err != nil {
@@ -6168,6 +6415,8 @@ func (ec *executionContext) fieldContext_Evse_connectors(ctx context.Context, fi
 				return ec.fieldContext_Connector_uid(ctx, field)
 			case "identifier":
 				return ec.fieldContext_Connector_identifier(ctx, field)
+			case "evse":
+				return ec.fieldContext_Connector_evse(ctx, field)
 			case "standard":
 				return ec.fieldContext_Connector_standard(ctx, field)
 			case "format":
@@ -8523,6 +8772,8 @@ func (ec *executionContext) fieldContext_Location_evses(ctx context.Context, fie
 				return ec.fieldContext_Evse_uid(ctx, field)
 			case "identifier":
 				return ec.fieldContext_Evse_identifier(ctx, field)
+			case "location":
+				return ec.fieldContext_Evse_location(ctx, field)
 			case "status":
 				return ec.fieldContext_Evse_status(ctx, field)
 			case "statusSchedule":
@@ -10225,8 +10476,6 @@ func (ec *executionContext) fieldContext_Mutation_createToken(ctx context.Contex
 				return ec.fieldContext_Token_authId(ctx, field)
 			case "visualNumber":
 				return ec.fieldContext_Token_visualNumber(ctx, field)
-			case "language":
-				return ec.fieldContext_Token_language(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Token", field.Name)
 		},
@@ -11111,6 +11360,176 @@ func (ec *executionContext) fieldContext_Query_verifyAuthentication(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_getConnector(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getConnector(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetConnector(rctx, fc.Args["input"].(GetConnectorInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.Connector)
+	fc.Result = res
+	return ec.marshalOConnector2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐConnector(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getConnector(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Connector_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Connector_uid(ctx, field)
+			case "identifier":
+				return ec.fieldContext_Connector_identifier(ctx, field)
+			case "evse":
+				return ec.fieldContext_Connector_evse(ctx, field)
+			case "standard":
+				return ec.fieldContext_Connector_standard(ctx, field)
+			case "format":
+				return ec.fieldContext_Connector_format(ctx, field)
+			case "powerType":
+				return ec.fieldContext_Connector_powerType(ctx, field)
+			case "voltage":
+				return ec.fieldContext_Connector_voltage(ctx, field)
+			case "amperage":
+				return ec.fieldContext_Connector_amperage(ctx, field)
+			case "wattage":
+				return ec.fieldContext_Connector_wattage(ctx, field)
+			case "tariffId":
+				return ec.fieldContext_Connector_tariffId(ctx, field)
+			case "tariff":
+				return ec.fieldContext_Connector_tariff(ctx, field)
+			case "termsAndConditions":
+				return ec.fieldContext_Connector_termsAndConditions(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_Connector_lastUpdated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Connector", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getConnector_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getEvse(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getEvse(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetEvse(rctx, fc.Args["input"].(GetEvseInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.Evse)
+	fc.Result = res
+	return ec.marshalOEvse2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEvse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getEvse(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Evse_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Evse_uid(ctx, field)
+			case "identifier":
+				return ec.fieldContext_Evse_identifier(ctx, field)
+			case "location":
+				return ec.fieldContext_Evse_location(ctx, field)
+			case "status":
+				return ec.fieldContext_Evse_status(ctx, field)
+			case "statusSchedule":
+				return ec.fieldContext_Evse_statusSchedule(ctx, field)
+			case "capabilities":
+				return ec.fieldContext_Evse_capabilities(ctx, field)
+			case "connectors":
+				return ec.fieldContext_Evse_connectors(ctx, field)
+			case "floorLevel":
+				return ec.fieldContext_Evse_floorLevel(ctx, field)
+			case "geom":
+				return ec.fieldContext_Evse_geom(ctx, field)
+			case "isRemoteCapable":
+				return ec.fieldContext_Evse_isRemoteCapable(ctx, field)
+			case "isRfidCapable":
+				return ec.fieldContext_Evse_isRfidCapable(ctx, field)
+			case "physicalReference":
+				return ec.fieldContext_Evse_physicalReference(ctx, field)
+			case "directions":
+				return ec.fieldContext_Evse_directions(ctx, field)
+			case "parkingRestrictions":
+				return ec.fieldContext_Evse_parkingRestrictions(ctx, field)
+			case "images":
+				return ec.fieldContext_Evse_images(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_Evse_lastUpdated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Evse", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getEvse_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_listInvoiceRequests(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_listInvoiceRequests(ctx, field)
 	if err != nil {
@@ -11206,14 +11625,11 @@ func (ec *executionContext) _Query_getLocation(ctx context.Context, field graphq
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*db.Location)
 	fc.Result = res
-	return ec.marshalNLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx, field.Selections, res)
+	return ec.marshalOLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getLocation(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11724,8 +12140,6 @@ func (ec *executionContext) fieldContext_Query_listTokens(ctx context.Context, f
 				return ec.fieldContext_Token_authId(ctx, field)
 			case "visualNumber":
 				return ec.fieldContext_Token_visualNumber(ctx, field)
-			case "language":
-				return ec.fieldContext_Token_language(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Token", field.Name)
 		},
@@ -12713,6 +13127,8 @@ func (ec *executionContext) fieldContext_Session_evse(ctx context.Context, field
 				return ec.fieldContext_Evse_uid(ctx, field)
 			case "identifier":
 				return ec.fieldContext_Evse_identifier(ctx, field)
+			case "location":
+				return ec.fieldContext_Evse_location(ctx, field)
 			case "status":
 				return ec.fieldContext_Evse_status(ctx, field)
 			case "statusSchedule":
@@ -12791,6 +13207,8 @@ func (ec *executionContext) fieldContext_Session_connector(ctx context.Context, 
 				return ec.fieldContext_Connector_uid(ctx, field)
 			case "identifier":
 				return ec.fieldContext_Connector_identifier(ctx, field)
+			case "evse":
+				return ec.fieldContext_Connector_evse(ctx, field)
 			case "standard":
 				return ec.fieldContext_Connector_standard(ctx, field)
 			case "format":
@@ -15201,47 +15619,6 @@ func (ec *executionContext) fieldContext_Token_visualNumber(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Token_language(ctx context.Context, field graphql.CollectedField, obj *db.Token) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Token_language(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Token().Language(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Token_language(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Token",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *db.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
@@ -17600,6 +17977,86 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputGetConnectorInput(ctx context.Context, obj interface{}) (GetConnectorInput, error) {
+	var it GetConnectorInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "identifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "identifier":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("identifier"))
+			it.Identifier, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputGetEvseInput(ctx context.Context, obj interface{}) (GetEvseInput, error) {
+	var it GetEvseInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "uid", "identifier"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "uid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
+			it.UID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "identifier":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("identifier"))
+			it.Identifier, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputGetLocationInput(ctx context.Context, obj interface{}) (GetLocationInput, error) {
 	var it GetLocationInput
 	asMap := map[string]interface{}{}
@@ -18443,6 +18900,26 @@ func (ec *executionContext) _Connector(ctx context.Context, sel ast.SelectionSet
 				return innerFunc(ctx)
 
 			})
+		case "evse":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Connector_evse(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "standard":
 			field := field
 
@@ -19221,6 +19698,26 @@ func (ec *executionContext) _Evse(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Evse_identifier(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "location":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Evse_location(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 
@@ -20849,6 +21346,46 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "getConnector":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getConnector(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getEvse":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getEvse(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "listInvoiceRequests":
 			field := field
 
@@ -20882,9 +21419,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getLocation(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
 				return res
 			}
 
@@ -22130,23 +22664,6 @@ func (ec *executionContext) _Token(ctx context.Context, sel ast.SelectionSet, ob
 				return innerFunc(ctx)
 
 			})
-		case "language":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Token_language(ctx, field, obj)
-				return res
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -23077,6 +23594,16 @@ func (ec *executionContext) marshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdata
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNGetConnectorInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetConnectorInput(ctx context.Context, v interface{}) (GetConnectorInput, error) {
+	res, err := ec.unmarshalInputGetConnectorInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNGetEvseInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetEvseInput(ctx context.Context, v interface{}) (GetEvseInput, error) {
+	res, err := ec.unmarshalInputGetEvseInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNGetLocationInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetLocationInput(ctx context.Context, v interface{}) (GetLocationInput, error) {
@@ -24115,6 +24642,13 @@ func (ec *executionContext) marshalOBusinessDetail2ᚖgithubᚗcomᚋsatimotoᚋ
 	return ec._BusinessDetail(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOConnector2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐConnector(ctx context.Context, sel ast.SelectionSet, v *db.Connector) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Connector(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOCreateImageInput2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateImageInput(ctx context.Context, v interface{}) (*CreateImageInput, error) {
 	if v == nil {
 		return nil, nil
@@ -24142,6 +24676,13 @@ func (ec *executionContext) marshalOEnergyMix2ᚖgithubᚗcomᚋsatimotoᚋgoᚑ
 		return graphql.Null
 	}
 	return ec._EnergyMix(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOEvse2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐEvse(ctx context.Context, sel ast.SelectionSet, v *db.Evse) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Evse(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
@@ -24220,6 +24761,13 @@ func (ec *executionContext) marshalOInvoiceRequest2ᚖgithubᚗcomᚋsatimotoᚋ
 		return graphql.Null
 	}
 	return ec._InvoiceRequest(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx context.Context, sel ast.SelectionSet, v *db.Location) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Location(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐOpeningTime(ctx context.Context, sel ast.SelectionSet, v *db.OpeningTime) graphql.Marshaler {

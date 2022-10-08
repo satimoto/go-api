@@ -59,7 +59,7 @@ input PublishLocationInput {
 }
 
 extend type Query {
-    getLocation(input: GetLocationInput!): Location!
+    getLocation(input: GetLocationInput!): Location
     listLocations(input: ListLocationsInput!): [ListLocation!]!
 }
 

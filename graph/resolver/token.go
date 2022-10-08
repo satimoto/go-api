@@ -63,11 +63,6 @@ func (r *tokenResolver) VisualNumber(ctx context.Context, obj *db.Token) (*strin
 	return util.NilString(obj.VisualNumber), nil
 }
 
-// Language is the resolver for the language field.
-func (r *tokenResolver) Language(ctx context.Context, obj *db.Token) (*string, error) {
-	return util.NilString(obj.Language), nil
-}
-
 // Token returns graph.TokenResolver implementation.
 func (r *Resolver) Token() graph.TokenResolver { return &tokenResolver{r} }
 
