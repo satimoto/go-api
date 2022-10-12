@@ -47,7 +47,7 @@ func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTo
 // ListTokens is the resolver for the listTokens field.
 func (r *queryResolver) ListTokens(ctx context.Context) ([]db.Token, error) {
 	if userID := middleware.GetUserID(ctx); userID != nil {
-		return r.TokenResolver.Repository.ListTokensByUserID(ctx, *userID)
+		return r.TokenResolver.Repository.ListRfidTokensByUserID(ctx, *userID)
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
