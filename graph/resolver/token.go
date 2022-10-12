@@ -25,9 +25,10 @@ func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTo
 		}
 
 		createTokenRequest := &ocpirpc.CreateTokenRequest{
-			UserId: *userID,
-			Uid:    input.UID,
-			Type:   string(db.TokenTypeRFID),
+			UserId:    *userID,
+			Uid:       input.UID,
+			Type:      string(db.TokenTypeRFID),
+			Whitelist: string(db.TokenWhitelistTypeNEVER),
 		}
 
 		createTokenResponse, err := r.OcpiService.CreateToken(ctx, createTokenRequest)

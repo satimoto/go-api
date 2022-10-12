@@ -12,8 +12,9 @@ import (
 
 func (r *TokenResolver) CreateToken(ctx context.Context, userID int64) (*ocpirpc.CreateTokenResponse, error) {
 	createTokenRequest := &ocpirpc.CreateTokenRequest{
-		UserId: userID,
-		Type:   string(db.TokenTypeOTHER),
+		UserId:    userID,
+		Type:      string(db.TokenTypeOTHER),
+		Whitelist: string(db.TokenWhitelistTypeNEVER),
 	}
 
 	createTokenResponse, err := r.OcpiService.CreateToken(ctx, createTokenRequest)
