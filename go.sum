@@ -638,12 +638,6 @@ github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQD
 github.com/russross/blackfriday/v2 v2.1.0 h1:JIOH55/0cWyOuilr9/qlrm0BSXldqnqwMsf35Ld67mk=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
-github.com/satimoto/go-datastore v0.3.1-0.20221007082724-a3fc6a6b5730 h1:KQX3xSilE2mTqF80n/cT9WZjG3B+mOnH7gk70eNL6Ns=
-github.com/satimoto/go-datastore v0.3.1-0.20221007082724-a3fc6a6b5730/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
-github.com/satimoto/go-datastore v0.3.1-0.20221008135255-0ea6dab1dd3e h1:a7dw7O5mQ7fzkCxaWt94fNGA6jei16g98pCSAe3gTRw=
-github.com/satimoto/go-datastore v0.3.1-0.20221008135255-0ea6dab1dd3e/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
-github.com/satimoto/go-datastore v0.3.1-0.20221010144727-ae8dab0e86d4 h1:aRGbnPnAXFsYSiBtu4rRZUrvVyJFr/K+ftKDiZZsVPM=
-github.com/satimoto/go-datastore v0.3.1-0.20221010144727-ae8dab0e86d4/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
 github.com/satimoto/go-datastore v0.3.1-0.20221012103502-18feca84ade6 h1:aLmudSjLb4I2+tkQ2AoukNKW01Itc2hyYOsC71E+teU=
 github.com/satimoto/go-datastore v0.3.1-0.20221012103502-18feca84ade6/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
 github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f h1:emb13r6KZW3+8sUySFsfdK63+r6MVyoF+uvX+9KzsLQ=
