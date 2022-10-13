@@ -283,8 +283,8 @@ type ComplexityRoot struct {
 		SyncCredential          func(childComplexity int, input SyncCredentialInput) int
 		UnregisterCredential    func(childComplexity int, input UnregisterCredentialInput) int
 		UpdateInvoiceRequest    func(childComplexity int, input UpdateInvoiceRequestInput) int
+		UpdateTokens            func(childComplexity int, input UpdateTokensInput) int
 		UpdateUser              func(childComplexity int, input UpdateUserInput) int
-		UpdatesToken            func(childComplexity int, input UpdateTokensInput) int
 		VerifyEmailSubscription func(childComplexity int, input VerifyEmailSubscriptionInput) int
 	}
 
@@ -574,7 +574,7 @@ type MutationResolver interface {
 	PublishLocation(ctx context.Context, input PublishLocationInput) (*ResultOk, error)
 	CreateReferral(ctx context.Context, input CreateReferralInput) (*ResultID, error)
 	CreateToken(ctx context.Context, input CreateTokenInput) (*db.Token, error)
-	UpdatesToken(ctx context.Context, input UpdateTokensInput) (*ResultOk, error)
+	UpdateTokens(ctx context.Context, input UpdateTokensInput) (*ResultOk, error)
 	CreateUser(ctx context.Context, input CreateUserInput) (*db.User, error)
 	UpdateUser(ctx context.Context, input UpdateUserInput) (*db.User, error)
 }
@@ -1821,6 +1821,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateInvoiceRequest(childComplexity, args["input"].(UpdateInvoiceRequestInput)), true
 
+	case "Mutation.updateTokens":
+		if e.complexity.Mutation.UpdateTokens == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTokens_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTokens(childComplexity, args["input"].(UpdateTokensInput)), true
+
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
 			break
@@ -1832,18 +1844,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateUser(childComplexity, args["input"].(UpdateUserInput)), true
-
-	case "Mutation.updatesToken":
-		if e.complexity.Mutation.UpdatesToken == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updatesToken_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdatesToken(childComplexity, args["input"].(UpdateTokensInput)), true
 
 	case "Mutation.verifyEmailSubscription":
 		if e.complexity.Mutation.VerifyEmailSubscription == nil {
@@ -2986,13 +2986,13 @@ func (ec *executionContext) field_Mutation_updateInvoiceRequest_args(ctx context
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_updateTokens_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 UpdateUserInput
+	var arg0 UpdateTokensInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdateUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateUserInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUpdateTokensInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateTokensInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3001,13 +3001,13 @@ func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_updatesToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 UpdateTokensInput
+	var arg0 UpdateUserInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdateTokensInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateTokensInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUpdateUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -10524,8 +10524,8 @@ func (ec *executionContext) fieldContext_Mutation_createToken(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_updatesToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updatesToken(ctx, field)
+func (ec *executionContext) _Mutation_updateTokens(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateTokens(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -10538,7 +10538,7 @@ func (ec *executionContext) _Mutation_updatesToken(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdatesToken(rctx, fc.Args["input"].(UpdateTokensInput))
+		return ec.resolvers.Mutation().UpdateTokens(rctx, fc.Args["input"].(UpdateTokensInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10555,7 +10555,7 @@ func (ec *executionContext) _Mutation_updatesToken(ctx context.Context, field gr
 	return ec.marshalNResultOk2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultOk(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_updatesToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_updateTokens(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -10576,7 +10576,7 @@ func (ec *executionContext) fieldContext_Mutation_updatesToken(ctx context.Conte
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updatesToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_updateTokens_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -21134,10 +21134,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "updatesToken":
+		case "updateTokens":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updatesToken(ctx, field)
+				return ec._Mutation_updateTokens(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {

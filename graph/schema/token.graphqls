@@ -23,5 +23,5 @@ extend type Query {
 }
 extend type Mutation {
     createToken(input: CreateTokenInput!): Token!
-    updatesToken(input: UpdateTokensInput!): ResultOk!
+    updateTokens(input: UpdateTokensInput!): ResultOk!
 }
