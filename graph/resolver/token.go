@@ -56,10 +56,6 @@ func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTo
 // UpdateToken is the resolver for the updateToken field.
 func (r *mutationResolver) UpdateToken(ctx context.Context, input graph.UpdateTokenInput) (*graph.ResultOk, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
-		if _, err := r.TokenResolver.Repository.GetTokenByUid(ctx, input.UID); err == nil {
-			return nil, errors.New("Error updating token")
-		}
-
 		updateTokensRequest := &ocpirpc.UpdateTokensRequest{
 			Uid:     input.UID,
 			Allowed: input.Allowed,
