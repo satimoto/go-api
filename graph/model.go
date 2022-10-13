@@ -65,7 +65,9 @@ type CreateReferralInput struct {
 }
 
 type CreateTokenInput struct {
-	UID string `json:"uid"`
+	UID     string  `json:"uid"`
+	Type    *string `json:"type"`
+	Allowed *string `json:"allowed"`
 }
 
 type CreateUserInput struct {
@@ -205,6 +207,11 @@ type UnregisterCredentialInput struct {
 type UpdateInvoiceRequestInput struct {
 	ID             int64  `json:"id"`
 	PaymentRequest string `json:"paymentRequest"`
+}
+
+type UpdateTokenInput struct {
+	UID     string `json:"uid"`
+	Allowed string `json:"allowed"`
 }
 
 type UpdateUserInput struct {
