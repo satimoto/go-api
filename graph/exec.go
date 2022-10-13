@@ -283,6 +283,7 @@ type ComplexityRoot struct {
 		SyncCredential          func(childComplexity int, input SyncCredentialInput) int
 		UnregisterCredential    func(childComplexity int, input UnregisterCredentialInput) int
 		UpdateInvoiceRequest    func(childComplexity int, input UpdateInvoiceRequestInput) int
+		UpdateToken             func(childComplexity int, input UpdateTokenInput) int
 		UpdateUser              func(childComplexity int, input UpdateUserInput) int
 		VerifyEmailSubscription func(childComplexity int, input VerifyEmailSubscriptionInput) int
 	}
@@ -573,6 +574,7 @@ type MutationResolver interface {
 	PublishLocation(ctx context.Context, input PublishLocationInput) (*ResultOk, error)
 	CreateReferral(ctx context.Context, input CreateReferralInput) (*ResultID, error)
 	CreateToken(ctx context.Context, input CreateTokenInput) (*db.Token, error)
+	UpdateToken(ctx context.Context, input UpdateTokenInput) (*ResultOk, error)
 	CreateUser(ctx context.Context, input CreateUserInput) (*db.User, error)
 	UpdateUser(ctx context.Context, input UpdateUserInput) (*db.User, error)
 }
@@ -1819,6 +1821,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateInvoiceRequest(childComplexity, args["input"].(UpdateInvoiceRequestInput)), true
 
+	case "Mutation.updateToken":
+		if e.complexity.Mutation.UpdateToken == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateToken_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateToken(childComplexity, args["input"].(UpdateTokenInput)), true
+
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
 			break
@@ -2631,6 +2645,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputSyncCredentialInput,
 		ec.unmarshalInputUnregisterCredentialInput,
 		ec.unmarshalInputUpdateInvoiceRequestInput,
+		ec.unmarshalInputUpdateTokenInput,
 		ec.unmarshalInputUpdateUserInput,
 		ec.unmarshalInputVerifyEmailSubscriptionInput,
 	)
@@ -2963,6 +2978,21 @@ func (ec *executionContext) field_Mutation_updateInvoiceRequest_args(ctx context
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNUpdateInvoiceRequestInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateInvoiceRequestInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 UpdateTokenInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateTokenInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateTokenInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -10494,6 +10524,65 @@ func (ec *executionContext) fieldContext_Mutation_createToken(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_updateToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateToken(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateToken(rctx, fc.Args["input"].(UpdateTokenInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ResultOk)
+	fc.Result = res
+	return ec.marshalNResultOk2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultOk(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ok":
+				return ec.fieldContext_ResultOk_ok(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ResultOk", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createUser(ctx, field)
 	if err != nil {
@@ -17912,7 +18001,7 @@ func (ec *executionContext) unmarshalInputCreateTokenInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"uid"}
+	fieldsInOrder := [...]string{"uid", "type", "allowed"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17924,6 +18013,22 @@ func (ec *executionContext) unmarshalInputCreateTokenInput(ctx context.Context, 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
 			it.UID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "allowed":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("allowed"))
+			it.Allowed, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18508,6 +18613,42 @@ func (ec *executionContext) unmarshalInputUpdateInvoiceRequestInput(ctx context.
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paymentRequest"))
 			it.PaymentRequest, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateTokenInput(ctx context.Context, obj interface{}) (UpdateTokenInput, error) {
+	var it UpdateTokenInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"uid", "allowed"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "uid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
+			it.UID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "allowed":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("allowed"))
+			it.Allowed, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -20980,6 +21121,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createToken(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateToken":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateToken(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -24315,6 +24465,11 @@ func (ec *executionContext) unmarshalNUnregisterCredentialInput2githubᚗcomᚋs
 
 func (ec *executionContext) unmarshalNUpdateInvoiceRequestInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateInvoiceRequestInput(ctx context.Context, v interface{}) (UpdateInvoiceRequestInput, error) {
 	res, err := ec.unmarshalInputUpdateInvoiceRequestInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateTokenInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateTokenInput(ctx context.Context, v interface{}) (UpdateTokenInput, error) {
+	res, err := ec.unmarshalInputUpdateTokenInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

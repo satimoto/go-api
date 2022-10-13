@@ -31,6 +31,14 @@ func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTo
 			Whitelist: string(db.TokenWhitelistTypeNEVER),
 		}
 
+		if input.Allowed != nil {
+			createTokenRequest.Allowed = *input.Allowed
+		}
+
+		if input.Type != nil {
+			createTokenRequest.Type = *input.Type
+		}
+
 		createTokenResponse, err := r.OcpiService.CreateToken(ctx, createTokenRequest)
 
 		if err != nil {
@@ -40,6 +48,32 @@ func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTo
 		}
 
 		return token.NewCreateToken(*createTokenResponse), nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// UpdateToken is the resolver for the updateToken field.
+func (r *mutationResolver) UpdateToken(ctx context.Context, input graph.UpdateTokenInput) (*graph.ResultOk, error) {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+		if _, err := r.TokenResolver.Repository.GetTokenByUid(ctx, input.UID); err == nil {
+			return nil, errors.New("Error updating token")
+		}
+
+		updateTokensRequest := &ocpirpc.UpdateTokensRequest{
+			Uid:     input.UID,
+			Allowed: input.Allowed,
+		}
+
+		updateTokensResponse, err := r.OcpiService.UpdateTokens(ctx, updateTokensRequest)
+
+		if err != nil {
+			util.LogOnError("API042", "Error updating token", err)
+			log.Printf("API042: UpdateTokensRequest=%#v", updateTokensResponse)
+			return nil, errors.New("Error updating token")
+		}
+
+		return &graph.ResultOk{Ok: true}, nil
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
