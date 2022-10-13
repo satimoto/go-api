@@ -209,9 +209,10 @@ type UpdateInvoiceRequestInput struct {
 	PaymentRequest string `json:"paymentRequest"`
 }
 
-type UpdateTokenInput struct {
-	UID     string `json:"uid"`
-	Allowed string `json:"allowed"`
+type UpdateTokensInput struct {
+	UserID  int64   `json:"userId"`
+	UID     *string `json:"uid"`
+	Allowed string  `json:"allowed"`
 }
 
 type UpdateUserInput struct {

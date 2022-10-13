@@ -12,8 +12,9 @@ input CreateTokenInput {
     allowed: String
 }
 
-input UpdateTokenInput {
-    uid: String!
+input UpdateTokensInput {
+    userId: ID!
+    uid: String
     allowed: String!
 }
 
@@ -22,5 +23,5 @@ extend type Query {
 }
 extend type Mutation {
     createToken(input: CreateTokenInput!): Token!
-    updateToken(input: UpdateTokenInput!): ResultOk!
+    updatesToken(input: UpdateTokensInput!): ResultOk!
 }

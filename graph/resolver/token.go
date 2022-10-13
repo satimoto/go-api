@@ -53,12 +53,16 @@ func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTo
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
-// UpdateToken is the resolver for the updateToken field.
-func (r *mutationResolver) UpdateToken(ctx context.Context, input graph.UpdateTokenInput) (*graph.ResultOk, error) {
+// UpdatesToken is the resolver for the updatesToken field.
+func (r *mutationResolver) UpdatesToken(ctx context.Context, input graph.UpdateTokensInput) (*graph.ResultOk, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		updateTokensRequest := &ocpirpc.UpdateTokensRequest{
-			Uid:     input.UID,
+			UserId:  input.UserID,
 			Allowed: input.Allowed,
+		}
+
+		if input.UID != nil {
+			updateTokensRequest.Uid = *input.UID
 		}
 
 		updateTokensResponse, err := r.OcpiService.UpdateTokens(ctx, updateTokensRequest)
