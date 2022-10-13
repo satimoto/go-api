@@ -18,15 +18,15 @@ import (
 func (r *queryResolver) GetSession(ctx context.Context, input graph.GetSessionInput) (*db.Session, error) {
 	if userID := middleware.GetUserID(ctx); userID != nil {
 		if input.ID != nil {
-			if s, err := r.SessionRepository.GetSession(ctx, *input.ID); err == nil && userID == &s.UserID {
+			if s, err := r.SessionRepository.GetSession(ctx, *input.ID); err == nil && *userID == s.UserID {
 				return &s, nil
 			}
 		} else if input.UID != nil {
-			if s, err := r.SessionRepository.GetSessionByUid(ctx, *input.UID); err == nil && userID == &s.UserID {
+			if s, err := r.SessionRepository.GetSessionByUid(ctx, *input.UID); err == nil && *userID == s.UserID {
 				return &s, nil
 			}
 		} else if input.AuthorizationID != nil {
-			if s, err := r.SessionRepository.GetSessionByAuthorizationID(ctx, *input.AuthorizationID); err == nil && userID == &s.UserID {
+			if s, err := r.SessionRepository.GetSessionByAuthorizationID(ctx, *input.AuthorizationID); err == nil && *userID == s.UserID {
 				return &s, nil
 			}
 		}

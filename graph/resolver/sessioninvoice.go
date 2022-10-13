@@ -17,7 +17,7 @@ import (
 // GetSessionInvoice is the resolver for the getSessionInvoice field.
 func (r *queryResolver) GetSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error) {
 	if userID := middleware.GetUserID(ctx); userID != nil {
-		if s, err := r.SessionRepository.GetSessionInvoice(ctx, id); err == nil && userID == &s.UserID {
+		if s, err := r.SessionRepository.GetSessionInvoice(ctx, id); err == nil && *userID == s.UserID {
 			return &s, nil
 		}
 
