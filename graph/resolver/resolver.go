@@ -28,6 +28,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/referral"
 	"github.com/satimoto/go-datastore/pkg/session"
 	"github.com/satimoto/go-datastore/pkg/tariff"
+	"github.com/satimoto/go-datastore/pkg/tokenauthorization"
 	"github.com/satimoto/go-datastore/pkg/user"
 	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/satimoto/go-ocpi/pkg/ocpi"
@@ -64,6 +65,7 @@ type Resolver struct {
 	PromotionRepository           promotion.PromotionRepository
 	SessionRepository             session.SessionRepository
 	TariffRepository              tariff.TariffRepository
+	TokenAuthorizationRepository  tokenauthorization.TokenAuthorizationRepository
 	TokenResolver                 *token.TokenResolver
 	UserRepository                user.UserRepository
 	defaultTaxPercent             float64
@@ -105,6 +107,7 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 		ReferralRepository:            referral.NewRepository(repositoryService),
 		SessionRepository:             session.NewRepository(repositoryService),
 		TariffRepository:              tariff.NewRepository(repositoryService),
+		TokenAuthorizationRepository:  tokenauthorization.NewRepository(repositoryService),
 		TokenResolver:                 token.NewResolver(repositoryService),
 		UserRepository:                user.NewRepository(repositoryService),
 		defaultTaxPercent:             defaultTaxPercent,
