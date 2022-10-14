@@ -61,6 +61,7 @@ type ResolverRoot interface {
 	StatusSchedule() StatusScheduleResolver
 	Tariff() TariffResolver
 	Token() TokenResolver
+	TokenAuthorization() TokenAuthorizationResolver
 	User() UserResolver
 }
 
@@ -268,24 +269,25 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateAuthentication    func(childComplexity int, action AuthenticationAction) int
-		CreateChannelRequest    func(childComplexity int, input CreateChannelRequestInput) int
-		CreateCredential        func(childComplexity int, input CreateCredentialInput) int
-		CreateEmailSubscription func(childComplexity int, input CreateEmailSubscriptionInput) int
-		CreateReferral          func(childComplexity int, input CreateReferralInput) int
-		CreateToken             func(childComplexity int, input CreateTokenInput) int
-		CreateUser              func(childComplexity int, input CreateUserInput) int
-		ExchangeAuthentication  func(childComplexity int, code string) int
-		PublishLocation         func(childComplexity int, input PublishLocationInput) int
-		RegisterCredential      func(childComplexity int, input RegisterCredentialInput) int
-		StartSession            func(childComplexity int, input StartSessionInput) int
-		StopSession             func(childComplexity int, input StopSessionInput) int
-		SyncCredential          func(childComplexity int, input SyncCredentialInput) int
-		UnregisterCredential    func(childComplexity int, input UnregisterCredentialInput) int
-		UpdateInvoiceRequest    func(childComplexity int, input UpdateInvoiceRequestInput) int
-		UpdateTokens            func(childComplexity int, input UpdateTokensInput) int
-		UpdateUser              func(childComplexity int, input UpdateUserInput) int
-		VerifyEmailSubscription func(childComplexity int, input VerifyEmailSubscriptionInput) int
+		CreateAuthentication     func(childComplexity int, action AuthenticationAction) int
+		CreateChannelRequest     func(childComplexity int, input CreateChannelRequestInput) int
+		CreateCredential         func(childComplexity int, input CreateCredentialInput) int
+		CreateEmailSubscription  func(childComplexity int, input CreateEmailSubscriptionInput) int
+		CreateReferral           func(childComplexity int, input CreateReferralInput) int
+		CreateToken              func(childComplexity int, input CreateTokenInput) int
+		CreateUser               func(childComplexity int, input CreateUserInput) int
+		ExchangeAuthentication   func(childComplexity int, code string) int
+		PublishLocation          func(childComplexity int, input PublishLocationInput) int
+		RegisterCredential       func(childComplexity int, input RegisterCredentialInput) int
+		StartSession             func(childComplexity int, input StartSessionInput) int
+		StopSession              func(childComplexity int, input StopSessionInput) int
+		SyncCredential           func(childComplexity int, input SyncCredentialInput) int
+		UnregisterCredential     func(childComplexity int, input UnregisterCredentialInput) int
+		UpdateInvoiceRequest     func(childComplexity int, input UpdateInvoiceRequestInput) int
+		UpdateTokenAuthorization func(childComplexity int, input UpdateTokenAuthorizationInput) int
+		UpdateTokens             func(childComplexity int, input UpdateTokensInput) int
+		UpdateUser               func(childComplexity int, input UpdateUserInput) int
+		VerifyEmailSubscription  func(childComplexity int, input VerifyEmailSubscriptionInput) int
 	}
 
 	Node struct {
@@ -439,6 +441,16 @@ type ComplexityRoot struct {
 		VisualNumber func(childComplexity int) int
 	}
 
+	TokenAuthorization struct {
+		AuthorizationID func(childComplexity int) int
+		Authorized      func(childComplexity int) int
+		CountryCode     func(childComplexity int) int
+		LocationUID     func(childComplexity int) int
+		PartyID         func(childComplexity int) int
+		Token           func(childComplexity int) int
+		VerificationKey func(childComplexity int) int
+	}
+
 	User struct {
 		DeviceToken  func(childComplexity int) int
 		ID           func(childComplexity int) int
@@ -575,6 +587,7 @@ type MutationResolver interface {
 	CreateReferral(ctx context.Context, input CreateReferralInput) (*ResultID, error)
 	CreateToken(ctx context.Context, input CreateTokenInput) (*db.Token, error)
 	UpdateTokens(ctx context.Context, input UpdateTokensInput) (*ResultOk, error)
+	UpdateTokenAuthorization(ctx context.Context, input UpdateTokenAuthorizationInput) (*db.TokenAuthorization, error)
 	CreateUser(ctx context.Context, input CreateUserInput) (*db.User, error)
 	UpdateUser(ctx context.Context, input UpdateUserInput) (*db.User, error)
 }
@@ -648,6 +661,14 @@ type TokenResolver interface {
 	Type(ctx context.Context, obj *db.Token) (string, error)
 
 	VisualNumber(ctx context.Context, obj *db.Token) (*string, error)
+}
+type TokenAuthorizationResolver interface {
+	CountryCode(ctx context.Context, obj *db.TokenAuthorization) (*string, error)
+	PartyID(ctx context.Context, obj *db.TokenAuthorization) (*string, error)
+	LocationUID(ctx context.Context, obj *db.TokenAuthorization) (*string, error)
+	Token(ctx context.Context, obj *db.TokenAuthorization) (*db.Token, error)
+
+	VerificationKey(ctx context.Context, obj *db.TokenAuthorization) (*string, error)
 }
 type UserResolver interface {
 	ReferralCode(ctx context.Context, obj *db.User) (*string, error)
@@ -1821,6 +1842,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateInvoiceRequest(childComplexity, args["input"].(UpdateInvoiceRequestInput)), true
 
+	case "Mutation.updateTokenAuthorization":
+		if e.complexity.Mutation.UpdateTokenAuthorization == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTokenAuthorization_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTokenAuthorization(childComplexity, args["input"].(UpdateTokenAuthorizationInput)), true
+
 	case "Mutation.updateTokens":
 		if e.complexity.Mutation.UpdateTokens == nil {
 			break
@@ -2581,6 +2614,55 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Token.VisualNumber(childComplexity), true
 
+	case "TokenAuthorization.authorizationId":
+		if e.complexity.TokenAuthorization.AuthorizationID == nil {
+			break
+		}
+
+		return e.complexity.TokenAuthorization.AuthorizationID(childComplexity), true
+
+	case "TokenAuthorization.authorized":
+		if e.complexity.TokenAuthorization.Authorized == nil {
+			break
+		}
+
+		return e.complexity.TokenAuthorization.Authorized(childComplexity), true
+
+	case "TokenAuthorization.countryCode":
+		if e.complexity.TokenAuthorization.CountryCode == nil {
+			break
+		}
+
+		return e.complexity.TokenAuthorization.CountryCode(childComplexity), true
+
+	case "TokenAuthorization.locationUid":
+		if e.complexity.TokenAuthorization.LocationUID == nil {
+			break
+		}
+
+		return e.complexity.TokenAuthorization.LocationUID(childComplexity), true
+
+	case "TokenAuthorization.partyId":
+		if e.complexity.TokenAuthorization.PartyID == nil {
+			break
+		}
+
+		return e.complexity.TokenAuthorization.PartyID(childComplexity), true
+
+	case "TokenAuthorization.token":
+		if e.complexity.TokenAuthorization.Token == nil {
+			break
+		}
+
+		return e.complexity.TokenAuthorization.Token(childComplexity), true
+
+	case "TokenAuthorization.verificationKey":
+		if e.complexity.TokenAuthorization.VerificationKey == nil {
+			break
+		}
+
+		return e.complexity.TokenAuthorization.VerificationKey(childComplexity), true
+
 	case "User.deviceToken":
 		if e.complexity.User.DeviceToken == nil {
 			break
@@ -2645,6 +2727,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputSyncCredentialInput,
 		ec.unmarshalInputUnregisterCredentialInput,
 		ec.unmarshalInputUpdateInvoiceRequestInput,
+		ec.unmarshalInputUpdateTokenAuthorizationInput,
 		ec.unmarshalInputUpdateTokensInput,
 		ec.unmarshalInputUpdateUserInput,
 		ec.unmarshalInputVerifyEmailSubscriptionInput,
@@ -2707,7 +2790,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
-//go:embed "schema/additionalgeolocation.graphqls" "schema/authentication.graphqls" "schema/businessdetail.graphqls" "schema/channelrequest.graphqls" "schema/command.graphqls" "schema/connector.graphqls" "schema/credential.graphqls" "schema/displaytext.graphqls" "schema/elementrestriction.graphqls" "schema/emailsubscription.graphqls" "schema/energymix.graphqls" "schema/energysource.graphqls" "schema/environmentalimpact.graphqls" "schema/evse.graphqls" "schema/exceptionalperiod.graphqls" "schema/geolocation.graphqls" "schema/image.graphqls" "schema/invoicerequest.graphqls" "schema/location.graphqls" "schema/node.graphqls" "schema/openingtime.graphqls" "schema/pricecomponent.graphqls" "schema/promotion.graphqls" "schema/rate.graphqls" "schema/referral.graphqls" "schema/regularhour.graphqls" "schema/result.graphqls" "schema/session.graphqls" "schema/sessioninvoice.graphqls" "schema/statusschedule.graphqls" "schema/tariff.graphqls" "schema/tariffelement.graphqls" "schema/textdescription.graphqls" "schema/token.graphqls" "schema/user.graphqls"
+//go:embed "schema/additionalgeolocation.graphqls" "schema/authentication.graphqls" "schema/businessdetail.graphqls" "schema/channelrequest.graphqls" "schema/command.graphqls" "schema/connector.graphqls" "schema/credential.graphqls" "schema/displaytext.graphqls" "schema/elementrestriction.graphqls" "schema/emailsubscription.graphqls" "schema/energymix.graphqls" "schema/energysource.graphqls" "schema/environmentalimpact.graphqls" "schema/evse.graphqls" "schema/exceptionalperiod.graphqls" "schema/geolocation.graphqls" "schema/image.graphqls" "schema/invoicerequest.graphqls" "schema/location.graphqls" "schema/node.graphqls" "schema/openingtime.graphqls" "schema/pricecomponent.graphqls" "schema/promotion.graphqls" "schema/rate.graphqls" "schema/referral.graphqls" "schema/regularhour.graphqls" "schema/result.graphqls" "schema/session.graphqls" "schema/sessioninvoice.graphqls" "schema/statusschedule.graphqls" "schema/tariff.graphqls" "schema/tariffelement.graphqls" "schema/textdescription.graphqls" "schema/token.graphqls" "schema/tokenauthorization.graphqls" "schema/user.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -2753,6 +2836,7 @@ var sources = []*ast.Source{
 	{Name: "schema/tariffelement.graphqls", Input: sourceData("schema/tariffelement.graphqls"), BuiltIn: false},
 	{Name: "schema/textdescription.graphqls", Input: sourceData("schema/textdescription.graphqls"), BuiltIn: false},
 	{Name: "schema/token.graphqls", Input: sourceData("schema/token.graphqls"), BuiltIn: false},
+	{Name: "schema/tokenauthorization.graphqls", Input: sourceData("schema/tokenauthorization.graphqls"), BuiltIn: false},
 	{Name: "schema/user.graphqls", Input: sourceData("schema/user.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -2978,6 +3062,21 @@ func (ec *executionContext) field_Mutation_updateInvoiceRequest_args(ctx context
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNUpdateInvoiceRequestInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateInvoiceRequestInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateTokenAuthorization_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 UpdateTokenAuthorizationInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateTokenAuthorizationInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateTokenAuthorizationInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -10583,6 +10682,77 @@ func (ec *executionContext) fieldContext_Mutation_updateTokens(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_updateTokenAuthorization(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateTokenAuthorization(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTokenAuthorization(rctx, fc.Args["input"].(UpdateTokenAuthorizationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.TokenAuthorization)
+	fc.Result = res
+	return ec.marshalNTokenAuthorization2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTokenAuthorization(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateTokenAuthorization(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "countryCode":
+				return ec.fieldContext_TokenAuthorization_countryCode(ctx, field)
+			case "partyId":
+				return ec.fieldContext_TokenAuthorization_partyId(ctx, field)
+			case "locationUid":
+				return ec.fieldContext_TokenAuthorization_locationUid(ctx, field)
+			case "token":
+				return ec.fieldContext_TokenAuthorization_token(ctx, field)
+			case "authorizationId":
+				return ec.fieldContext_TokenAuthorization_authorizationId(ctx, field)
+			case "authorized":
+				return ec.fieldContext_TokenAuthorization_authorized(ctx, field)
+			case "verificationKey":
+				return ec.fieldContext_TokenAuthorization_verificationKey(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TokenAuthorization", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateTokenAuthorization_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createUser(ctx, field)
 	if err != nil {
@@ -15708,6 +15878,314 @@ func (ec *executionContext) fieldContext_Token_visualNumber(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _TokenAuthorization_countryCode(ctx context.Context, field graphql.CollectedField, obj *db.TokenAuthorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TokenAuthorization_countryCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TokenAuthorization().CountryCode(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TokenAuthorization_countryCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TokenAuthorization",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TokenAuthorization_partyId(ctx context.Context, field graphql.CollectedField, obj *db.TokenAuthorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TokenAuthorization_partyId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TokenAuthorization().PartyID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TokenAuthorization_partyId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TokenAuthorization",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TokenAuthorization_locationUid(ctx context.Context, field graphql.CollectedField, obj *db.TokenAuthorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TokenAuthorization_locationUid(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TokenAuthorization().LocationUID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TokenAuthorization_locationUid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TokenAuthorization",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TokenAuthorization_token(ctx context.Context, field graphql.CollectedField, obj *db.TokenAuthorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TokenAuthorization_token(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TokenAuthorization().Token(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Token)
+	fc.Result = res
+	return ec.marshalNToken2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐToken(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TokenAuthorization_token(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TokenAuthorization",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Token_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Token_uid(ctx, field)
+			case "type":
+				return ec.fieldContext_Token_type(ctx, field)
+			case "authId":
+				return ec.fieldContext_Token_authId(ctx, field)
+			case "visualNumber":
+				return ec.fieldContext_Token_visualNumber(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Token", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TokenAuthorization_authorizationId(ctx context.Context, field graphql.CollectedField, obj *db.TokenAuthorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TokenAuthorization_authorizationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AuthorizationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TokenAuthorization_authorizationId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TokenAuthorization",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TokenAuthorization_authorized(ctx context.Context, field graphql.CollectedField, obj *db.TokenAuthorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TokenAuthorization_authorized(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Authorized, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TokenAuthorization_authorized(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TokenAuthorization",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TokenAuthorization_verificationKey(ctx context.Context, field graphql.CollectedField, obj *db.TokenAuthorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TokenAuthorization_verificationKey(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TokenAuthorization().VerificationKey(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TokenAuthorization_verificationKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TokenAuthorization",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *db.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
@@ -18622,6 +19100,42 @@ func (ec *executionContext) unmarshalInputUpdateInvoiceRequestInput(ctx context.
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateTokenAuthorizationInput(ctx context.Context, obj interface{}) (UpdateTokenAuthorizationInput, error) {
+	var it UpdateTokenAuthorizationInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"authorizationId", "authorized"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "authorizationId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorizationId"))
+			it.AuthorizationID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "authorized":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorized"))
+			it.Authorized, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateTokensInput(ctx context.Context, obj interface{}) (UpdateTokensInput, error) {
 	var it UpdateTokensInput
 	asMap := map[string]interface{}{}
@@ -21143,6 +21657,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateTokenAuthorization":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateTokenAuthorization(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createUser":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -22833,6 +23356,129 @@ func (ec *executionContext) _Token(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var tokenAuthorizationImplementors = []string{"TokenAuthorization"}
+
+func (ec *executionContext) _TokenAuthorization(ctx context.Context, sel ast.SelectionSet, obj *db.TokenAuthorization) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tokenAuthorizationImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TokenAuthorization")
+		case "countryCode":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TokenAuthorization_countryCode(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "partyId":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TokenAuthorization_partyId(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "locationUid":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TokenAuthorization_locationUid(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "token":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TokenAuthorization_token(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "authorizationId":
+
+			out.Values[i] = ec._TokenAuthorization_authorizationId(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "authorized":
+
+			out.Values[i] = ec._TokenAuthorization_authorized(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "verificationKey":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TokenAuthorization_verificationKey(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var userImplementors = []string{"User"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *db.User) graphql.Marshaler {
@@ -24466,6 +25112,20 @@ func (ec *executionContext) marshalNToken2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdata
 	return ec._Token(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNTokenAuthorization2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTokenAuthorization(ctx context.Context, sel ast.SelectionSet, v db.TokenAuthorization) graphql.Marshaler {
+	return ec._TokenAuthorization(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTokenAuthorization2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTokenAuthorization(ctx context.Context, sel ast.SelectionSet, v *db.TokenAuthorization) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._TokenAuthorization(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNUnregisterCredentialInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUnregisterCredentialInput(ctx context.Context, v interface{}) (UnregisterCredentialInput, error) {
 	res, err := ec.unmarshalInputUnregisterCredentialInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -24473,6 +25133,11 @@ func (ec *executionContext) unmarshalNUnregisterCredentialInput2githubᚗcomᚋs
 
 func (ec *executionContext) unmarshalNUpdateInvoiceRequestInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateInvoiceRequestInput(ctx context.Context, v interface{}) (UpdateInvoiceRequestInput, error) {
 	res, err := ec.unmarshalInputUpdateInvoiceRequestInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateTokenAuthorizationInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateTokenAuthorizationInput(ctx context.Context, v interface{}) (UpdateTokenAuthorizationInput, error) {
+	res, err := ec.unmarshalInputUpdateTokenAuthorizationInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
