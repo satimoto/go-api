@@ -445,7 +445,7 @@ type ComplexityRoot struct {
 		AuthorizationID func(childComplexity int) int
 		Authorized      func(childComplexity int) int
 		CountryCode     func(childComplexity int) int
-		LocationUID     func(childComplexity int) int
+		Location        func(childComplexity int) int
 		PartyID         func(childComplexity int) int
 		Token           func(childComplexity int) int
 		VerificationKey func(childComplexity int) int
@@ -665,7 +665,7 @@ type TokenResolver interface {
 type TokenAuthorizationResolver interface {
 	CountryCode(ctx context.Context, obj *db.TokenAuthorization) (*string, error)
 	PartyID(ctx context.Context, obj *db.TokenAuthorization) (*string, error)
-	LocationUID(ctx context.Context, obj *db.TokenAuthorization) (*string, error)
+	Location(ctx context.Context, obj *db.TokenAuthorization) (*db.Location, error)
 	Token(ctx context.Context, obj *db.TokenAuthorization) (*db.Token, error)
 
 	VerificationKey(ctx context.Context, obj *db.TokenAuthorization) (*string, error)
@@ -2635,12 +2635,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TokenAuthorization.CountryCode(childComplexity), true
 
-	case "TokenAuthorization.locationUid":
-		if e.complexity.TokenAuthorization.LocationUID == nil {
+	case "TokenAuthorization.location":
+		if e.complexity.TokenAuthorization.Location == nil {
 			break
 		}
 
-		return e.complexity.TokenAuthorization.LocationUID(childComplexity), true
+		return e.complexity.TokenAuthorization.Location(childComplexity), true
 
 	case "TokenAuthorization.partyId":
 		if e.complexity.TokenAuthorization.PartyID == nil {
@@ -10725,8 +10725,8 @@ func (ec *executionContext) fieldContext_Mutation_updateTokenAuthorization(ctx c
 				return ec.fieldContext_TokenAuthorization_countryCode(ctx, field)
 			case "partyId":
 				return ec.fieldContext_TokenAuthorization_partyId(ctx, field)
-			case "locationUid":
-				return ec.fieldContext_TokenAuthorization_locationUid(ctx, field)
+			case "location":
+				return ec.fieldContext_TokenAuthorization_location(ctx, field)
 			case "token":
 				return ec.fieldContext_TokenAuthorization_token(ctx, field)
 			case "authorizationId":
@@ -15960,8 +15960,8 @@ func (ec *executionContext) fieldContext_TokenAuthorization_partyId(ctx context.
 	return fc, nil
 }
 
-func (ec *executionContext) _TokenAuthorization_locationUid(ctx context.Context, field graphql.CollectedField, obj *db.TokenAuthorization) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TokenAuthorization_locationUid(ctx, field)
+func (ec *executionContext) _TokenAuthorization_location(ctx context.Context, field graphql.CollectedField, obj *db.TokenAuthorization) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TokenAuthorization_location(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -15974,7 +15974,7 @@ func (ec *executionContext) _TokenAuthorization_locationUid(ctx context.Context,
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.TokenAuthorization().LocationUID(rctx, obj)
+		return ec.resolvers.TokenAuthorization().Location(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -15983,19 +15983,73 @@ func (ec *executionContext) _TokenAuthorization_locationUid(ctx context.Context,
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*db.Location)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐLocation(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TokenAuthorization_locationUid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TokenAuthorization_location(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TokenAuthorization",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Location_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Location_uid(ctx, field)
+			case "type":
+				return ec.fieldContext_Location_type(ctx, field)
+			case "name":
+				return ec.fieldContext_Location_name(ctx, field)
+			case "address":
+				return ec.fieldContext_Location_address(ctx, field)
+			case "city":
+				return ec.fieldContext_Location_city(ctx, field)
+			case "postalCode":
+				return ec.fieldContext_Location_postalCode(ctx, field)
+			case "country":
+				return ec.fieldContext_Location_country(ctx, field)
+			case "geom":
+				return ec.fieldContext_Location_geom(ctx, field)
+			case "relatedLocations":
+				return ec.fieldContext_Location_relatedLocations(ctx, field)
+			case "evses":
+				return ec.fieldContext_Location_evses(ctx, field)
+			case "availableEvses":
+				return ec.fieldContext_Location_availableEvses(ctx, field)
+			case "totalEvses":
+				return ec.fieldContext_Location_totalEvses(ctx, field)
+			case "isRemoteCapable":
+				return ec.fieldContext_Location_isRemoteCapable(ctx, field)
+			case "isRfidCapable":
+				return ec.fieldContext_Location_isRfidCapable(ctx, field)
+			case "directions":
+				return ec.fieldContext_Location_directions(ctx, field)
+			case "operator":
+				return ec.fieldContext_Location_operator(ctx, field)
+			case "suboperator":
+				return ec.fieldContext_Location_suboperator(ctx, field)
+			case "owner":
+				return ec.fieldContext_Location_owner(ctx, field)
+			case "facilities":
+				return ec.fieldContext_Location_facilities(ctx, field)
+			case "timeZone":
+				return ec.fieldContext_Location_timeZone(ctx, field)
+			case "openingTime":
+				return ec.fieldContext_Location_openingTime(ctx, field)
+			case "chargingWhenClosed":
+				return ec.fieldContext_Location_chargingWhenClosed(ctx, field)
+			case "images":
+				return ec.fieldContext_Location_images(ctx, field)
+			case "energyMix":
+				return ec.fieldContext_Location_energyMix(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_Location_lastUpdated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Location", field.Name)
 		},
 	}
 	return fc, nil
@@ -23400,7 +23454,7 @@ func (ec *executionContext) _TokenAuthorization(ctx context.Context, sel ast.Sel
 				return innerFunc(ctx)
 
 			})
-		case "locationUid":
+		case "location":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -23409,7 +23463,7 @@ func (ec *executionContext) _TokenAuthorization(ctx context.Context, sel ast.Sel
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._TokenAuthorization_locationUid(ctx, field, obj)
+				res = ec._TokenAuthorization_location(ctx, field, obj)
 				return res
 			}
 
