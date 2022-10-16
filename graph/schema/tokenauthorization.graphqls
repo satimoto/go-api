@@ -1,7 +1,7 @@
 type TokenAuthorization {
     countryCode: String
     partyId: String
-    locationUid: String
+    location: Location
     token: Token!
     authorizationId: String!
     authorized: Boolean!

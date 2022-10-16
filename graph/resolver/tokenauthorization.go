@@ -12,8 +12,8 @@ import (
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
-	"github.com/satimoto/go-datastore/pkg/param"
 	"github.com/satimoto/go-datastore/pkg/util"
+	"github.com/satimoto/go-ocpi/ocpirpc"
 	ocpiTokenAuthorization "github.com/satimoto/go-ocpi/pkg/ocpi/tokenauthorization"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -21,22 +21,26 @@ import (
 // UpdateTokenAuthorization is the resolver for the updateTokenAuthorization field.
 func (r *mutationResolver) UpdateTokenAuthorization(ctx context.Context, input graph.UpdateTokenAuthorizationInput) (*db.TokenAuthorization, error) {
 	if userID := middleware.GetUserID(ctx); userID != nil {
-		if tokenAuthorization, err := r.TokenAuthorizationRepository.GetTokenAuthorizationByAuthorizationID(ctx, input.AuthorizationID); err == nil {
-			if user, err := r.UserRepository.GetUserByTokenID(ctx, tokenAuthorization.TokenID); err == nil && user.ID == *userID {
-				updateTokenAuthorizationParams := param.NewUpdateTokenAuthorizationParams(tokenAuthorization)
-				updateTokenAuthorizationParams.Authorized = input.Authorized
+		updateTokenAuthorizationRequest := &ocpirpc.UpdateTokenAuthorizationRequest{
+			AuthorizationId:  input.AuthorizationID,
+			Authorize: input.Authorized,
+		}
 
-				tokenAuthorization, err = r.TokenAuthorizationRepository.UpdateTokenAuthorizationByAuthorizationID(ctx, updateTokenAuthorizationParams)
+		updateTokenAuthorizationResponse, err := r.OcpiService.UpdateTokenAuthorization(ctx, updateTokenAuthorizationRequest)
 
-				if err != nil {
-					util.LogOnError("API043", "Error updating token authorization", err)
-					log.Printf("API043: Params=%#v", updateTokenAuthorizationParams)
-					return nil, errors.New("Error updating token authorization")
-				}
+		if err != nil {
+			util.LogOnError("API042", "Error updating token authorization", err)
+			log.Printf("API042: Params=%#v", updateTokenAuthorizationRequest)
+			return nil, errors.New("Error updating token authorization")
+		}
 
+		if updateTokenAuthorizationResponse.Ok {
+			if tokenAuthorization, err := r.TokenAuthorizationRepository.GetTokenAuthorizationByAuthorizationID(ctx, input.AuthorizationID); err == nil {
 				return &tokenAuthorization, nil
 			}
 		}
+
+		return nil, errors.New("Error updating token authorization")
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
@@ -52,9 +56,15 @@ func (r *tokenAuthorizationResolver) PartyID(ctx context.Context, obj *db.TokenA
 	return util.NilString(obj.PartyID), nil
 }
 
-// LocationUID is the resolver for the locationUid field.
-func (r *tokenAuthorizationResolver) LocationUID(ctx context.Context, obj *db.TokenAuthorization) (*string, error) {
-	return util.NilString(obj.LocationID), nil
+// Location is the resolver for the location field.
+func (r *tokenAuthorizationResolver) Location(ctx context.Context, obj *db.TokenAuthorization) (*db.Location, error) {
+	if obj.LocationID.Valid {
+		if location, err := r.LocationRepository.GetLocationByUid(ctx, obj.LocationID.String); err == nil {
+			return &location, nil
+		}
+	}
+
+	return nil, nil
 }
 
 // Token is the resolver for the token field.
