@@ -22,8 +22,8 @@ import (
 func (r *mutationResolver) UpdateTokenAuthorization(ctx context.Context, input graph.UpdateTokenAuthorizationInput) (*db.TokenAuthorization, error) {
 	if userID := middleware.GetUserID(ctx); userID != nil {
 		updateTokenAuthorizationRequest := &ocpirpc.UpdateTokenAuthorizationRequest{
-			AuthorizationId:  input.AuthorizationID,
-			Authorize: input.Authorized,
+			AuthorizationId: input.AuthorizationID,
+			Authorize:       input.Authorized,
 		}
 
 		_, err := r.OcpiService.UpdateTokenAuthorization(ctx, updateTokenAuthorizationRequest)
