@@ -26,7 +26,7 @@ func (r *mutationResolver) UpdateTokenAuthorization(ctx context.Context, input g
 			Authorize: input.Authorized,
 		}
 
-		updateTokenAuthorizationResponse, err := r.OcpiService.UpdateTokenAuthorization(ctx, updateTokenAuthorizationRequest)
+		_, err := r.OcpiService.UpdateTokenAuthorization(ctx, updateTokenAuthorizationRequest)
 
 		if err != nil {
 			util.LogOnError("API042", "Error updating token authorization", err)
@@ -34,13 +34,15 @@ func (r *mutationResolver) UpdateTokenAuthorization(ctx context.Context, input g
 			return nil, errors.New("Error updating token authorization")
 		}
 
-		if updateTokenAuthorizationResponse.Ok {
-			if tokenAuthorization, err := r.TokenAuthorizationRepository.GetTokenAuthorizationByAuthorizationID(ctx, input.AuthorizationID); err == nil {
-				return &tokenAuthorization, nil
-			}
+		tokenAuthorization, err := r.TokenAuthorizationRepository.GetTokenAuthorizationByAuthorizationID(ctx, input.AuthorizationID)
+
+		if err != nil {
+			util.LogOnError("API043", "Error retrieving token authorization", err)
+			log.Printf("API043: AuthorizationID=%v", input.AuthorizationID)
+			return nil, errors.New("Error updating token authorization")
 		}
 
-		return nil, errors.New("Error updating token authorization")
+		return &tokenAuthorization, nil
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
