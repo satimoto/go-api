@@ -13,6 +13,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/businessdetail"
 	"github.com/satimoto/go-datastore/pkg/channelrequest"
 	"github.com/satimoto/go-datastore/pkg/connector"
+	"github.com/satimoto/go-datastore/pkg/credential"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/displaytext"
 	"github.com/satimoto/go-datastore/pkg/emailsubscription"
@@ -51,6 +52,7 @@ type Resolver struct {
 	ChannelRequestRepository      channelrequest.ChannelRequestRepository
 	ConnectorRepository           connector.ConnectorRepository
 	CountryAccountResolver        *countryaccount.CountryAccountResolver
+	CredentialRepository          credential.CredentialRepository
 	DisplayTextRepository         displaytext.DisplayTextRepository
 	EmailSubscriptionRepository   emailsubscription.EmailSubscriptionRepository
 	EnergyMixRepository           energymix.EnergyMixRepository
@@ -93,6 +95,7 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 		ChannelRequestRepository:      channelrequest.NewRepository(repositoryService),
 		ConnectorRepository:           connector.NewRepository(repositoryService),
 		CountryAccountResolver:        countryaccount.NewResolver(repositoryService),
+		CredentialRepository:          credential.NewRepository(repositoryService),
 		DisplayTextRepository:         displaytext.NewRepository(repositoryService),
 		EmailSubscriptionRepository:   emailsubscription.NewRepository(repositoryService),
 		EnergyMixRepository:           energymix.NewRepository(repositoryService),

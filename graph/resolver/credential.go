@@ -86,3 +86,12 @@ func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph
 
 	return nil, gqlerror.Errorf("Not authenticated")
 }
+
+// ListCredentials is the resolver for the listCredentials field.
+func (r *queryResolver) ListCredentials(ctx context.Context) ([]db.Credential, error) {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+		return r.CredentialRepository.ListCredentials(ctx)
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}

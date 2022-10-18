@@ -326,6 +326,7 @@ type ComplexityRoot struct {
 		GetSessionInvoice    func(childComplexity int, id int64) int
 		GetTariff            func(childComplexity int, input GetTariffInput) int
 		GetUser              func(childComplexity int) int
+		ListCredentials      func(childComplexity int) int
 		ListInvoiceRequests  func(childComplexity int) int
 		ListLocations        func(childComplexity int, input ListLocationsInput) int
 		ListTokens           func(childComplexity int) int
@@ -610,6 +611,7 @@ type PriceComponentResolver interface {
 type QueryResolver interface {
 	VerifyAuthentication(ctx context.Context, code string) (*VerifyAuthentication, error)
 	GetConnector(ctx context.Context, input GetConnectorInput) (*db.Connector, error)
+	ListCredentials(ctx context.Context) ([]db.Credential, error)
 	GetEvse(ctx context.Context, input GetEvseInput) (*db.Evse, error)
 	ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRequest, error)
 	GetLocation(ctx context.Context, input GetLocationInput) (*db.Location, error)
@@ -2085,6 +2087,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetUser(childComplexity), true
+
+	case "Query.listCredentials":
+		if e.complexity.Query.ListCredentials == nil {
+			break
+		}
+
+		return e.complexity.Query.ListCredentials(childComplexity), true
 
 	case "Query.listInvoiceRequests":
 		if e.complexity.Query.ListInvoiceRequests == nil {
@@ -11697,6 +11706,62 @@ func (ec *executionContext) fieldContext_Query_getConnector(ctx context.Context,
 	if fc.Args, err = ec.field_Query_getConnector_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_listCredentials(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_listCredentials(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListCredentials(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]db.Credential)
+	fc.Result = res
+	return ec.marshalNCredential2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCredentialᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_listCredentials(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Credential_id(ctx, field)
+			case "url":
+				return ec.fieldContext_Credential_url(ctx, field)
+			case "countryCode":
+				return ec.fieldContext_Credential_countryCode(ctx, field)
+			case "partyId":
+				return ec.fieldContext_Credential_partyId(ctx, field)
+			case "isHub":
+				return ec.fieldContext_Credential_isHub(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Credential", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -22101,6 +22166,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "listCredentials":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listCredentials(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "getEvse":
 			field := field
 
@@ -24134,6 +24222,50 @@ func (ec *executionContext) unmarshalNCreateUserInput2githubᚗcomᚋsatimotoᚋ
 
 func (ec *executionContext) marshalNCredential2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCredential(ctx context.Context, sel ast.SelectionSet, v db.Credential) graphql.Marshaler {
 	return ec._Credential(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCredential2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCredentialᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Credential) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCredential2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCredential(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNCredential2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCredential(ctx context.Context, sel ast.SelectionSet, v *db.Credential) graphql.Marshaler {
