@@ -115,6 +115,7 @@ module "service-api" {
     region                         = var.region
     service_name                   = var.service_name
     service_container_port         = var.service_container_port
+    service_metric_port            = var.service_metric_port
     task_network_mode              = var.task_network_mode
     env_api_domain                 = "https://${var.subdomain_name}.${data.terraform_remote_state.infrastructure.outputs.route53_zone_name}"
     env_db_user                    = "satimoto"
@@ -125,6 +126,7 @@ module "service-api" {
     env_default_commission_percent = var.env_default_commission_percent
     env_ferp_rpc_address           = "ferp.${data.terraform_remote_state.infrastructure.outputs.ecs_service_discovery_namespace_name}:${var.env_ferp_rpc_port}"
     env_jwt_secret                 = data.aws_ssm_parameter.jwt_secret.value
+    env_metric_port                = var.service_metric_port
     env_ocpi_rpc_address           = "ocpi.${data.terraform_remote_state.infrastructure.outputs.ecs_service_discovery_namespace_name}:${var.env_ocpi_rpc_port}"
     env_reply_to_email             = "Satimoto <hello@satimoto.com>"
     env_rest_port                  = var.service_container_port
