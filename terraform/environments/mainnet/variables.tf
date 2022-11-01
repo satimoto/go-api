@@ -42,6 +42,10 @@ variable "service_container_port" {
   description = "The port on the container to associate with the load balancer"
 }
 
+variable "service_metric_port" {
+  description = "The port to associate with metric collection"
+}
+
 variable "task_network_mode" {
   description = "The Docker networking mode to use for the containers in the task"
 }
