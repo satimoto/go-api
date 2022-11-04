@@ -455,6 +455,7 @@ type ComplexityRoot struct {
 	User struct {
 		DeviceToken  func(childComplexity int) int
 		ID           func(childComplexity int) int
+		Node         func(childComplexity int) int
 		Pubkey       func(childComplexity int) int
 		ReferralCode func(childComplexity int) int
 	}
@@ -674,6 +675,7 @@ type TokenAuthorizationResolver interface {
 }
 type UserResolver interface {
 	ReferralCode(ctx context.Context, obj *db.User) (*string, error)
+	Node(ctx context.Context, obj *db.User) (*db.Node, error)
 }
 
 type executableSchema struct {
@@ -2685,6 +2687,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.ID(childComplexity), true
+
+	case "User.node":
+		if e.complexity.User.Node == nil {
+			break
+		}
+
+		return e.complexity.User.Node(childComplexity), true
 
 	case "User.pubkey":
 		if e.complexity.User.Pubkey == nil {
@@ -10809,6 +10818,8 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 				return ec.fieldContext_User_deviceToken(ctx, field)
 			case "referralCode":
 				return ec.fieldContext_User_referralCode(ctx, field)
+			case "node":
+				return ec.fieldContext_User_node(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -10874,6 +10885,8 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_deviceToken(ctx, field)
 			case "referralCode":
 				return ec.fieldContext_User_referralCode(ctx, field)
+			case "node":
+				return ec.fieldContext_User_node(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -12518,6 +12531,8 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 				return ec.fieldContext_User_deviceToken(ctx, field)
 			case "referralCode":
 				return ec.fieldContext_User_referralCode(ctx, field)
+			case "node":
+				return ec.fieldContext_User_node(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -16473,6 +16488,55 @@ func (ec *executionContext) fieldContext_User_referralCode(ctx context.Context, 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_node(ctx context.Context, field graphql.CollectedField, obj *db.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Node(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.Node)
+	fc.Result = res
+	return ec.marshalONode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐNode(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "pubkey":
+				return ec.fieldContext_Node_pubkey(ctx, field)
+			case "addr":
+				return ec.fieldContext_Node_addr(ctx, field)
+			case "alias":
+				return ec.fieldContext_Node_alias(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Node", field.Name)
 		},
 	}
 	return fc, nil
@@ -23669,6 +23733,23 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				return innerFunc(ctx)
 
 			})
+		case "node":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_node(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -25782,6 +25863,13 @@ func (ec *executionContext) marshalOLocation2ᚖgithubᚗcomᚋsatimotoᚋgoᚑd
 		return graphql.Null
 	}
 	return ec._Location(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalONode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐNode(ctx context.Context, sel ast.SelectionSet, v *db.Node) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Node(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐOpeningTime(ctx context.Context, sel ast.SelectionSet, v *db.OpeningTime) graphql.Marshaler {
