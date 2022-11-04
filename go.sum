@@ -81,7 +81,6 @@ github.com/btcsuite/btcd v0.22.0-beta.0.20220204213055-eaf0459ff879/go.mod h1:os
 github.com/btcsuite/btcd v0.22.0-beta.0.20220207191057-4dc4ff7963b4/go.mod h1:7alexyj/lHlOtr2PJK7L/+HDJZpcGDn/pAU98r7DY08=
 github.com/btcsuite/btcd v0.22.0-beta.0.20220316175102-8d5c75c28923/go.mod h1:taIcYprAW2g6Z9S0gGUxyR+zDwimyDMK5ePOX+iJ2ds=
 github.com/btcsuite/btcd v0.23.0/go.mod h1:0QJIIN1wwIXF/3G/m87gIwGniDMDQqjVn4SZgnFpsYY=
-github.com/btcsuite/btcd v0.23.1 h1:IB8cVQcC2X5mHbnfirLG5IZnkWYNTPlLZVrxUYSotbE=
 github.com/btcsuite/btcd v0.23.1/go.mod h1:0QJIIN1wwIXF/3G/m87gIwGniDMDQqjVn4SZgnFpsYY=
 github.com/btcsuite/btcd v0.23.3 h1:4KH/JKy9WiCd+iUS9Mu0Zp7Dnj17TGdKrg9xc/FGj24=
 github.com/btcsuite/btcd v0.23.3/go.mod h1:0QJIIN1wwIXF/3G/m87gIwGniDMDQqjVn4SZgnFpsYY=
@@ -642,6 +641,8 @@ github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQD
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
 github.com/satimoto/go-datastore v0.3.1-0.20221014172535-5cb6fc2609b6 h1:N12ivbfo2Uf/a9YkqJSngb180TPVA2bi4/JpWSfnQAQ=
 github.com/satimoto/go-datastore v0.3.1-0.20221014172535-5cb6fc2609b6/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
+github.com/satimoto/go-datastore v0.3.1-0.20221104105440-f0d4e8d865e6 h1:owYFezUlqMU1P5JnOhQ9IWfU/BXnvFo0kKQ6QeB3aoU=
+github.com/satimoto/go-datastore v0.3.1-0.20221104105440-f0d4e8d865e6/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
 github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f h1:emb13r6KZW3+8sUySFsfdK63+r6MVyoF+uvX+9KzsLQ=
 github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f/go.mod h1:GQdhGMwlWYwyFMO/cLhl1dRrHbKhQxKeuiPs35amvV4=
 github.com/satimoto/go-lsp v0.2.1-0.20220919200559-6ab40df2ed28 h1:2ut6UBRJoSRjJcGbfpoDRP5Y/8NMleQArCHCkhYtV2o=

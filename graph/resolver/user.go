@@ -117,23 +117,18 @@ func (r *userResolver) ReferralCode(ctx context.Context, obj *db.User) (*string,
 	return util.NullString(obj.ReferralCode)
 }
 
+// Node is the resolver for the node field.
+func (r *userResolver) Node(ctx context.Context, obj *db.User) (*db.Node, error) {
+	if obj.NodeID.Valid {
+		if node, err := r.NodeRepository.GetNode(ctx, obj.NodeID.Int64); err == nil {
+			return &node, nil
+		}
+	}
+
+	return nil, nil
+}
+
 // User returns graph.UserResolver implementation.
 func (r *Resolver) User() graph.UserResolver { return &userResolver{r} }
 
 type userResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *mutationResolver) generateReferralCode(ctx context.Context) string {
-	for {
-		referralCode := util.RandomString(8)
-
-		if _, err := r.UserRepository.GetUserByReferralCode(ctx, dbUtil.SqlNullString(referralCode)); err != nil {
-			return referralCode
-		}
-	}
-}
