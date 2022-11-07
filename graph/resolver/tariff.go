@@ -5,12 +5,37 @@ package resolver
 
 import (
 	"context"
+	"log"
 
 	"github.com/satimoto/go-api/graph"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/param"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
+
+// UpdateTariff is the resolver for the updateTariff field.
+func (r *mutationResolver) UpdateTariff(ctx context.Context, input graph.UpdateTariffInput) (*db.Tariff, error) {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+		if tariff, err := r.TariffRepository.GetTariffByUid(ctx, input.UID); err != nil {
+			updateTariffParams := param.NewUpdateTariffByUidParams(tariff)
+			updateTariffParams.IsIntermediateCdrCapable = input.IsIntermediateCdrCapable
+
+			updatedTariff, err := r.TariffRepository.UpdateTariffByUid(ctx, updateTariffParams)
+
+			if err != nil {
+				metrics.RecordError("API029", "Error updating tariff", err)
+				log.Printf("API029: Params=%#v", updateTariffParams)
+				return nil, gqlerror.Errorf("Error updating tariff")
+			}
+
+			return &updatedTariff, nil
+		}
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
 
 // GetTariff is the resolver for the getTariff field.
 func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInput) (*db.Tariff, error) {
