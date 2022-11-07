@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/satimoto/go-api/graph"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/token"
 	"github.com/satimoto/go-datastore/pkg/db"
@@ -42,7 +43,7 @@ func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTo
 		createTokenResponse, err := r.OcpiService.CreateToken(ctx, createTokenRequest)
 
 		if err != nil {
-			util.LogOnError("API041", "Error creating token", err)
+			metrics.RecordError("API041", "Error creating token", err)
 			log.Printf("API041: CreateTokenRequest=%#v", createTokenRequest)
 			return nil, errors.New("Error creating token")
 		}
@@ -68,7 +69,7 @@ func (r *mutationResolver) UpdateTokens(ctx context.Context, input graph.UpdateT
 		updateTokensResponse, err := r.OcpiService.UpdateTokens(ctx, updateTokensRequest)
 
 		if err != nil {
-			util.LogOnError("API042", "Error updating token", err)
+			metrics.RecordError("API042", "Error updating token", err)
 			log.Printf("API042: UpdateTokensRequest=%#v", updateTokensResponse)
 			return nil, errors.New("Error updating token")
 		}

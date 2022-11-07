@@ -1,4 +1,4 @@
-package metric
+package metrics
 
 import (
 	"context"
@@ -15,27 +15,27 @@ import (
 	"github.com/satimoto/go-datastore/pkg/util"
 )
 
-type Metric interface {
+type Metrics interface {
 	Handler() *chi.Mux
-	StartMetric(context.Context, *sync.WaitGroup)
+	StartMetrics(context.Context, *sync.WaitGroup)
 }
 
-type MetricService struct {
+type MetricsService struct {
 	Server *http.Server
 }
 
-func NewMetric() Metric {
-	return &MetricService{}
+func NewMetrics() Metrics {
+	return &MetricsService{}
 }
 
-func (rs *MetricService) Handler() *chi.Mux {
+func (rs *MetricsService) Handler() *chi.Mux {
 	router := chi.NewRouter()
 	router.Mount("/metrics", promhttp.Handler())
 
 	return router
 }
 
-func (rs *MetricService) StartMetric(ctx context.Context, waitGroup *sync.WaitGroup) {
+func (rs *MetricsService) StartMetrics(ctx context.Context, waitGroup *sync.WaitGroup) {
 	if rs.Server == nil {
 		rs.Server = &http.Server{
 			Addr:    fmt.Sprintf(":%s", os.Getenv("METRIC_PORT")),
@@ -43,31 +43,31 @@ func (rs *MetricService) StartMetric(ctx context.Context, waitGroup *sync.WaitGr
 		}
 	}
 
-	log.Printf("Starting Metric service")
+	log.Printf("Starting Metrics service")
 	waitGroup.Add(1)
 
 	go rs.listenAndServe()
 
 	go func() {
 		<-ctx.Done()
-		log.Printf("Shutting down Metric service")
+		log.Printf("Shutting down Metrics service")
 
 		rs.shutdown()
 
-		log.Printf("Metric service shut down")
+		log.Printf("Metrics service shut down")
 		waitGroup.Done()
 	}()
 }
 
-func (rs *MetricService) listenAndServe() {
+func (rs *MetricsService) listenAndServe() {
 	err := rs.Server.ListenAndServe()
 
 	if err != nil && err != http.ErrServerClosed {
-		util.LogOnError("API044", "Error in Metric service", err)
+		RecordError("API044", "Error in Metrics service", err)
 	}
 }
 
-func (rs *MetricService) shutdown() {
+func (rs *MetricsService) shutdown() {
 	timeout := util.GetEnvInt32("SHUTDOWN_TIMEOUT", 20)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
@@ -75,6 +75,6 @@ func (rs *MetricService) shutdown() {
 	err := rs.Server.Shutdown(ctx)
 
 	if err != nil {
-		util.LogOnError("API045", "Error shutting down Metric service", err)
+		RecordError("API045", "Error shutting down Metrics service", err)
 	}
 }

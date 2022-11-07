@@ -12,7 +12,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
-	github.com/satimoto/go-datastore v0.3.1-0.20221104105440-f0d4e8d865e6
+	github.com/satimoto/go-datastore v0.3.1-0.20221105210051-c8c039eb9db1
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.5.1
 )
@@ -60,7 +60,7 @@ require (
 	github.com/fiatjaf/go-lnurl v1.11.2
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/lightningnetwork/lnd v0.15.1-beta.rc2
-	github.com/prometheus/client_golang v1.12.2
+	github.com/prometheus/client_golang v1.13.1
 	github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f
 	github.com/satimoto/go-lsp v0.2.1-0.20220919200559-6ab40df2ed28
 	github.com/satimoto/go-ocpi v0.2.1-0.20221016112643-50609a52d6c0
@@ -85,8 +85,8 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/nbd-wtf/ln-decodepay v1.5.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.32.1 // indirect
-	github.com/prometheus/procfs v0.7.3 // indirect
+	github.com/prometheus/common v0.37.0 // indirect
+	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/urfave/cli/v2 v2.8.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect

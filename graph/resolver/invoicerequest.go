@@ -8,10 +8,10 @@ import (
 	"log"
 
 	"github.com/satimoto/go-api/graph"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
-	dbUtil "github.com/satimoto/go-datastore/pkg/util"
 	"github.com/satimoto/go-lsp/lsprpc"
 	"github.com/satimoto/go-lsp/pkg/lsp"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -73,7 +73,7 @@ func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph
 		node, err := r.NodeRepository.GetNode(ctx, user.NodeID.Int64)
 
 		if err != nil {
-			dbUtil.LogOnError("API030", "Error retrieving node", err)
+			metrics.RecordError("API030", "Error retrieving node", err)
 			log.Printf("API030: Input=%#v", input)
 			return nil, gqlerror.Errorf("Error retrieving node")
 		}
@@ -90,7 +90,7 @@ func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph
 		updateInvoiceResponse, err := lspService.UpdateInvoice(ctx, updateInvoiceRequest)
 
 		if err != nil {
-			dbUtil.LogOnError("API031", "Error updating invoice", err)
+			metrics.RecordError("API031", "Error updating invoice", err)
 			log.Printf("API031: UpdateInvoiceRequest=%#v", updateInvoiceRequest)
 			return nil, gqlerror.Errorf("Error updating invoice")
 		}
@@ -98,7 +98,7 @@ func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph
 		invoiceRequest, err := r.InvoiceRequestRepository.GetInvoiceRequest(ctx, input.ID)
 
 		if err != nil {
-			dbUtil.LogOnError("API032", "Error updating invoice", err)
+			metrics.RecordError("API032", "Error updating invoice", err)
 			log.Printf("API032: Input=%#v", updateInvoiceRequest)
 			log.Printf("API032: Response=%#v", updateInvoiceResponse)
 			return nil, gqlerror.Errorf("Error updating invoice")
