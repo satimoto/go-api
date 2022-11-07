@@ -6,6 +6,7 @@ type ListLocation {
     totalEvses: Int!
     isRemoteCapable: Boolean!
     isRfidCapable: Boolean!
+    addedDate: String!
 }
 
 type Location {
@@ -43,11 +44,13 @@ input GetLocationInput {
 }
 
 input ListLocationsInput {
-    xMin: Float!
-    yMin: Float!
-    xMax: Float!
-    yMax: Float!
+    country: String
     interval: Int
+    limit: Int
+    xMin: Float
+    xMax: Float
+    yMin: Float
+    yMax: Float
 }
 
 input PublishLocationInput {

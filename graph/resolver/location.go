@@ -207,11 +207,19 @@ func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocat
 	if userID := middleware.GetUserID(ctx); userID != nil {
 		var list []graph.ListLocation
 
-		params := param.NewListLocationsByGeomParams(input)
+		if input.Country != nil && len(*input.Country) > 0 {
+			if locations, err := r.LocationRepository.ListLocationsByCountry(ctx, *input.Country); err == nil {
+				for _, l := range locations {
+					list = append(list, param.NewListLocation(l))
+				}
+			}
+		} else {
+			params := param.NewListLocationsByGeomParams(input)
 
-		if locations, err := r.LocationRepository.ListLocationsByGeom(ctx, params); err == nil {
-			for _, l := range locations {
-				list = append(list, param.NewListLocation(l))
+			if locations, err := r.LocationRepository.ListLocationsByGeom(ctx, params); err == nil {
+				for _, l := range locations {
+					list = append(list, param.NewListLocation(l))
+				}
 			}
 		}
 

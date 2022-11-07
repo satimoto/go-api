@@ -15,3 +15,11 @@ func DefaultInt(val *int, fallback int) int {
 
 	return fallback
 }
+
+func DefaultFloat(val *float64, fallback float64) float64 {
+	if val != nil {
+		return *val
+	}
+
+	return fallback
+}
