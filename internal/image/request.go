@@ -12,8 +12,8 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/template"
-	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/skip2/go-qrcode"
 )
 
@@ -23,7 +23,7 @@ func (r *ImageResolver) GetReferralCodeImage(rw http.ResponseWriter, request *ht
 	circuitBytes, err := template.ReadFile("image/circuit.png")
 
 	if err != nil {
-		util.LogOnError("API037", "Error reading image file", err)
+		metrics.RecordError("API037", "Error reading image file", err)
 		log.Printf("API037: ReferralCode=%v", referralCode)
 		rw.WriteHeader(http.StatusNotFound)
 		return
@@ -33,7 +33,7 @@ func (r *ImageResolver) GetReferralCodeImage(rw http.ResponseWriter, request *ht
 	circuitImageData, err := png.Decode(circuitBytesReader)
 
 	if err != nil {
-		util.LogOnError("API038", "Error decoding png", err)
+		metrics.RecordError("API038", "Error decoding png", err)
 		log.Printf("API038: ReferralCode=%v", referralCode)
 		rw.WriteHeader(http.StatusNotFound)
 		return
@@ -42,9 +42,9 @@ func (r *ImageResolver) GetReferralCodeImage(rw http.ResponseWriter, request *ht
 	imageData := image.NewRGBA(image.Rect(0, 0, circuitImageData.Bounds().Dx(), circuitImageData.Bounds().Dy()))
 	draw.Draw(imageData, imageData.Bounds(), circuitImageData, image.Point{X: 0, Y: 0}, draw.Src)
 	qr, err := qrcode.New(content, qrcode.Medium)
-	
+
 	if err != nil {
-		util.LogOnError("API039", "Error creating QR code", err)
+		metrics.RecordError("API039", "Error creating QR code", err)
 		log.Printf("API039: Content=%v", content)
 		rw.WriteHeader(http.StatusNotFound)
 		return
@@ -67,7 +67,7 @@ func (r *ImageResolver) GetReferralCodeImage(rw http.ResponseWriter, request *ht
 			v := bitmap[y2][x2]
 
 			if v {
-				imageData.SetRGBA(x + xOffset, y + yOffset, foregroundColor)
+				imageData.SetRGBA(x+xOffset, y+yOffset, foregroundColor)
 			}
 		}
 	}
@@ -76,7 +76,7 @@ func (r *ImageResolver) GetReferralCodeImage(rw http.ResponseWriter, request *ht
 	err = png.Encode(buffer, imageData)
 
 	if err != nil {
-		util.LogOnError("API040", "Error encoding png", err)
+		metrics.RecordError("API040", "Error encoding png", err)
 		log.Printf("API040: Content=%v", content)
 		rw.WriteHeader(http.StatusNotFound)
 		return

@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/satimoto/go-api/graph"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
@@ -21,7 +22,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, input.Code)
 
 	if err != nil {
-		dbUtil.LogOnError("API016", "Authentication not found", err)
+		metrics.RecordError("API016", "Authentication not found", err)
 		log.Printf("API016: Code=%v", input.Code)
 		return nil, gqlerror.Errorf("Authentication not found")
 	}
@@ -54,7 +55,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 	user, err := r.UserRepository.CreateUser(ctx, createUserParams)
 
 	if err != nil {
-		dbUtil.LogOnError("API018", "User already exists", err)
+		metrics.RecordError("API018", "User already exists", err)
 		log.Printf("API018: Params=%#v", createUserParams)
 		return nil, gqlerror.Errorf("User already exists")
 	}
@@ -77,7 +78,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 		updatedUser, err := r.UserRepository.UpdateUser(ctx, updateUserParams)
 
 		if err != nil {
-			dbUtil.LogOnError("API020", "Error updating user", err)
+			metrics.RecordError("API020", "Error updating user", err)
 			log.Printf("API020: Params=%#v", updateUserParams)
 			return nil, gqlerror.Errorf("Error updating user")
 		}
@@ -90,7 +91,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 		err = r.PendingNotificationRepository.UpdatePendingNotificationsByUser(ctx, updatePendingNotificationByUserParams)
 
 		if err != nil {
-			dbUtil.LogOnError("API027", "Error updating pending notifications", err)
+			metrics.RecordError("API027", "Error updating pending notifications", err)
 			log.Printf("API027: Params=%#v", updatePendingNotificationByUserParams)
 			return nil, gqlerror.Errorf("Error updating pending notifications")
 		}

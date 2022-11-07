@@ -10,6 +10,7 @@ import (
 	"log"
 
 	"github.com/satimoto/go-api/graph"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/util"
@@ -29,7 +30,7 @@ func (r *mutationResolver) UpdateTokenAuthorization(ctx context.Context, input g
 		_, err := r.OcpiService.UpdateTokenAuthorization(ctx, updateTokenAuthorizationRequest)
 
 		if err != nil {
-			util.LogOnError("API042", "Error updating token authorization", err)
+			metrics.RecordError("API042", "Error updating token authorization", err)
 			log.Printf("API042: Params=%#v", updateTokenAuthorizationRequest)
 			return nil, errors.New("Error updating token authorization")
 		}
@@ -37,7 +38,7 @@ func (r *mutationResolver) UpdateTokenAuthorization(ctx context.Context, input g
 		tokenAuthorization, err := r.TokenAuthorizationRepository.GetTokenAuthorizationByAuthorizationID(ctx, input.AuthorizationID)
 
 		if err != nil {
-			util.LogOnError("API043", "Error retrieving token authorization", err)
+			metrics.RecordError("API043", "Error retrieving token authorization", err)
 			log.Printf("API043: AuthorizationID=%v", input.AuthorizationID)
 			return nil, errors.New("Error updating token authorization")
 		}

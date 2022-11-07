@@ -13,6 +13,7 @@ import (
 
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/satimoto/go-api/graph"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/param"
@@ -128,7 +129,7 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 		openChannelResponse, err := lspService.OpenChannel(ctx, openChannelRequest)
 
 		if err != nil {
-			dbUtil.LogOnError("API009", "Error allocating scid", err)
+			metrics.RecordError("API009", "Error allocating scid", err)
 			log.Printf("API009: OpenChannelRequest=%#v", openChannelRequest)
 			return nil, gqlerror.Errorf("Error requesting payment channel")
 		}
@@ -155,7 +156,7 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 		channelRequest, err := r.ChannelRequestRepository.CreateChannelRequest(ctx, createChannelRequestParams)
 
 		if err != nil {
-			dbUtil.LogOnError("API010", "Error creating channel request", err)
+			metrics.RecordError("API010", "Error creating channel request", err)
 			log.Printf("API010: CreateChannelRequestParams=%#v", createChannelRequestParams)
 			return nil, gqlerror.Errorf("Channel request already exists")
 		}

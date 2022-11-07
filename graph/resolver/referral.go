@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/satimoto/go-api/graph"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/util"
@@ -20,7 +21,7 @@ func (r *mutationResolver) CreateReferral(ctx context.Context, input graph.Creat
 	user, err := r.UserRepository.GetUserByReferralCode(ctx, util.SqlNullString(input.Referrer))
 
 	if err != nil {
-		util.LogOnError("API033", "Error retrieving user", err)
+		metrics.RecordError("API033", "Error retrieving user", err)
 		log.Printf("API033: Referrer: %v", input.Referrer)
 		return nil, gqlerror.Errorf("Error creating referral")
 	}
@@ -28,7 +29,7 @@ func (r *mutationResolver) CreateReferral(ctx context.Context, input graph.Creat
 	promotion, err := r.PromotionRepository.GetPromotionByCode(ctx, input.Code)
 
 	if err != nil {
-		util.LogOnError("API034", "Error retrieving promotion", err)
+		metrics.RecordError("API034", "Error retrieving promotion", err)
 		log.Printf("API034: Code: %v", input.Code)
 		return nil, gqlerror.Errorf("Error creating referral")
 	}
@@ -36,7 +37,7 @@ func (r *mutationResolver) CreateReferral(ctx context.Context, input graph.Creat
 	ipAddress := middleware.GetIPAddress(ctx)
 
 	if ipAddress == nil {
-		util.LogOnError("API035", "Error ip address not found", err)
+		metrics.RecordError("API035", "Error ip address not found", err)
 		log.Printf("API035: Input: %#v", input)
 		return nil, gqlerror.Errorf("Error ip address not found")
 	}
@@ -51,7 +52,7 @@ func (r *mutationResolver) CreateReferral(ctx context.Context, input graph.Creat
 	referrer, err := r.ReferralRepository.CreateReferral(ctx, createReferralParams)
 
 	if err != nil {
-		util.LogOnError("API036", "Error creating referral", err)
+		metrics.RecordError("API036", "Error creating referral", err)
 		log.Printf("API036: Params: %#v", createReferralParams)
 		return nil, gqlerror.Errorf("Error creating referral")
 	}

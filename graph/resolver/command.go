@@ -9,8 +9,8 @@ import (
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/command"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
-	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -21,7 +21,7 @@ func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSe
 		startSessionResponse, err := r.OcpiService.StartSession(ctx, startSessionRequest)
 
 		if err != nil {
-			util.LogOnError("API011", "Error starting session", err)
+			metrics.RecordError("API011", "Error starting session", err)
 			log.Printf("API011: StartSessionRequest: %#v", startSessionRequest)
 			return nil, gqlerror.Errorf("Error starting session")
 		}
@@ -39,7 +39,7 @@ func (r *mutationResolver) StopSession(ctx context.Context, input graph.StopSess
 		stopSessionResponse, err := r.OcpiService.StopSession(ctx, stopSessionRequest)
 
 		if err != nil {
-			util.LogOnError("API012", "Error stopping session", err)
+			metrics.RecordError("API012", "Error stopping session", err)
 			log.Printf("API012: StopSessionRequest: %#v", stopSessionRequest)
 			return nil, gqlerror.Errorf("Error stopping session")
 		}

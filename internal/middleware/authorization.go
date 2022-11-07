@@ -8,9 +8,9 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/satimoto/go-api/internal/authentication"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/user"
-	"github.com/satimoto/go-datastore/pkg/util"
 )
 
 func AuthorizationContext() func(http.Handler) http.Handler {
@@ -57,7 +57,7 @@ func GetUser(ctx context.Context, r user.UserRepository) *db.User {
 		user, err := r.GetUser(ctx, *userID)
 
 		if err != nil {
-			util.LogOnError("API019", "Error retrieving user", err)
+			metrics.RecordError("API019", "Error retrieving user", err)
 			log.Printf("API019: UserID=%v", userID)
 			return nil
 		}
