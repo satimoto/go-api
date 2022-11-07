@@ -109,9 +109,8 @@ type GetSessionInput struct {
 }
 
 type GetTariffInput struct {
-	ID      *int64  `json:"id"`
-	UID     *string `json:"uid"`
-	Country *string `json:"country"`
+	ID  *int64  `json:"id"`
+	UID *string `json:"uid"`
 }
 
 type ListLocation struct {
@@ -210,6 +209,11 @@ type UnregisterCredentialInput struct {
 type UpdateInvoiceRequestInput struct {
 	ID             int64  `json:"id"`
 	PaymentRequest string `json:"paymentRequest"`
+}
+
+type UpdateTariffInput struct {
+	UID                      string `json:"uid"`
+	IsIntermediateCdrCapable bool   `json:"isIntermediateCdrCapable"`
 }
 
 type UpdateTokenAuthorizationInput struct {
