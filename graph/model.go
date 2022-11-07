@@ -122,14 +122,17 @@ type ListLocation struct {
 	TotalEvses      int               `json:"totalEvses"`
 	IsRemoteCapable bool              `json:"isRemoteCapable"`
 	IsRfidCapable   bool              `json:"isRfidCapable"`
+	AddedDate       string            `json:"addedDate"`
 }
 
 type ListLocationsInput struct {
-	XMin     float64 `json:"xMin"`
-	YMin     float64 `json:"yMin"`
-	XMax     float64 `json:"xMax"`
-	YMax     float64 `json:"yMax"`
-	Interval *int    `json:"interval"`
+	Country  *string  `json:"country"`
+	Interval *int     `json:"interval"`
+	Limit    *int     `json:"limit"`
+	XMin     *float64 `json:"xMin"`
+	XMax     *float64 `json:"xMax"`
+	YMin     *float64 `json:"yMin"`
+	YMax     *float64 `json:"yMax"`
 }
 
 type PublishLocationInput struct {

@@ -41,6 +41,7 @@ type ResolverRoot interface {
 	BusinessDetail() BusinessDetailResolver
 	ChannelRequest() ChannelRequestResolver
 	Connector() ConnectorResolver
+	CountryAccount() CountryAccountResolver
 	ElementRestriction() ElementRestrictionResolver
 	EnergyMix() EnergyMixResolver
 	EnergySource() EnergySourceResolver
@@ -109,6 +110,13 @@ type ComplexityRoot struct {
 		Uid                func(childComplexity int) int
 		Voltage            func(childComplexity int) int
 		Wattage            func(childComplexity int) int
+	}
+
+	CountryAccount struct {
+		Country   func(childComplexity int) int
+		Latitude  func(childComplexity int) int
+		Longitude func(childComplexity int) int
+		Zoom      func(childComplexity int) int
 	}
 
 	CreateAuthentication struct {
@@ -230,6 +238,7 @@ type ComplexityRoot struct {
 	}
 
 	ListLocation struct {
+		AddedDate       func(childComplexity int) int
 		AvailableEvses  func(childComplexity int) int
 		Geom            func(childComplexity int) int
 		IsRemoteCapable func(childComplexity int) int
@@ -326,6 +335,7 @@ type ComplexityRoot struct {
 		GetSessionInvoice    func(childComplexity int, id int64) int
 		GetTariff            func(childComplexity int, input GetTariffInput) int
 		GetUser              func(childComplexity int) int
+		ListCountryAccounts  func(childComplexity int) int
 		ListCredentials      func(childComplexity int) int
 		ListInvoiceRequests  func(childComplexity int) int
 		ListLocations        func(childComplexity int, input ListLocationsInput) int
@@ -489,6 +499,11 @@ type ConnectorResolver interface {
 	TermsAndConditions(ctx context.Context, obj *db.Connector) (*string, error)
 	LastUpdated(ctx context.Context, obj *db.Connector) (string, error)
 }
+type CountryAccountResolver interface {
+	Longitude(ctx context.Context, obj *db.CountryAccount) (*float64, error)
+	Latitude(ctx context.Context, obj *db.CountryAccount) (*float64, error)
+	Zoom(ctx context.Context, obj *db.CountryAccount) (*float64, error)
+}
 type ElementRestrictionResolver interface {
 	StartTime(ctx context.Context, obj *db.ElementRestriction) (*string, error)
 	EndTime(ctx context.Context, obj *db.ElementRestriction) (*string, error)
@@ -612,6 +627,7 @@ type PriceComponentResolver interface {
 type QueryResolver interface {
 	VerifyAuthentication(ctx context.Context, code string) (*VerifyAuthentication, error)
 	GetConnector(ctx context.Context, input GetConnectorInput) (*db.Connector, error)
+	ListCountryAccounts(ctx context.Context) ([]db.CountryAccount, error)
 	ListCredentials(ctx context.Context) ([]db.Credential, error)
 	GetEvse(ctx context.Context, input GetEvseInput) (*db.Evse, error)
 	ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRequest, error)
@@ -902,6 +918,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Connector.Wattage(childComplexity), true
+
+	case "CountryAccount.country":
+		if e.complexity.CountryAccount.Country == nil {
+			break
+		}
+
+		return e.complexity.CountryAccount.Country(childComplexity), true
+
+	case "CountryAccount.latitude":
+		if e.complexity.CountryAccount.Latitude == nil {
+			break
+		}
+
+		return e.complexity.CountryAccount.Latitude(childComplexity), true
+
+	case "CountryAccount.longitude":
+		if e.complexity.CountryAccount.Longitude == nil {
+			break
+		}
+
+		return e.complexity.CountryAccount.Longitude(childComplexity), true
+
+	case "CountryAccount.zoom":
+		if e.complexity.CountryAccount.Zoom == nil {
+			break
+		}
+
+		return e.complexity.CountryAccount.Zoom(childComplexity), true
 
 	case "CreateAuthentication.code":
 		if e.complexity.CreateAuthentication.Code == nil {
@@ -1434,6 +1478,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.InvoiceRequest.TotalMsat(childComplexity), true
+
+	case "ListLocation.addedDate":
+		if e.complexity.ListLocation.AddedDate == nil {
+			break
+		}
+
+		return e.complexity.ListLocation.AddedDate(childComplexity), true
 
 	case "ListLocation.availableEvses":
 		if e.complexity.ListLocation.AvailableEvses == nil {
@@ -2089,6 +2140,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetUser(childComplexity), true
+
+	case "Query.listCountryAccounts":
+		if e.complexity.Query.ListCountryAccounts == nil {
+			break
+		}
+
+		return e.complexity.Query.ListCountryAccounts(childComplexity), true
 
 	case "Query.listCredentials":
 		if e.complexity.Query.ListCredentials == nil {
@@ -2808,7 +2866,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
-//go:embed "schema/additionalgeolocation.graphqls" "schema/authentication.graphqls" "schema/businessdetail.graphqls" "schema/channelrequest.graphqls" "schema/command.graphqls" "schema/connector.graphqls" "schema/credential.graphqls" "schema/displaytext.graphqls" "schema/elementrestriction.graphqls" "schema/emailsubscription.graphqls" "schema/energymix.graphqls" "schema/energysource.graphqls" "schema/environmentalimpact.graphqls" "schema/evse.graphqls" "schema/exceptionalperiod.graphqls" "schema/geolocation.graphqls" "schema/image.graphqls" "schema/invoicerequest.graphqls" "schema/location.graphqls" "schema/node.graphqls" "schema/openingtime.graphqls" "schema/pricecomponent.graphqls" "schema/promotion.graphqls" "schema/rate.graphqls" "schema/referral.graphqls" "schema/regularhour.graphqls" "schema/result.graphqls" "schema/session.graphqls" "schema/sessioninvoice.graphqls" "schema/statusschedule.graphqls" "schema/tariff.graphqls" "schema/tariffelement.graphqls" "schema/textdescription.graphqls" "schema/token.graphqls" "schema/tokenauthorization.graphqls" "schema/user.graphqls"
+//go:embed "schema/additionalgeolocation.graphqls" "schema/authentication.graphqls" "schema/businessdetail.graphqls" "schema/channelrequest.graphqls" "schema/command.graphqls" "schema/connector.graphqls" "schema/countryaccount.graphqls" "schema/credential.graphqls" "schema/displaytext.graphqls" "schema/elementrestriction.graphqls" "schema/emailsubscription.graphqls" "schema/energymix.graphqls" "schema/energysource.graphqls" "schema/environmentalimpact.graphqls" "schema/evse.graphqls" "schema/exceptionalperiod.graphqls" "schema/geolocation.graphqls" "schema/image.graphqls" "schema/invoicerequest.graphqls" "schema/location.graphqls" "schema/node.graphqls" "schema/openingtime.graphqls" "schema/pricecomponent.graphqls" "schema/promotion.graphqls" "schema/rate.graphqls" "schema/referral.graphqls" "schema/regularhour.graphqls" "schema/result.graphqls" "schema/session.graphqls" "schema/sessioninvoice.graphqls" "schema/statusschedule.graphqls" "schema/tariff.graphqls" "schema/tariffelement.graphqls" "schema/textdescription.graphqls" "schema/token.graphqls" "schema/tokenauthorization.graphqls" "schema/user.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -2826,6 +2884,7 @@ var sources = []*ast.Source{
 	{Name: "schema/channelrequest.graphqls", Input: sourceData("schema/channelrequest.graphqls"), BuiltIn: false},
 	{Name: "schema/command.graphqls", Input: sourceData("schema/command.graphqls"), BuiltIn: false},
 	{Name: "schema/connector.graphqls", Input: sourceData("schema/connector.graphqls"), BuiltIn: false},
+	{Name: "schema/countryaccount.graphqls", Input: sourceData("schema/countryaccount.graphqls"), BuiltIn: false},
 	{Name: "schema/credential.graphqls", Input: sourceData("schema/credential.graphqls"), BuiltIn: false},
 	{Name: "schema/displaytext.graphqls", Input: sourceData("schema/displaytext.graphqls"), BuiltIn: false},
 	{Name: "schema/elementrestriction.graphqls", Input: sourceData("schema/elementrestriction.graphqls"), BuiltIn: false},
@@ -4714,6 +4773,173 @@ func (ec *executionContext) fieldContext_Connector_lastUpdated(ctx context.Conte
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryAccount_country(ctx context.Context, field graphql.CollectedField, obj *db.CountryAccount) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CountryAccount_country(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Country, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CountryAccount_country(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryAccount",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryAccount_longitude(ctx context.Context, field graphql.CollectedField, obj *db.CountryAccount) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CountryAccount_longitude(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CountryAccount().Longitude(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CountryAccount_longitude(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryAccount",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryAccount_latitude(ctx context.Context, field graphql.CollectedField, obj *db.CountryAccount) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CountryAccount_latitude(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CountryAccount().Latitude(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CountryAccount_latitude(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryAccount",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryAccount_zoom(ctx context.Context, field graphql.CollectedField, obj *db.CountryAccount) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CountryAccount_zoom(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CountryAccount().Zoom(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CountryAccount_zoom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryAccount",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8429,6 +8655,50 @@ func (ec *executionContext) fieldContext_ListLocation_isRfidCapable(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _ListLocation_addedDate(ctx context.Context, field graphql.CollectedField, obj *ListLocation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListLocation_addedDate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AddedDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListLocation_addedDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListLocation",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Location_id(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Location_id(ctx, field)
 	if err != nil {
@@ -11723,6 +11993,60 @@ func (ec *executionContext) fieldContext_Query_getConnector(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_listCountryAccounts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_listCountryAccounts(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListCountryAccounts(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]db.CountryAccount)
+	fc.Result = res
+	return ec.marshalNCountryAccount2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCountryAccountᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_listCountryAccounts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "country":
+				return ec.fieldContext_CountryAccount_country(ctx, field)
+			case "longitude":
+				return ec.fieldContext_CountryAccount_longitude(ctx, field)
+			case "latitude":
+				return ec.fieldContext_CountryAccount_latitude(ctx, field)
+			case "zoom":
+				return ec.fieldContext_CountryAccount_zoom(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CountryAccount", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_listCredentials(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_listCredentials(ctx, field)
 	if err != nil {
@@ -12100,6 +12424,8 @@ func (ec *executionContext) fieldContext_Query_listLocations(ctx context.Context
 				return ec.fieldContext_ListLocation_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
 				return ec.fieldContext_ListLocation_isRfidCapable(ctx, field)
+			case "addedDate":
+				return ec.fieldContext_ListLocation_addedDate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ListLocation", field.Name)
 		},
@@ -18954,42 +19280,18 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"xMin", "yMin", "xMax", "yMax", "interval"}
+	fieldsInOrder := [...]string{"country", "interval", "limit", "xMin", "xMax", "yMin", "yMax"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "xMin":
+		case "country":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("xMin"))
-			it.XMin, err = ec.unmarshalNFloat2float64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "yMin":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yMin"))
-			it.YMin, err = ec.unmarshalNFloat2float64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "xMax":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("xMax"))
-			it.XMax, err = ec.unmarshalNFloat2float64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "yMax":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yMax"))
-			it.YMax, err = ec.unmarshalNFloat2float64(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("country"))
+			it.Country, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18998,6 +19300,46 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("interval"))
 			it.Interval, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "limit":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+			it.Limit, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "xMin":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("xMin"))
+			it.XMin, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "xMax":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("xMax"))
+			it.XMax, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "yMin":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yMin"))
+			it.YMin, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "yMax":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yMax"))
+			it.YMax, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -19911,6 +20253,85 @@ func (ec *executionContext) _Connector(ctx context.Context, sel ast.SelectionSet
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var countryAccountImplementors = []string{"CountryAccount"}
+
+func (ec *executionContext) _CountryAccount(ctx context.Context, sel ast.SelectionSet, obj *db.CountryAccount) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, countryAccountImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CountryAccount")
+		case "country":
+
+			out.Values[i] = ec._CountryAccount_country(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "longitude":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CountryAccount_longitude(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "latitude":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CountryAccount_latitude(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "zoom":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CountryAccount_zoom(ctx, field, obj)
 				return res
 			}
 
@@ -21302,6 +21723,13 @@ func (ec *executionContext) _ListLocation(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "addedDate":
+
+			out.Values[i] = ec._ListLocation_addedDate(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22220,6 +22648,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getConnector(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "listCountryAccounts":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listCountryAccounts(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 
@@ -24250,6 +24701,54 @@ func (ec *executionContext) marshalNConnector2ᚖgithubᚗcomᚋsatimotoᚋgoᚑ
 		return graphql.Null
 	}
 	return ec._Connector(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNCountryAccount2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCountryAccount(ctx context.Context, sel ast.SelectionSet, v db.CountryAccount) graphql.Marshaler {
+	return ec._CountryAccount(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCountryAccount2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCountryAccountᚄ(ctx context.Context, sel ast.SelectionSet, v []db.CountryAccount) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCountryAccount2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐCountryAccount(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNCreateAuthentication2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateAuthentication(ctx context.Context, sel ast.SelectionSet, v CreateAuthentication) graphql.Marshaler {

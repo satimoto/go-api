@@ -1,0 +1,10 @@
+type CountryAccount {
+    country: String!
+    longitude: Float
+    latitude: Float
+    zoom: Float
+}
+
+extend type Query {
+    listCountryAccounts: [CountryAccount!]!
+}
