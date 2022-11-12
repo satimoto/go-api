@@ -120,6 +120,10 @@ func (r *queryResolver) GetEvse(ctx context.Context, input graph.GetEvseInput) (
 			if evse, err := r.EvseRepository.GetEvseByUid(ctx, *input.UID); err == nil {
 				return &evse, nil
 			}
+		} else if input.EvseID != nil {
+			if evse, err := r.EvseRepository.GetEvseByIdentifier(ctx, dbUtil.SqlNullString(input.EvseID)); err == nil {
+				return &evse, nil
+			}
 		} else if input.Identifier != nil {
 			dashRegex := regexp.MustCompile(`-`)
 			identifier := strings.ToUpper(dashRegex.ReplaceAllString(*input.Identifier, "*"))

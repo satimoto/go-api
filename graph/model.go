@@ -94,6 +94,7 @@ type GetConnectorInput struct {
 type GetEvseInput struct {
 	ID         *int64  `json:"id"`
 	UID        *string `json:"uid"`
+	EvseID     *string `json:"evseId"`
 	Identifier *string `json:"identifier"`
 }
 

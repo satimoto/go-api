@@ -19275,7 +19275,7 @@ func (ec *executionContext) unmarshalInputGetEvseInput(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "uid", "identifier"}
+	fieldsInOrder := [...]string{"id", "uid", "evseId", "identifier"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -19295,6 +19295,14 @@ func (ec *executionContext) unmarshalInputGetEvseInput(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
 			it.UID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "evseId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("evseId"))
+			it.EvseID, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
