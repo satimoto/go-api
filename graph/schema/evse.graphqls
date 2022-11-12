@@ -21,6 +21,7 @@ type Evse {
 input GetEvseInput {
     id: ID
     uid: String
+    evseId: String
     identifier: String
 }
 
