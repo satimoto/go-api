@@ -121,7 +121,7 @@ func (r *queryResolver) GetEvse(ctx context.Context, input graph.GetEvseInput) (
 				return &evse, nil
 			}
 		} else if input.EvseID != nil {
-			if evse, err := r.EvseRepository.GetEvseByIdentifier(ctx, dbUtil.SqlNullString(input.EvseID)); err == nil {
+			if evse, err := r.EvseRepository.GetEvseByEvseID(ctx, dbUtil.SqlNullString(input.EvseID)); err == nil {
 				return &evse, nil
 			}
 		} else if input.Identifier != nil {
