@@ -1,7 +1,7 @@
 type User {
     id: ID!
     pubkey: String!
-    deviceToken: String!
+    deviceToken: String
     referralCode: String
     node: Node
 }
@@ -9,7 +9,7 @@ type User {
 input CreateUserInput {
     code: String!
     pubkey: String!
-    deviceToken: String!
+    deviceToken: String
 }
 
 input UpdateUserInput {

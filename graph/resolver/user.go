@@ -45,7 +45,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 	referralCode := r.generateReferralCode(ctx)
 	createUserParams := db.CreateUserParams{
 		CommissionPercent: dbUtil.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
-		DeviceToken:       input.DeviceToken,
+		DeviceToken:       dbUtil.SqlNullString(input.DeviceToken),
 		LinkingPubkey:     auth.LinkingPubkey.String,
 		Pubkey:            input.Pubkey,
 		ReferralCode:      dbUtil.SqlNullString(referralCode),
@@ -73,7 +73,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUserInput) (*db.User, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
 		updateUserParams := param.NewUpdateUserParams(*user)
-		updateUserParams.DeviceToken = input.DeviceToken
+		updateUserParams.DeviceToken = dbUtil.SqlNullString(input.DeviceToken)
 
 		updatedUser, err := r.UserRepository.UpdateUser(ctx, updateUserParams)
 
@@ -84,7 +84,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 		}
 
 		updatePendingNotificationByUserParams := db.UpdatePendingNotificationsByUserParams{
-			DeviceToken: input.DeviceToken,
+			DeviceToken: dbUtil.SqlNullString(input.DeviceToken),
 			UserID:      user.ID,
 		}
 
@@ -111,6 +111,11 @@ func (r *queryResolver) GetUser(ctx context.Context) (*db.User, error) {
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// DeviceToken is the resolver for the deviceToken field.
+func (r *userResolver) DeviceToken(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.DeviceToken)
 }
 
 // ReferralCode is the resolver for the referralCode field.
