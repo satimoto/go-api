@@ -5,12 +5,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/satimoto/go-api/graph/resolver"
+	"github.com/satimoto/go-api/internal/notification"
 	"github.com/satimoto/go-ocpi/pkg/ocpi"
 )
 
 func (rs *RestService) mountGraphql() *chi.Mux {
 	ocpiService := ocpi.NewService(os.Getenv("OCPI_RPC_ADDRESS"))
-	r := resolver.NewResolverWithServices(rs.RepositoryService, rs.FerpService, ocpiService)
+	notificationService := notification.NewService(os.Getenv("FCM_API_KEY"))
+	r := resolver.NewResolverWithServices(rs.RepositoryService, rs.FerpService, notificationService, ocpiService)
 	router := chi.NewRouter()
 
 	router.Post("/query", r.GraphQLHandler())
