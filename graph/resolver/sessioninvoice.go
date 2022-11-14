@@ -10,6 +10,7 @@ import (
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/middleware"
+	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -22,6 +23,21 @@ func (r *queryResolver) GetSessionInvoice(ctx context.Context, id int64) (*db.Se
 		}
 
 		return nil, gqlerror.Errorf("Session invoice not found")
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// ListSessionInvoices is the resolver for the listSessionInvoices field.
+func (r *queryResolver) ListSessionInvoices(ctx context.Context, input graph.ListSessionInvoicesInput) ([]db.SessionInvoice, error) {
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		listSessionInvoicesByUserIDParams := param.NewListSessionInvoicesByUserIDParams(*userID, input)
+
+		if s, err := r.SessionRepository.ListSessionInvoicesByUserID(ctx, listSessionInvoicesByUserIDParams); err == nil {
+			return s, nil
+		}
+
+		return nil, gqlerror.Errorf("Session invoices not found")
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")

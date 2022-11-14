@@ -135,6 +135,11 @@ type ListLocationsInput struct {
 	YMax     *float64 `json:"yMax"`
 }
 
+type ListSessionInvoicesInput struct {
+	IsSettled *bool `json:"isSettled"`
+	IsExpired *bool `json:"isExpired"`
+}
+
 type PublishLocationInput struct {
 	ID           *int64  `json:"id"`
 	CredentialID *int64  `json:"credentialId"`

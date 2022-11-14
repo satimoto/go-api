@@ -340,6 +340,7 @@ type ComplexityRoot struct {
 		ListCredentials      func(childComplexity int) int
 		ListInvoiceRequests  func(childComplexity int) int
 		ListLocations        func(childComplexity int, input ListLocationsInput) int
+		ListSessionInvoices  func(childComplexity int, input ListSessionInvoicesInput) int
 		ListTokens           func(childComplexity int) int
 		VerifyAuthentication func(childComplexity int, code string) int
 	}
@@ -639,6 +640,7 @@ type QueryResolver interface {
 	GetRate(ctx context.Context, currency string) (*Rate, error)
 	GetSession(ctx context.Context, input GetSessionInput) (*db.Session, error)
 	GetSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error)
+	ListSessionInvoices(ctx context.Context, input ListSessionInvoicesInput) ([]db.SessionInvoice, error)
 	GetTariff(ctx context.Context, input GetTariffInput) (*db.Tariff, error)
 	ListTokens(ctx context.Context) ([]db.Token, error)
 	GetUser(ctx context.Context) (*db.User, error)
@@ -2190,6 +2192,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.ListLocations(childComplexity, args["input"].(ListLocationsInput)), true
 
+	case "Query.listSessionInvoices":
+		if e.complexity.Query.ListSessionInvoices == nil {
+			break
+		}
+
+		args, err := ec.field_Query_listSessionInvoices_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ListSessionInvoices(childComplexity, args["input"].(ListSessionInvoicesInput)), true
+
 	case "Query.listTokens":
 		if e.complexity.Query.ListTokens == nil {
 			break
@@ -2819,6 +2833,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputGetSessionInput,
 		ec.unmarshalInputGetTariffInput,
 		ec.unmarshalInputListLocationsInput,
+		ec.unmarshalInputListSessionInvoicesInput,
 		ec.unmarshalInputPublishLocationInput,
 		ec.unmarshalInputRegisterCredentialInput,
 		ec.unmarshalInputStartSessionInput,
@@ -3373,6 +3388,21 @@ func (ec *executionContext) field_Query_listLocations_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNListLocationsInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListLocationsInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_listSessionInvoices_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ListSessionInvoicesInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNListSessionInvoicesInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListSessionInvoicesInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -12797,6 +12827,97 @@ func (ec *executionContext) fieldContext_Query_getSessionInvoice(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_listSessionInvoices(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_listSessionInvoices(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListSessionInvoices(rctx, fc.Args["input"].(ListSessionInvoicesInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]db.SessionInvoice)
+	fc.Result = res
+	return ec.marshalNSessionInvoice2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSessionInvoiceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_listSessionInvoices(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_SessionInvoice_id(ctx, field)
+			case "currency":
+				return ec.fieldContext_SessionInvoice_currency(ctx, field)
+			case "currencyRate":
+				return ec.fieldContext_SessionInvoice_currencyRate(ctx, field)
+			case "currencyRateMsat":
+				return ec.fieldContext_SessionInvoice_currencyRateMsat(ctx, field)
+			case "priceFiat":
+				return ec.fieldContext_SessionInvoice_priceFiat(ctx, field)
+			case "priceMsat":
+				return ec.fieldContext_SessionInvoice_priceMsat(ctx, field)
+			case "commissionFiat":
+				return ec.fieldContext_SessionInvoice_commissionFiat(ctx, field)
+			case "commissionMsat":
+				return ec.fieldContext_SessionInvoice_commissionMsat(ctx, field)
+			case "taxFiat":
+				return ec.fieldContext_SessionInvoice_taxFiat(ctx, field)
+			case "taxMsat":
+				return ec.fieldContext_SessionInvoice_taxMsat(ctx, field)
+			case "totalFiat":
+				return ec.fieldContext_SessionInvoice_totalFiat(ctx, field)
+			case "totalMsat":
+				return ec.fieldContext_SessionInvoice_totalMsat(ctx, field)
+			case "paymentRequest":
+				return ec.fieldContext_SessionInvoice_paymentRequest(ctx, field)
+			case "signature":
+				return ec.fieldContext_SessionInvoice_signature(ctx, field)
+			case "isSettled":
+				return ec.fieldContext_SessionInvoice_isSettled(ctx, field)
+			case "isExpired":
+				return ec.fieldContext_SessionInvoice_isExpired(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_SessionInvoice_lastUpdated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SessionInvoice", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_listSessionInvoices_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_getTariff(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_getTariff(ctx, field)
 	if err != nil {
@@ -19510,6 +19631,42 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputListSessionInvoicesInput(ctx context.Context, obj interface{}) (ListSessionInvoicesInput, error) {
+	var it ListSessionInvoicesInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"isSettled", "isExpired"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "isSettled":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isSettled"))
+			it.IsSettled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isExpired":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isExpired"))
+			it.IsExpired, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPublishLocationInput(ctx context.Context, obj interface{}) (PublishLocationInput, error) {
 	var it PublishLocationInput
 	asMap := map[string]interface{}{}
@@ -23059,6 +23216,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "listSessionInvoices":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listSessionInvoices(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "getTariff":
 			field := field
 
@@ -25630,6 +25810,11 @@ func (ec *executionContext) marshalNListLocation2ᚕgithubᚗcomᚋsatimotoᚋgo
 
 func (ec *executionContext) unmarshalNListLocationsInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListLocationsInput(ctx context.Context, v interface{}) (ListLocationsInput, error) {
 	res, err := ec.unmarshalInputListLocationsInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNListSessionInvoicesInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListSessionInvoicesInput(ctx context.Context, v interface{}) (ListSessionInvoicesInput, error) {
+	res, err := ec.unmarshalInputListSessionInvoicesInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
