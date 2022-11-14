@@ -55,6 +55,10 @@
         "value": "${env_default_commission_percent}"
       },
       {
+        "name": "FCM_API_KEY",
+        "value": "${env_fcm_api_key}"
+      },
+      {
         "name": "FERP_RPC_ADDRESS",
         "value": "${env_ferp_rpc_address}"
       },

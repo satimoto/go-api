@@ -9,6 +9,7 @@ import (
 	"github.com/satimoto/go-api/internal/aws/email"
 	"github.com/satimoto/go-api/internal/countryaccount"
 	"github.com/satimoto/go-api/internal/ferp"
+	"github.com/satimoto/go-api/internal/notification"
 	"github.com/satimoto/go-api/internal/token"
 	"github.com/satimoto/go-datastore/pkg/businessdetail"
 	"github.com/satimoto/go-datastore/pkg/channelrequest"
@@ -45,6 +46,7 @@ type Repository interface{}
 type Resolver struct {
 	Repository
 	FerpService                   ferp.Ferp
+	NotificationService           notification.Notification
 	OcpiService                   ocpi.Ocpi
 	Emailer                       email.Emailer
 	AuthenticationResolver        *authentication.AuthenticationResolver
@@ -75,12 +77,13 @@ type Resolver struct {
 
 func NewResolver(repositoryService *db.RepositoryService) *Resolver {
 	ferpService := ferp.NewService(os.Getenv("FERP_RPC_ADDRESS"))
+	notificationService := notification.NewService(os.Getenv("FCM_API_KEY"))
 	ocpiService := ocpi.NewService(os.Getenv("OCPI_RPC_ADDRESS"))
 
-	return NewResolverWithServices(repositoryService, ferpService, ocpiService)
+	return NewResolverWithServices(repositoryService, ferpService, notificationService, ocpiService)
 }
 
-func NewResolverWithServices(repositoryService *db.RepositoryService, ferpService ferp.Ferp, ocpiService ocpi.Ocpi) *Resolver {
+func NewResolverWithServices(repositoryService *db.RepositoryService, ferpService ferp.Ferp, notificationService notification.Notification, ocpiService ocpi.Ocpi) *Resolver {
 	repo := Repository(repositoryService)
 	emailer := email.New(os.Getenv("REPLY_TO_EMAIL"))
 	defaultTaxPercent := util.GetEnvFloat64("DEFAULT_TAX_PERCENT", 19)
@@ -88,6 +91,7 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 	return &Resolver{
 		Repository:                    repo,
 		FerpService:                   ferpService,
+		NotificationService:           notificationService,
 		OcpiService:                   ocpiService,
 		Emailer:                       emailer,
 		AuthenticationResolver:        authentication.NewResolver(repositoryService),

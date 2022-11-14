@@ -71,6 +71,7 @@ require (
 )
 
 require (
+	github.com/appleboy/go-fcm v0.1.5
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.2.1 // indirect
 	github.com/btcsuite/btcd/btcutil v1.1.2 // indirect

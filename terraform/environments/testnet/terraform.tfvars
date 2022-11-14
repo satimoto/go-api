@@ -42,6 +42,8 @@ env_channel_request_max_amount = 450000
 
 env_default_commission_percent = 7
 
+env_fcm_api_key = "AAAAxi-5AuI:APA91bGGRy1tshxXQuqyz3vjbarr5QFwlGpKJAUfoAQ-IqCU_8kWClNslZpRKEExQtew2YxQwtIyOIe9QDCCbbApPoqAO9Srm2i-CNNM8agj2mkMJsLMaEYGtGW81QYpvQJqwBSQWVYf"
+
 env_ferp_rpc_port = 50000
 
 env_ocpi_rpc_port = 50000

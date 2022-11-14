@@ -7,9 +7,11 @@ import (
 	"context"
 	"log"
 
+	"github.com/appleboy/go-fcm"
 	"github.com/satimoto/go-api/graph"
 	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
+	"github.com/satimoto/go-api/internal/notification"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/param"
@@ -108,6 +110,29 @@ func (r *queryResolver) GetUser(ctx context.Context) (*db.User, error) {
 
 	if user != nil {
 		return user, nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// PingUser is the resolver for the pingUser field.
+func (r *queryResolver) PingUser(ctx context.Context, id int64) (*graph.ResultOk, error) {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+		if toUser, err := r.UserRepository.GetUser(ctx, id); err == nil && toUser.DeviceToken.Valid {
+			dataPingMessage := notification.CreateDataPingNotificationDto()
+
+			message := &fcm.Message{
+				To:               toUser.DeviceToken.String,
+				ContentAvailable: true,
+				Data:             dataPingMessage,
+			}
+
+			r.NotificationService.SendNotification(message)
+
+			return &graph.ResultOk{Ok: true}, nil
+		}
+
+		return &graph.ResultOk{Ok: false}, nil
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
