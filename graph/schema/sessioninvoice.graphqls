@@ -18,6 +18,12 @@ type SessionInvoice {
     lastUpdated: String!
 }
 
+input ListSessionInvoicesInput {
+    isSettled: Boolean
+    isExpired: Boolean
+}
+
 extend type Query {
     getSessionInvoice(id: ID!): SessionInvoice
+    listSessionInvoices(input: ListSessionInvoicesInput!): [SessionInvoice!]!
 }
