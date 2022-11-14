@@ -5,6 +5,7 @@ package resolver
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/satimoto/go-api/graph"
@@ -16,8 +17,14 @@ import (
 
 // StartSession is the resolver for the startSession field.
 func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSessionInput) (*graph.StartSession, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
-		startSessionRequest := command.NewStartSessionRequest(*userID, input)
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+		if !user.DeviceToken.Valid {
+			metrics.RecordError("API046", "Error starting session", errors.New("notifications not enabled"))
+			log.Printf("API046: UserID: %#v", user.ID)
+			return nil, gqlerror.Errorf("Notifications not enabled")
+		}
+
+		startSessionRequest := command.NewStartSessionRequest(user.ID, input)
 		startSessionResponse, err := r.OcpiService.StartSession(ctx, startSessionRequest)
 
 		if err != nil {

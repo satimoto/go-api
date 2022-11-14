@@ -71,9 +71,9 @@ type CreateTokenInput struct {
 }
 
 type CreateUserInput struct {
-	Code        string `json:"code"`
-	Pubkey      string `json:"pubkey"`
-	DeviceToken string `json:"deviceToken"`
+	Code        string  `json:"code"`
+	Pubkey      string  `json:"pubkey"`
+	DeviceToken *string `json:"deviceToken"`
 }
 
 type ExchangeAuthentication struct {
