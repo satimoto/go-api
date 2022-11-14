@@ -18,6 +18,7 @@ input UpdateUserInput {
 
 extend type Query {
     getUser: User!
+    pingUser(id: ID!): ResultOk!
 }
 
 extend type Mutation {
