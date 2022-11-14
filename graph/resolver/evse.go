@@ -18,6 +18,11 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// EvseID is the resolver for the evseId field.
+func (r *evseResolver) EvseID(ctx context.Context, obj *db.Evse) (*string, error) {
+	return util.NullString(obj.EvseID)
+}
+
 // Identifier is the resolver for the identifier field.
 func (r *evseResolver) Identifier(ctx context.Context, obj *db.Evse) (*string, error) {
 	return util.NullString(obj.Identifier)

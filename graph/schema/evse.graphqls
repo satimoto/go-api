@@ -1,6 +1,7 @@
 type Evse {
     id: ID!
     uid: String!
+    evseId: String
     identifier: String
     location: Location!
     status: String!

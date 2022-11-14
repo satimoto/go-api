@@ -180,6 +180,7 @@ type ComplexityRoot struct {
 		Capabilities        func(childComplexity int) int
 		Connectors          func(childComplexity int) int
 		Directions          func(childComplexity int) int
+		EvseID              func(childComplexity int) int
 		FloorLevel          func(childComplexity int) int
 		Geom                func(childComplexity int) int
 		ID                  func(childComplexity int) int
@@ -533,6 +534,7 @@ type EnvironmentalImpactResolver interface {
 	Source(ctx context.Context, obj *db.EnvironmentalImpact) (string, error)
 }
 type EvseResolver interface {
+	EvseID(ctx context.Context, obj *db.Evse) (*string, error)
 	Identifier(ctx context.Context, obj *db.Evse) (*string, error)
 	Location(ctx context.Context, obj *db.Evse) (*db.Location, error)
 	Status(ctx context.Context, obj *db.Evse) (string, error)
@@ -1204,6 +1206,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Evse.Directions(childComplexity), true
+
+	case "Evse.evseId":
+		if e.complexity.Evse.EvseID == nil {
+			break
+		}
+
+		return e.complexity.Evse.EvseID(childComplexity), true
 
 	case "Evse.floorLevel":
 		if e.complexity.Evse.FloorLevel == nil {
@@ -4359,6 +4368,8 @@ func (ec *executionContext) fieldContext_Connector_evse(ctx context.Context, fie
 				return ec.fieldContext_Evse_id(ctx, field)
 			case "uid":
 				return ec.fieldContext_Evse_uid(ctx, field)
+			case "evseId":
+				return ec.fieldContext_Evse_evseId(ctx, field)
 			case "identifier":
 				return ec.fieldContext_Evse_identifier(ctx, field)
 			case "location":
@@ -6522,6 +6533,47 @@ func (ec *executionContext) fieldContext_Evse_uid(ctx context.Context, field gra
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Evse_evseId(ctx context.Context, field graphql.CollectedField, obj *db.Evse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Evse_evseId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Evse().EvseID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Evse_evseId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Evse",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -9258,6 +9310,8 @@ func (ec *executionContext) fieldContext_Location_evses(ctx context.Context, fie
 				return ec.fieldContext_Evse_id(ctx, field)
 			case "uid":
 				return ec.fieldContext_Evse_uid(ctx, field)
+			case "evseId":
+				return ec.fieldContext_Evse_evseId(ctx, field)
 			case "identifier":
 				return ec.fieldContext_Evse_identifier(ctx, field)
 			case "location":
@@ -12291,6 +12345,8 @@ func (ec *executionContext) fieldContext_Query_getEvse(ctx context.Context, fiel
 				return ec.fieldContext_Evse_id(ctx, field)
 			case "uid":
 				return ec.fieldContext_Evse_uid(ctx, field)
+			case "evseId":
+				return ec.fieldContext_Evse_evseId(ctx, field)
 			case "identifier":
 				return ec.fieldContext_Evse_identifier(ctx, field)
 			case "location":
@@ -14031,6 +14087,8 @@ func (ec *executionContext) fieldContext_Session_evse(ctx context.Context, field
 				return ec.fieldContext_Evse_id(ctx, field)
 			case "uid":
 				return ec.fieldContext_Evse_uid(ctx, field)
+			case "evseId":
+				return ec.fieldContext_Evse_evseId(ctx, field)
 			case "identifier":
 				return ec.fieldContext_Evse_identifier(ctx, field)
 			case "location":
@@ -21309,6 +21367,23 @@ func (ec *executionContext) _Evse(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "evseId":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Evse_evseId(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "identifier":
 			field := field
 
