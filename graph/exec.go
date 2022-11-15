@@ -294,6 +294,7 @@ type ComplexityRoot struct {
 		SyncCredential           func(childComplexity int, input SyncCredentialInput) int
 		UnregisterCredential     func(childComplexity int, input UnregisterCredentialInput) int
 		UpdateInvoiceRequest     func(childComplexity int, input UpdateInvoiceRequestInput) int
+		UpdateSessionInvoice     func(childComplexity int, id int64) int
 		UpdateTariff             func(childComplexity int, input UpdateTariffInput) int
 		UpdateTokenAuthorization func(childComplexity int, input UpdateTokenAuthorizationInput) int
 		UpdateTokens             func(childComplexity int, input UpdateTokensInput) int
@@ -608,6 +609,7 @@ type MutationResolver interface {
 	UpdateInvoiceRequest(ctx context.Context, input UpdateInvoiceRequestInput) (*db.InvoiceRequest, error)
 	PublishLocation(ctx context.Context, input PublishLocationInput) (*ResultOk, error)
 	CreateReferral(ctx context.Context, input CreateReferralInput) (*ResultID, error)
+	UpdateSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error)
 	UpdateTariff(ctx context.Context, input UpdateTariffInput) (*db.Tariff, error)
 	CreateToken(ctx context.Context, input CreateTokenInput) (*db.Token, error)
 	UpdateTokens(ctx context.Context, input UpdateTokensInput) (*ResultOk, error)
@@ -1914,6 +1916,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateInvoiceRequest(childComplexity, args["input"].(UpdateInvoiceRequestInput)), true
 
+	case "Mutation.updateSessionInvoice":
+		if e.complexity.Mutation.UpdateSessionInvoice == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateSessionInvoice_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateSessionInvoice(childComplexity, args["id"].(int64)), true
+
 	case "Mutation.updateTariff":
 		if e.complexity.Mutation.UpdateTariff == nil {
 			break
@@ -3206,6 +3220,21 @@ func (ec *executionContext) field_Mutation_updateInvoiceRequest_args(ctx context
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateSessionInvoice_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int64
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int64(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -10992,6 +11021,94 @@ func (ec *executionContext) fieldContext_Mutation_createReferral(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createReferral_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateSessionInvoice(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateSessionInvoice(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateSessionInvoice(rctx, fc.Args["id"].(int64))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.SessionInvoice)
+	fc.Result = res
+	return ec.marshalOSessionInvoice2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐSessionInvoice(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateSessionInvoice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_SessionInvoice_id(ctx, field)
+			case "currency":
+				return ec.fieldContext_SessionInvoice_currency(ctx, field)
+			case "currencyRate":
+				return ec.fieldContext_SessionInvoice_currencyRate(ctx, field)
+			case "currencyRateMsat":
+				return ec.fieldContext_SessionInvoice_currencyRateMsat(ctx, field)
+			case "priceFiat":
+				return ec.fieldContext_SessionInvoice_priceFiat(ctx, field)
+			case "priceMsat":
+				return ec.fieldContext_SessionInvoice_priceMsat(ctx, field)
+			case "commissionFiat":
+				return ec.fieldContext_SessionInvoice_commissionFiat(ctx, field)
+			case "commissionMsat":
+				return ec.fieldContext_SessionInvoice_commissionMsat(ctx, field)
+			case "taxFiat":
+				return ec.fieldContext_SessionInvoice_taxFiat(ctx, field)
+			case "taxMsat":
+				return ec.fieldContext_SessionInvoice_taxMsat(ctx, field)
+			case "totalFiat":
+				return ec.fieldContext_SessionInvoice_totalFiat(ctx, field)
+			case "totalMsat":
+				return ec.fieldContext_SessionInvoice_totalMsat(ctx, field)
+			case "paymentRequest":
+				return ec.fieldContext_SessionInvoice_paymentRequest(ctx, field)
+			case "signature":
+				return ec.fieldContext_SessionInvoice_signature(ctx, field)
+			case "isSettled":
+				return ec.fieldContext_SessionInvoice_isSettled(ctx, field)
+			case "isExpired":
+				return ec.fieldContext_SessionInvoice_isExpired(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_SessionInvoice_lastUpdated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SessionInvoice", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateSessionInvoice_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -22767,6 +22884,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateSessionInvoice":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateSessionInvoice(ctx, field)
+			})
+
 		case "updateTariff":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {

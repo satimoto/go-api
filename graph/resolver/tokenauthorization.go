@@ -32,7 +32,6 @@ func (r *mutationResolver) UpdateTokenAuthorization(ctx context.Context, input g
 		if err != nil {
 			metrics.RecordError("API042", "Error updating token authorization", err)
 			log.Printf("API042: Params=%#v", updateTokenAuthorizationRequest)
-			return nil, errors.New("Error updating token authorization")
 		}
 
 		tokenAuthorization, err := r.TokenAuthorizationRepository.GetTokenAuthorizationByAuthorizationID(ctx, input.AuthorizationID)
