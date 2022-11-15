@@ -27,3 +27,7 @@ extend type Query {
     getSessionInvoice(id: ID!): SessionInvoice
     listSessionInvoices(input: ListSessionInvoicesInput!): [SessionInvoice!]!
 }
+
+extend type Mutation {
+    updateSessionInvoice(id: ID!): SessionInvoice
+}

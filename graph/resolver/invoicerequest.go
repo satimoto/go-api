@@ -5,6 +5,7 @@ package resolver
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/satimoto/go-api/graph"
@@ -65,7 +66,7 @@ func (r *invoiceRequestResolver) PaymentRequest(ctx context.Context, obj *db.Inv
 func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph.UpdateInvoiceRequestInput) (*db.InvoiceRequest, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
 		if !user.NodeID.Valid {
-			log.Printf("API026: Error user has no node")
+			metrics.RecordError("API026", "Error user has no node", errors.New("no node available"))
 			log.Printf("API026: Input=%#v", input)
 			return nil, gqlerror.Errorf("No node available")
 		}
@@ -81,13 +82,13 @@ func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph
 		// TODO: This request should be a non-blocking goroutine
 		lspService := lsp.NewService(node.LspAddr)
 
-		updateInvoiceRequest := &lsprpc.UpdateInvoiceRequest{
+		updateInvoiceRequest := &lsprpc.UpdateInvoiceRequestRequest{
 			Id:             input.ID,
 			UserId:         user.ID,
 			PaymentRequest: input.PaymentRequest,
 		}
 
-		updateInvoiceResponse, err := lspService.UpdateInvoice(ctx, updateInvoiceRequest)
+		updateInvoiceResponse, err := lspService.UpdateInvoiceRequest(ctx, updateInvoiceRequest)
 
 		if err != nil {
 			metrics.RecordError("API031", "Error updating invoice", err)
