@@ -6,6 +6,7 @@ import (
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
+	dbUtil "github.com/satimoto/go-datastore/pkg/util"
 )
 
 func NewListLocationsByGeomParams(input graph.ListLocationsInput) db.ListLocationsByGeomParams {
@@ -21,6 +22,8 @@ func NewListLocationsByGeomParams(input graph.ListLocationsInput) db.ListLocatio
 func NewListLocation(location db.Location) graph.ListLocation {
 	return graph.ListLocation{
 		UID:             location.Uid,
+		CountryCode:     dbUtil.NilString(location.CountryCode),
+		PartyID:         dbUtil.NilString(location.PartyID),
 		Name:            location.Name.String,
 		Geom:            location.Geom,
 		AvailableEvses:  int(location.AvailableEvses),
