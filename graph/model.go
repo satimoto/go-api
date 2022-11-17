@@ -17,6 +17,10 @@ type AddtionalGeoLocation struct {
 	Name      *db.DisplayText `json:"name"`
 }
 
+type Channel struct {
+	ChannelID string `json:"channelId"`
+}
+
 type CreateAuthentication struct {
 	Code  string `json:"code"`
 	LnURL string `json:"lnUrl"`

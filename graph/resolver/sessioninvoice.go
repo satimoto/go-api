@@ -43,8 +43,8 @@ func (r *mutationResolver) UpdateSessionInvoice(ctx context.Context, id int64) (
 				lspService := lsp.NewService(node.LspAddr)
 
 				updateSessionInvoiceRequest := &lsprpc.UpdateSessionInvoiceRequest{
-					Id:             id,
-					UserId:         user.ID,
+					Id:     id,
+					UserId: user.ID,
 				}
 
 				updateSessionInvoiceResponse, err := lspService.UpdateSessionInvoice(ctx, updateSessionInvoiceRequest)
