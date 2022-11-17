@@ -121,6 +121,8 @@ type GetTariffInput struct {
 type ListLocation struct {
 	UID             string            `json:"uid"`
 	Name            string            `json:"name"`
+	CountryCode     *string           `json:"countryCode"`
+	PartyID         *string           `json:"partyId"`
 	Geom            geom.Geometry4326 `json:"geom"`
 	AvailableEvses  int               `json:"availableEvses"`
 	TotalEvses      int               `json:"totalEvses"`

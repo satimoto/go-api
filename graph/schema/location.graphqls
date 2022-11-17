@@ -1,6 +1,8 @@
 type ListLocation {
     uid: String!
     name: String!
+    countryCode: String
+    partyId: String
     geom: Geometry! 
     availableEvses: Int!
     totalEvses: Int!
