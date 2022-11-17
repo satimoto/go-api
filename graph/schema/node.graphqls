@@ -3,3 +3,11 @@ type Node {
     addr: String!
     alias: String!
 }
+
+type Channel {
+    channelId: String!
+}
+
+extend type Query {
+    listChannels: [Channel!]!
+}

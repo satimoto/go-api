@@ -82,6 +82,10 @@ type ComplexityRoot struct {
 		Website func(childComplexity int) int
 	}
 
+	Channel struct {
+		ChannelID func(childComplexity int) int
+	}
+
 	ChannelRequest struct {
 		AmountMsat                func(childComplexity int) int
 		CltvExpiryDelta           func(childComplexity int) int
@@ -338,6 +342,7 @@ type ComplexityRoot struct {
 		GetSessionInvoice    func(childComplexity int, id int64) int
 		GetTariff            func(childComplexity int, input GetTariffInput) int
 		GetUser              func(childComplexity int) int
+		ListChannels         func(childComplexity int) int
 		ListCountryAccounts  func(childComplexity int) int
 		ListCredentials      func(childComplexity int) int
 		ListInvoiceRequests  func(childComplexity int) int
@@ -642,6 +647,7 @@ type QueryResolver interface {
 	ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRequest, error)
 	GetLocation(ctx context.Context, input GetLocationInput) (*db.Location, error)
 	ListLocations(ctx context.Context, input ListLocationsInput) ([]ListLocation, error)
+	ListChannels(ctx context.Context) ([]Channel, error)
 	GetRate(ctx context.Context, currency string) (*Rate, error)
 	GetSession(ctx context.Context, input GetSessionInput) (*db.Session, error)
 	GetSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error)
@@ -762,6 +768,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BusinessDetail.Website(childComplexity), true
+
+	case "Channel.channelId":
+		if e.complexity.Channel.ChannelID == nil {
+			break
+		}
+
+		return e.complexity.Channel.ChannelID(childComplexity), true
 
 	case "ChannelRequest.amountMsat":
 		if e.complexity.ChannelRequest.AmountMsat == nil {
@@ -2183,6 +2196,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetUser(childComplexity), true
+
+	case "Query.listChannels":
+		if e.complexity.Query.ListChannels == nil {
+			break
+		}
+
+		return e.complexity.Query.ListChannels(childComplexity), true
 
 	case "Query.listCountryAccounts":
 		if e.complexity.Query.ListCountryAccounts == nil {
@@ -3801,6 +3821,50 @@ func (ec *executionContext) fieldContext_BusinessDetail_logo(ctx context.Context
 				return ec.fieldContext_Image_height(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Channel_channelId(ctx context.Context, field graphql.CollectedField, obj *Channel) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Channel_channelId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ChannelID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Channel_channelId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Channel",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -12794,6 +12858,54 @@ func (ec *executionContext) fieldContext_Query_listLocations(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_listChannels(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_listChannels(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListChannels(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]Channel)
+	fc.Result = res
+	return ec.marshalNChannel2ᚕgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐChannelᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_listChannels(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "channelId":
+				return ec.fieldContext_Channel_channelId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Channel", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_getRate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_getRate(ctx, field)
 	if err != nil {
@@ -20495,6 +20607,34 @@ func (ec *executionContext) _BusinessDetail(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var channelImplementors = []string{"Channel"}
+
+func (ec *executionContext) _Channel(ctx context.Context, sel ast.SelectionSet, obj *Channel) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, channelImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Channel")
+		case "channelId":
+
+			out.Values[i] = ec._Channel_channelId(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var channelRequestImplementors = []string{"ChannelRequest"}
 
 func (ec *executionContext) _ChannelRequest(ctx context.Context, sel ast.SelectionSet, obj *db.ChannelRequest) graphql.Marshaler {
@@ -23439,6 +23579,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "listChannels":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listChannels(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "getRate":
 			field := field
 
@@ -25341,6 +25504,54 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNChannel2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐChannel(ctx context.Context, sel ast.SelectionSet, v Channel) graphql.Marshaler {
+	return ec._Channel(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNChannel2ᚕgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐChannelᚄ(ctx context.Context, sel ast.SelectionSet, v []Channel) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNChannel2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐChannel(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNChannelRequest2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐChannelRequest(ctx context.Context, sel ast.SelectionSet, v db.ChannelRequest) graphql.Marshaler {
