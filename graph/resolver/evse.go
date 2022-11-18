@@ -5,6 +5,8 @@ package resolver
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -126,9 +128,28 @@ func (r *queryResolver) GetEvse(ctx context.Context, input graph.GetEvseInput) (
 				return &evse, nil
 			}
 		} else if input.EvseID != nil {
-			if evse, err := r.EvseRepository.GetEvseByEvseID(ctx, dbUtil.SqlNullString(input.EvseID)); err == nil {
-				return &evse, nil
+			evse, err := r.EvseRepository.GetEvseByEvseID(ctx, dbUtil.SqlNullString(input.EvseID))
+
+			if err != nil {
+				// Like search to get the best match
+				likeEvseID := fmt.Sprintf("%%%s", *input.EvseID)
+
+				if strings.Contains(*input.EvseID, "*") {
+					likeEvseID = fmt.Sprintf("%s%%", *input.EvseID)
+				}
+
+				if evses, err := r.EvseRepository.ListEvsesLikeEvseID(ctx, dbUtil.SqlNullString(likeEvseID)); err == nil {
+					log.Printf("Like search for %v matched %v result(s)", likeEvseID, len(evses))
+
+					if len(evses) > 0 {
+						return &evses[0], nil
+					}
+				}
+
+				return nil, gqlerror.Errorf("Evse not found")
 			}
+
+			return &evse, nil
 		} else if input.Identifier != nil {
 			dashRegex := regexp.MustCompile(`-`)
 			identifier := strings.ToUpper(dashRegex.ReplaceAllString(*input.Identifier, "*"))
