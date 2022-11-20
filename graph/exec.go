@@ -245,6 +245,7 @@ type ComplexityRoot struct {
 	ListLocation struct {
 		AddedDate       func(childComplexity int) int
 		AvailableEvses  func(childComplexity int) int
+		Country         func(childComplexity int) int
 		CountryCode     func(childComplexity int) int
 		Geom            func(childComplexity int) int
 		IsRemoteCapable func(childComplexity int) int
@@ -1526,6 +1527,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ListLocation.AvailableEvses(childComplexity), true
+
+	case "ListLocation.country":
+		if e.complexity.ListLocation.Country == nil {
+			break
+		}
+
+		return e.complexity.ListLocation.Country(childComplexity), true
 
 	case "ListLocation.countryCode":
 		if e.complexity.ListLocation.CountryCode == nil {
@@ -8778,6 +8786,50 @@ func (ec *executionContext) fieldContext_ListLocation_partyId(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _ListLocation_country(ctx context.Context, field graphql.CollectedField, obj *ListLocation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListLocation_country(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Country, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListLocation_country(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListLocation",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ListLocation_geom(ctx context.Context, field graphql.CollectedField, obj *ListLocation) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ListLocation_geom(ctx, field)
 	if err != nil {
@@ -12930,6 +12982,8 @@ func (ec *executionContext) fieldContext_Query_listLocations(ctx context.Context
 				return ec.fieldContext_ListLocation_countryCode(ctx, field)
 			case "partyId":
 				return ec.fieldContext_ListLocation_partyId(ctx, field)
+			case "country":
+				return ec.fieldContext_ListLocation_country(ctx, field)
 			case "geom":
 				return ec.fieldContext_ListLocation_geom(ctx, field)
 			case "availableEvses":
@@ -22580,6 +22634,13 @@ func (ec *executionContext) _ListLocation(ctx context.Context, sel ast.Selection
 
 			out.Values[i] = ec._ListLocation_partyId(ctx, field, obj)
 
+		case "country":
+
+			out.Values[i] = ec._ListLocation_country(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "geom":
 
 			out.Values[i] = ec._ListLocation_geom(ctx, field, obj)

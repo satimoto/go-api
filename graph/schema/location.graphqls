@@ -3,6 +3,7 @@ type ListLocation {
     name: String!
     countryCode: String
     partyId: String
+    country: String!
     geom: Geometry! 
     availableEvses: Int!
     totalEvses: Int!
