@@ -43,6 +43,7 @@ type Location {
 input GetLocationInput {
     id: ID
     uid: String
+    country: String
 }
 
 input ListLocationsInput {
