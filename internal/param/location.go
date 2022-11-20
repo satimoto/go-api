@@ -25,6 +25,7 @@ func NewListLocation(location db.Location) graph.ListLocation {
 		CountryCode:     dbUtil.NilString(location.CountryCode),
 		PartyID:         dbUtil.NilString(location.PartyID),
 		Name:            location.Name.String,
+		Country:         location.Country,
 		Geom:            location.Geom,
 		AvailableEvses:  int(location.AvailableEvses),
 		TotalEvses:      int(location.TotalEvses),

@@ -124,6 +124,7 @@ type ListLocation struct {
 	Name            string            `json:"name"`
 	CountryCode     *string           `json:"countryCode"`
 	PartyID         *string           `json:"partyId"`
+	Country         string            `json:"country"`
 	Geom            geom.Geometry4326 `json:"geom"`
 	AvailableEvses  int               `json:"availableEvses"`
 	TotalEvses      int               `json:"totalEvses"`
