@@ -103,8 +103,9 @@ type GetEvseInput struct {
 }
 
 type GetLocationInput struct {
-	ID  *int64  `json:"id"`
-	UID *string `json:"uid"`
+	ID      *int64  `json:"id"`
+	UID     *string `json:"uid"`
+	Country *string `json:"country"`
 }
 
 type GetSessionInput struct {
