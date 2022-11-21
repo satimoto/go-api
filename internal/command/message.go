@@ -16,6 +16,6 @@ func NewStartSessionRequest(userID int64, input graph.StartSessionInput) *ocpirp
 
 func NewStopSessionRequest(userID int64, input graph.StopSessionInput) *ocpirpc.StopSessionRequest {
 	return &ocpirpc.StopSessionRequest{
-		SessionUid: input.SessionUID,
+		AuthorizationId: input.AuthorizationID,
 	}
 }

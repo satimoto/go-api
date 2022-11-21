@@ -19,7 +19,7 @@ type StopSession {
 }
 
 input StopSessionInput {
-    sessionUid: String!
+    authorizationId: String! 
 }
 
 extend type Mutation {
