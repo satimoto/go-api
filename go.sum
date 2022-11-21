@@ -657,8 +657,8 @@ github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f h1:emb13r6KZW3+
 github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f/go.mod h1:GQdhGMwlWYwyFMO/cLhl1dRrHbKhQxKeuiPs35amvV4=
 github.com/satimoto/go-lsp v0.2.1-0.20221116231523-b2169c1be301 h1:Lu+PaqZpky71MgHd1CrsLpKC5g+WZCo0uCIjKKq0tpc=
 github.com/satimoto/go-lsp v0.2.1-0.20221116231523-b2169c1be301/go.mod h1:bleUpVumUC8QAFi0CZdnbtDRGWRFKETMH5JWcLAolBs=
-github.com/satimoto/go-ocpi v0.2.1-0.20221016112643-50609a52d6c0 h1:0+YhEThTcUpqeG0sZftLMQ2zsyfv2TJ2tAazyPac0Rc=
-github.com/satimoto/go-ocpi v0.2.1-0.20221016112643-50609a52d6c0/go.mod h1:nMJe80IwOrc3QA0OFBrRoDDOcvQYaIpknN0dD0d+hHA=
+github.com/satimoto/go-ocpi v0.2.1-0.20221121150618-6100911bf86b h1:yPF0IRSpL3ggu0kL2w0rZ4IRVAilNN+YmcDlDqUnCXA=
+github.com/satimoto/go-ocpi v0.2.1-0.20221121150618-6100911bf86b/go.mod h1:WpMCqrktmUhq8MTFXgzoIAhtPjok9qTJX02M3uw8HSw=
 github.com/satori/go.uuid v1.2.0/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdhQKdks0=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/sergi/go-diff v1.1.0 h1:we8PVUC3FE2uYfodKH/nBHMSetSfHDR6scGdBi+erh0=

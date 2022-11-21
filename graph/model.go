@@ -196,7 +196,7 @@ type StopSession struct {
 }
 
 type StopSessionInput struct {
-	SessionUID string `json:"sessionUid"`
+	AuthorizationID string `json:"authorizationId"`
 }
 
 type SyncCredentialInput struct {

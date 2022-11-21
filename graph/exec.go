@@ -20345,18 +20345,18 @@ func (ec *executionContext) unmarshalInputStopSessionInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"sessionUid"}
+	fieldsInOrder := [...]string{"authorizationId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "sessionUid":
+		case "authorizationId":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sessionUid"))
-			it.SessionUID, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorizationId"))
+			it.AuthorizationID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
