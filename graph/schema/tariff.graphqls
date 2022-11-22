@@ -17,7 +17,9 @@ input GetTariffInput {
 }
 
 input UpdateTariffInput {
-    uid: String!
+    uid: String
+    countryCode: String
+    partyId: String
     isIntermediateCdrCapable: Boolean!
 }
 
@@ -26,5 +28,5 @@ extend type Query {
 }
 
 extend type Mutation {
-    updateTariff(input: UpdateTariffInput!): Tariff!
+    updateTariff(input: UpdateTariffInput!): ResultOk!
 }

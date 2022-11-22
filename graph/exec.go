@@ -618,7 +618,7 @@ type MutationResolver interface {
 	PublishLocation(ctx context.Context, input PublishLocationInput) (*ResultOk, error)
 	CreateReferral(ctx context.Context, input CreateReferralInput) (*ResultID, error)
 	UpdateSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error)
-	UpdateTariff(ctx context.Context, input UpdateTariffInput) (*db.Tariff, error)
+	UpdateTariff(ctx context.Context, input UpdateTariffInput) (*ResultOk, error)
 	CreateToken(ctx context.Context, input CreateTokenInput) (*db.Token, error)
 	UpdateTokens(ctx context.Context, input UpdateTokensInput) (*ResultOk, error)
 	UpdateTokenAuthorization(ctx context.Context, input UpdateTokenAuthorizationInput) (*db.TokenAuthorization, error)
@@ -11355,9 +11355,9 @@ func (ec *executionContext) _Mutation_updateTariff(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*db.Tariff)
+	res := resTmp.(*ResultOk)
 	fc.Result = res
-	return ec.marshalNTariff2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTariff(ctx, field.Selections, res)
+	return ec.marshalNResultOk2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultOk(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateTariff(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11368,28 +11368,10 @@ func (ec *executionContext) fieldContext_Mutation_updateTariff(ctx context.Conte
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Tariff_id(ctx, field)
-			case "uid":
-				return ec.fieldContext_Tariff_uid(ctx, field)
-			case "currency":
-				return ec.fieldContext_Tariff_currency(ctx, field)
-			case "currencyRate":
-				return ec.fieldContext_Tariff_currencyRate(ctx, field)
-			case "currencyRateMsat":
-				return ec.fieldContext_Tariff_currencyRateMsat(ctx, field)
-			case "commissionPercent":
-				return ec.fieldContext_Tariff_commissionPercent(ctx, field)
-			case "taxPercent":
-				return ec.fieldContext_Tariff_taxPercent(ctx, field)
-			case "elements":
-				return ec.fieldContext_Tariff_elements(ctx, field)
-			case "energyMix":
-				return ec.fieldContext_Tariff_energyMix(ctx, field)
-			case "isIntermediateCdrCapable":
-				return ec.fieldContext_Tariff_isIntermediateCdrCapable(ctx, field)
+			case "ok":
+				return ec.fieldContext_ResultOk_ok(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Tariff", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ResultOk", field.Name)
 		},
 	}
 	defer func() {
@@ -20489,7 +20471,7 @@ func (ec *executionContext) unmarshalInputUpdateTariffInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"uid", "isIntermediateCdrCapable"}
+	fieldsInOrder := [...]string{"uid", "countryCode", "partyId", "isIntermediateCdrCapable"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -20500,7 +20482,23 @@ func (ec *executionContext) unmarshalInputUpdateTariffInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
-			it.UID, err = ec.unmarshalNString2string(ctx, v)
+			it.UID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "countryCode":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("countryCode"))
+			it.CountryCode, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "partyId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partyId"))
+			it.PartyID, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
