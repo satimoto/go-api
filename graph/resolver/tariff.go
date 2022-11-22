@@ -10,28 +10,25 @@ import (
 	"github.com/satimoto/go-api/graph"
 	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
+	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-datastore/pkg/db"
-	"github.com/satimoto/go-datastore/pkg/param"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // UpdateTariff is the resolver for the updateTariff field.
-func (r *mutationResolver) UpdateTariff(ctx context.Context, input graph.UpdateTariffInput) (*db.Tariff, error) {
+func (r *mutationResolver) UpdateTariff(ctx context.Context, input graph.UpdateTariffInput) (*graph.ResultOk, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
-		if tariff, err := r.TariffRepository.GetTariffByUid(ctx, input.UID); err != nil {
-			updateTariffParams := param.NewUpdateTariffByUidParams(tariff)
-			updateTariffParams.IsIntermediateCdrCapable = input.IsIntermediateCdrCapable
+		updateTariffCapabilitiesParams := param.NewUpdateTariffCapabilitiesParams(input)
 
-			updatedTariff, err := r.TariffRepository.UpdateTariffByUid(ctx, updateTariffParams)
+		err := r.TariffRepository.UpdateTariffCapabilities(ctx, updateTariffCapabilitiesParams)
 
-			if err != nil {
-				metrics.RecordError("API029", "Error updating tariff", err)
-				log.Printf("API029: Params=%#v", updateTariffParams)
-				return nil, gqlerror.Errorf("Error updating tariff")
-			}
-
-			return &updatedTariff, nil
+		if err != nil {
+			metrics.RecordError("API029", "Error updating tariff", err)
+			log.Printf("API029: Params=%#v", updateTariffCapabilitiesParams)
+			return nil, gqlerror.Errorf("Error updating tariff")
 		}
+
+		return &graph.ResultOk{Ok: true}, nil
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")

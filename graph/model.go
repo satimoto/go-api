@@ -226,8 +226,10 @@ type UpdateInvoiceRequestInput struct {
 }
 
 type UpdateTariffInput struct {
-	UID                      string `json:"uid"`
-	IsIntermediateCdrCapable bool   `json:"isIntermediateCdrCapable"`
+	UID                      *string `json:"uid"`
+	CountryCode              *string `json:"countryCode"`
+	PartyID                  *string `json:"partyId"`
+	IsIntermediateCdrCapable bool    `json:"isIntermediateCdrCapable"`
 }
 
 type UpdateTokenAuthorizationInput struct {
