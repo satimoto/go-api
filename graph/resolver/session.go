@@ -91,7 +91,7 @@ func (r *sessionResolver) MeterID(ctx context.Context, obj *db.Session) (*string
 
 // SessionInvoices is the resolver for the sessionInvoices field.
 func (r *sessionResolver) SessionInvoices(ctx context.Context, obj *db.Session) ([]db.SessionInvoice, error) {
-	return r.SessionRepository.ListSessionInvoices(ctx, obj.ID)
+	return r.SessionRepository.ListSessionInvoicesBySessionID(ctx, obj.ID)
 }
 
 // InvoiceRequest is the resolver for the invoiceRequest field.
