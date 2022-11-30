@@ -1,5 +1,13 @@
 package util
 
+func DefaultBool(val *bool, fallback bool) bool {
+	if val != nil {
+		return *val
+	}
+
+	return fallback
+}
+
 func DefaultString(str *string, fallback string) string {
 	if str != nil {
 		return *str
