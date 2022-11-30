@@ -20355,7 +20355,7 @@ func (ec *executionContext) unmarshalInputSyncCredentialInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "fromDate", "countryCode", "partyId"}
+	fieldsInOrder := [...]string{"id", "fromDate", "countryCode", "partyId", "withTariffs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -20391,6 +20391,14 @@ func (ec *executionContext) unmarshalInputSyncCredentialInput(ctx context.Contex
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partyId"))
 			it.PartyID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "withTariffs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("withTariffs"))
+			it.WithTariffs, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}

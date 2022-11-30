@@ -204,6 +204,7 @@ type SyncCredentialInput struct {
 	FromDate    *string `json:"fromDate"`
 	CountryCode *string `json:"countryCode"`
 	PartyID     *string `json:"partyId"`
+	WithTariffs *bool   `json:"withTariffs"`
 }
 
 type TariffElement struct {

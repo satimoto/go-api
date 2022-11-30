@@ -59,6 +59,7 @@ func NewSyncCredentialRequest(input graph.SyncCredentialInput) *ocpirpc.SyncCred
 		FromDate:    util.DefaultString(input.FromDate, ""),
 		CountryCode: util.DefaultString(input.CountryCode, ""),
 		PartyId:     util.DefaultString(input.PartyID, ""),
+		WithTariffs: util.DefaultBool(input.WithTariffs, false),
 	}
 }
 
