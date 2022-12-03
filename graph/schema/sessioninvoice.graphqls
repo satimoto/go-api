@@ -15,6 +15,10 @@ type SessionInvoice {
     signature: String!
     isSettled: Boolean!
     isExpired: Boolean!
+    estimatedEnergy: Float!
+    estimatedTime: Float!
+    meteredEnergy: Float!
+    meteredTime: Float!
     lastUpdated: String!
 }
 
