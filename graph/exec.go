@@ -20083,7 +20083,7 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"country", "interval", "limit", "xMin", "xMax", "yMin", "yMax"}
+	fieldsInOrder := [...]string{"country", "interval", "isRemoteCapable", "isRfidCapable", "limit", "xMin", "xMax", "yMin", "yMax"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -20103,6 +20103,22 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("interval"))
 			it.Interval, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isRemoteCapable":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isRemoteCapable"))
+			it.IsRemoteCapable, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isRfidCapable":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isRfidCapable"))
+			it.IsRfidCapable, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}

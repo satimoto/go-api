@@ -11,11 +11,13 @@ import (
 
 func NewListLocationsByGeomParams(input graph.ListLocationsInput) db.ListLocationsByGeomParams {
 	return db.ListLocationsByGeomParams{
-		XMin:     util.DefaultFloat(input.XMin, 0),
-		YMin:     util.DefaultFloat(input.YMin, 0),
-		XMax:     util.DefaultFloat(input.XMax, 0),
-		YMax:     util.DefaultFloat(input.YMax, 0),
-		Interval: int32(util.DefaultInt(input.Interval, 0)),
+		Interval:        int32(util.DefaultInt(input.Interval, 0)),
+		IsRemoteCapable: util.DefaultBool(input.IsRemoteCapable, true),
+		IsRfidCapable:   util.DefaultBool(input.IsRfidCapable, true),
+		XMin:            util.DefaultFloat(input.XMin, 0),
+		YMin:            util.DefaultFloat(input.YMin, 0),
+		XMax:            util.DefaultFloat(input.XMax, 0),
+		YMax:            util.DefaultFloat(input.YMax, 0),
 	}
 }
 

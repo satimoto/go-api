@@ -50,6 +50,8 @@ input GetLocationInput {
 input ListLocationsInput {
     country: String
     interval: Int
+    isRemoteCapable: Boolean
+    isRfidCapable: Boolean
     limit: Int
     xMin: Float
     xMax: Float

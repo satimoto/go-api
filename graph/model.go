@@ -134,13 +134,15 @@ type ListLocation struct {
 }
 
 type ListLocationsInput struct {
-	Country  *string  `json:"country"`
-	Interval *int     `json:"interval"`
-	Limit    *int     `json:"limit"`
-	XMin     *float64 `json:"xMin"`
-	XMax     *float64 `json:"xMax"`
-	YMin     *float64 `json:"yMin"`
-	YMax     *float64 `json:"yMax"`
+	Country         *string  `json:"country"`
+	Interval        *int     `json:"interval"`
+	IsRemoteCapable *bool    `json:"isRemoteCapable"`
+	IsRfidCapable   *bool    `json:"isRfidCapable"`
+	Limit           *int     `json:"limit"`
+	XMin            *float64 `json:"xMin"`
+	XMax            *float64 `json:"xMax"`
+	YMin            *float64 `json:"yMin"`
+	YMax            *float64 `json:"yMax"`
 }
 
 type ListSessionInvoicesInput struct {
