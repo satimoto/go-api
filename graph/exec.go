@@ -400,10 +400,14 @@ type ComplexityRoot struct {
 		Currency         func(childComplexity int) int
 		CurrencyRate     func(childComplexity int) int
 		CurrencyRateMsat func(childComplexity int) int
+		EstimatedEnergy  func(childComplexity int) int
+		EstimatedTime    func(childComplexity int) int
 		ID               func(childComplexity int) int
 		IsExpired        func(childComplexity int) int
 		IsSettled        func(childComplexity int) int
 		LastUpdated      func(childComplexity int) int
+		MeteredEnergy    func(childComplexity int) int
+		MeteredTime      func(childComplexity int) int
 		PaymentRequest   func(childComplexity int) int
 		PriceFiat        func(childComplexity int) int
 		PriceMsat        func(childComplexity int) int
@@ -2500,6 +2504,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SessionInvoice.CurrencyRateMsat(childComplexity), true
 
+	case "SessionInvoice.estimatedEnergy":
+		if e.complexity.SessionInvoice.EstimatedEnergy == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.EstimatedEnergy(childComplexity), true
+
+	case "SessionInvoice.estimatedTime":
+		if e.complexity.SessionInvoice.EstimatedTime == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.EstimatedTime(childComplexity), true
+
 	case "SessionInvoice.id":
 		if e.complexity.SessionInvoice.ID == nil {
 			break
@@ -2527,6 +2545,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SessionInvoice.LastUpdated(childComplexity), true
+
+	case "SessionInvoice.meteredEnergy":
+		if e.complexity.SessionInvoice.MeteredEnergy == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.MeteredEnergy(childComplexity), true
+
+	case "SessionInvoice.meteredTime":
+		if e.complexity.SessionInvoice.MeteredTime == nil {
+			break
+		}
+
+		return e.complexity.SessionInvoice.MeteredTime(childComplexity), true
 
 	case "SessionInvoice.paymentRequest":
 		if e.complexity.SessionInvoice.PaymentRequest == nil {
@@ -11309,6 +11341,14 @@ func (ec *executionContext) fieldContext_Mutation_updateSessionInvoice(ctx conte
 				return ec.fieldContext_SessionInvoice_isSettled(ctx, field)
 			case "isExpired":
 				return ec.fieldContext_SessionInvoice_isExpired(ctx, field)
+			case "estimatedEnergy":
+				return ec.fieldContext_SessionInvoice_estimatedEnergy(ctx, field)
+			case "estimatedTime":
+				return ec.fieldContext_SessionInvoice_estimatedTime(ctx, field)
+			case "meteredEnergy":
+				return ec.fieldContext_SessionInvoice_meteredEnergy(ctx, field)
+			case "meteredTime":
+				return ec.fieldContext_SessionInvoice_meteredTime(ctx, field)
 			case "lastUpdated":
 				return ec.fieldContext_SessionInvoice_lastUpdated(ctx, field)
 			}
@@ -13259,6 +13299,14 @@ func (ec *executionContext) fieldContext_Query_getSessionInvoice(ctx context.Con
 				return ec.fieldContext_SessionInvoice_isSettled(ctx, field)
 			case "isExpired":
 				return ec.fieldContext_SessionInvoice_isExpired(ctx, field)
+			case "estimatedEnergy":
+				return ec.fieldContext_SessionInvoice_estimatedEnergy(ctx, field)
+			case "estimatedTime":
+				return ec.fieldContext_SessionInvoice_estimatedTime(ctx, field)
+			case "meteredEnergy":
+				return ec.fieldContext_SessionInvoice_meteredEnergy(ctx, field)
+			case "meteredTime":
+				return ec.fieldContext_SessionInvoice_meteredTime(ctx, field)
 			case "lastUpdated":
 				return ec.fieldContext_SessionInvoice_lastUpdated(ctx, field)
 			}
@@ -13350,6 +13398,14 @@ func (ec *executionContext) fieldContext_Query_listSessionInvoices(ctx context.C
 				return ec.fieldContext_SessionInvoice_isSettled(ctx, field)
 			case "isExpired":
 				return ec.fieldContext_SessionInvoice_isExpired(ctx, field)
+			case "estimatedEnergy":
+				return ec.fieldContext_SessionInvoice_estimatedEnergy(ctx, field)
+			case "estimatedTime":
+				return ec.fieldContext_SessionInvoice_estimatedTime(ctx, field)
+			case "meteredEnergy":
+				return ec.fieldContext_SessionInvoice_meteredEnergy(ctx, field)
+			case "meteredTime":
+				return ec.fieldContext_SessionInvoice_meteredTime(ctx, field)
 			case "lastUpdated":
 				return ec.fieldContext_SessionInvoice_lastUpdated(ctx, field)
 			}
@@ -14767,6 +14823,14 @@ func (ec *executionContext) fieldContext_Session_sessionInvoices(ctx context.Con
 				return ec.fieldContext_SessionInvoice_isSettled(ctx, field)
 			case "isExpired":
 				return ec.fieldContext_SessionInvoice_isExpired(ctx, field)
+			case "estimatedEnergy":
+				return ec.fieldContext_SessionInvoice_estimatedEnergy(ctx, field)
+			case "estimatedTime":
+				return ec.fieldContext_SessionInvoice_estimatedTime(ctx, field)
+			case "meteredEnergy":
+				return ec.fieldContext_SessionInvoice_meteredEnergy(ctx, field)
+			case "meteredTime":
+				return ec.fieldContext_SessionInvoice_meteredTime(ctx, field)
 			case "lastUpdated":
 				return ec.fieldContext_SessionInvoice_lastUpdated(ctx, field)
 			}
@@ -15634,6 +15698,182 @@ func (ec *executionContext) fieldContext_SessionInvoice_isExpired(ctx context.Co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SessionInvoice_estimatedEnergy(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SessionInvoice_estimatedEnergy(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EstimatedEnergy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SessionInvoice_estimatedEnergy(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SessionInvoice_estimatedTime(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SessionInvoice_estimatedTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EstimatedTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SessionInvoice_estimatedTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SessionInvoice_meteredEnergy(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SessionInvoice_meteredEnergy(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MeteredEnergy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SessionInvoice_meteredEnergy(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SessionInvoice_meteredTime(ctx context.Context, field graphql.CollectedField, obj *db.SessionInvoice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SessionInvoice_meteredTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MeteredTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SessionInvoice_meteredTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SessionInvoice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -24558,6 +24798,34 @@ func (ec *executionContext) _SessionInvoice(ctx context.Context, sel ast.Selecti
 		case "isExpired":
 
 			out.Values[i] = ec._SessionInvoice_isExpired(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "estimatedEnergy":
+
+			out.Values[i] = ec._SessionInvoice_estimatedEnergy(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "estimatedTime":
+
+			out.Values[i] = ec._SessionInvoice_estimatedTime(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "meteredEnergy":
+
+			out.Values[i] = ec._SessionInvoice_meteredEnergy(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "meteredTime":
+
+			out.Values[i] = ec._SessionInvoice_meteredTime(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
