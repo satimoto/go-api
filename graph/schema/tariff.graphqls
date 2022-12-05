@@ -5,6 +5,7 @@ type Tariff {
     currencyRate: Int!
     currencyRateMsat: Int!
     commissionPercent: Float!
+    isIntermediateCdrCapable: Boolean!
     taxPercent: Float
     elements: [TariffElement!]!
     energyMix: EnergyMix

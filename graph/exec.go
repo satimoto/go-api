@@ -449,15 +449,16 @@ type ComplexityRoot struct {
 	}
 
 	Tariff struct {
-		CommissionPercent func(childComplexity int) int
-		Currency          func(childComplexity int) int
-		CurrencyRate      func(childComplexity int) int
-		CurrencyRateMsat  func(childComplexity int) int
-		Elements          func(childComplexity int) int
-		EnergyMix         func(childComplexity int) int
-		ID                func(childComplexity int) int
-		TaxPercent        func(childComplexity int) int
-		Uid               func(childComplexity int) int
+		CommissionPercent        func(childComplexity int) int
+		Currency                 func(childComplexity int) int
+		CurrencyRate             func(childComplexity int) int
+		CurrencyRateMsat         func(childComplexity int) int
+		Elements                 func(childComplexity int) int
+		EnergyMix                func(childComplexity int) int
+		ID                       func(childComplexity int) int
+		IsIntermediateCdrCapable func(childComplexity int) int
+		TaxPercent               func(childComplexity int) int
+		Uid                      func(childComplexity int) int
 	}
 
 	TariffElement struct {
@@ -705,6 +706,7 @@ type TariffResolver interface {
 	CurrencyRate(ctx context.Context, obj *db.Tariff) (int, error)
 	CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (int, error)
 	CommissionPercent(ctx context.Context, obj *db.Tariff) (float64, error)
+	IsIntermediateCdrCapable(ctx context.Context, obj *db.Tariff) (bool, error)
 	TaxPercent(ctx context.Context, obj *db.Tariff) (*float64, error)
 	Elements(ctx context.Context, obj *db.Tariff) ([]TariffElement, error)
 	EnergyMix(ctx context.Context, obj *db.Tariff) (*db.EnergyMix, error)
@@ -2804,6 +2806,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tariff.ID(childComplexity), true
+
+	case "Tariff.isIntermediateCdrCapable":
+		if e.complexity.Tariff.IsIntermediateCdrCapable == nil {
+			break
+		}
+
+		return e.complexity.Tariff.IsIntermediateCdrCapable(childComplexity), true
 
 	case "Tariff.taxPercent":
 		if e.complexity.Tariff.TaxPercent == nil {
@@ -5004,6 +5013,8 @@ func (ec *executionContext) fieldContext_Connector_tariff(ctx context.Context, f
 				return ec.fieldContext_Tariff_currencyRateMsat(ctx, field)
 			case "commissionPercent":
 				return ec.fieldContext_Tariff_commissionPercent(ctx, field)
+			case "isIntermediateCdrCapable":
+				return ec.fieldContext_Tariff_isIntermediateCdrCapable(ctx, field)
 			case "taxPercent":
 				return ec.fieldContext_Tariff_taxPercent(ctx, field)
 			case "elements":
@@ -13836,6 +13847,8 @@ func (ec *executionContext) fieldContext_Query_getTariff(ctx context.Context, fi
 				return ec.fieldContext_Tariff_currencyRateMsat(ctx, field)
 			case "commissionPercent":
 				return ec.fieldContext_Tariff_commissionPercent(ctx, field)
+			case "isIntermediateCdrCapable":
+				return ec.fieldContext_Tariff_isIntermediateCdrCapable(ctx, field)
 			case "taxPercent":
 				return ec.fieldContext_Tariff_taxPercent(ctx, field)
 			case "elements":
@@ -17061,6 +17074,50 @@ func (ec *executionContext) fieldContext_Tariff_commissionPercent(ctx context.Co
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tariff_isIntermediateCdrCapable(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tariff_isIntermediateCdrCapable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tariff().IsIntermediateCdrCapable(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tariff_isIntermediateCdrCapable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tariff",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -25584,6 +25641,26 @@ func (ec *executionContext) _Tariff(ctx context.Context, sel ast.SelectionSet, o
 					}
 				}()
 				res = ec._Tariff_commissionPercent(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "isIntermediateCdrCapable":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tariff_isIntermediateCdrCapable(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

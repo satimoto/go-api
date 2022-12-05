@@ -5,7 +5,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/satimoto/go-api/graph"
 	"github.com/satimoto/go-api/internal/middleware"
@@ -65,6 +64,11 @@ func (r *tariffResolver) CommissionPercent(ctx context.Context, obj *db.Tariff) 
 	return user.CommissionPercent, nil
 }
 
+// IsIntermediateCdrCapable is the resolver for the isIntermediateCdrCapable field.
+func (r *tariffResolver) IsIntermediateCdrCapable(ctx context.Context, obj *db.Tariff) (bool, error) {
+	return false, nil
+}
+
 // TaxPercent is the resolver for the taxPercent field.
 func (r *tariffResolver) TaxPercent(ctx context.Context, obj *db.Tariff) (*float64, error) {
 	taxPercent, err := r.calculateTaxPercent(ctx)
@@ -116,13 +120,3 @@ func (r *tariffResolver) EnergyMix(ctx context.Context, obj *db.Tariff) (*db.Ene
 func (r *Resolver) Tariff() graph.TariffResolver { return &tariffResolver{r} }
 
 type tariffResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *tariffResolver) IsIntermediateCdrCapable(ctx context.Context, obj *db.Tariff) (bool, error) {
-	panic(fmt.Errorf("not implemented: IsIntermediateCdrCapable - isIntermediateCdrCapable"))
-}
