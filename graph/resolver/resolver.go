@@ -25,6 +25,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/location"
 	"github.com/satimoto/go-datastore/pkg/node"
 	"github.com/satimoto/go-datastore/pkg/openingtime"
+	"github.com/satimoto/go-datastore/pkg/party"
 	"github.com/satimoto/go-datastore/pkg/pendingnotification"
 	"github.com/satimoto/go-datastore/pkg/promotion"
 	"github.com/satimoto/go-datastore/pkg/referral"
@@ -65,6 +66,7 @@ type Resolver struct {
 	NodeRepository                node.NodeRepository
 	OpeningTimeRepository         openingtime.OpeningTimeRepository
 	ReferralRepository            referral.ReferralRepository
+	PartyRepository               party.PartyRepository
 	PendingNotificationRepository pendingnotification.PendingNotificationRepository
 	PromotionRepository           promotion.PromotionRepository
 	SessionRepository             session.SessionRepository
@@ -109,6 +111,7 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 		LocationRepository:            location.NewRepository(repositoryService),
 		NodeRepository:                node.NewRepository(repositoryService),
 		OpeningTimeRepository:         openingtime.NewRepository(repositoryService),
+		PartyRepository:               party.NewRepository(repositoryService),
 		PendingNotificationRepository: pendingnotification.NewRepository(repositoryService),
 		PromotionRepository:           promotion.NewRepository(repositoryService),
 		ReferralRepository:            referral.NewRepository(repositoryService),

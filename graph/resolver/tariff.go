@@ -5,34 +5,13 @@ package resolver
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/satimoto/go-api/graph"
-	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
-	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
-
-// UpdateTariff is the resolver for the updateTariff field.
-func (r *mutationResolver) UpdateTariff(ctx context.Context, input graph.UpdateTariffInput) (*graph.ResultOk, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
-		updateTariffCapabilitiesParams := param.NewUpdateTariffCapabilitiesParams(input)
-
-		err := r.TariffRepository.UpdateTariffCapabilities(ctx, updateTariffCapabilitiesParams)
-
-		if err != nil {
-			metrics.RecordError("API029", "Error updating tariff", err)
-			log.Printf("API029: Params=%#v", updateTariffCapabilitiesParams)
-			return nil, gqlerror.Errorf("Error updating tariff")
-		}
-
-		return &graph.ResultOk{Ok: true}, nil
-	}
-
-	return nil, gqlerror.Errorf("Not authenticated")
-}
 
 // GetTariff is the resolver for the getTariff field.
 func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInput) (*db.Tariff, error) {
@@ -137,3 +116,13 @@ func (r *tariffResolver) EnergyMix(ctx context.Context, obj *db.Tariff) (*db.Ene
 func (r *Resolver) Tariff() graph.TariffResolver { return &tariffResolver{r} }
 
 type tariffResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *tariffResolver) IsIntermediateCdrCapable(ctx context.Context, obj *db.Tariff) (bool, error) {
+	panic(fmt.Errorf("not implemented: IsIntermediateCdrCapable - isIntermediateCdrCapable"))
+}

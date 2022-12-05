@@ -290,6 +290,7 @@ type ComplexityRoot struct {
 		CreateChannelRequest     func(childComplexity int, input CreateChannelRequestInput) int
 		CreateCredential         func(childComplexity int, input CreateCredentialInput) int
 		CreateEmailSubscription  func(childComplexity int, input CreateEmailSubscriptionInput) int
+		CreateParty              func(childComplexity int, input CreatePartyInput) int
 		CreateReferral           func(childComplexity int, input CreateReferralInput) int
 		CreateToken              func(childComplexity int, input CreateTokenInput) int
 		CreateUser               func(childComplexity int, input CreateUserInput) int
@@ -301,8 +302,8 @@ type ComplexityRoot struct {
 		SyncCredential           func(childComplexity int, input SyncCredentialInput) int
 		UnregisterCredential     func(childComplexity int, input UnregisterCredentialInput) int
 		UpdateInvoiceRequest     func(childComplexity int, input UpdateInvoiceRequestInput) int
+		UpdateParty              func(childComplexity int, input UpdatePartyInput) int
 		UpdateSessionInvoice     func(childComplexity int, id int64) int
-		UpdateTariff             func(childComplexity int, input UpdateTariffInput) int
 		UpdateTokenAuthorization func(childComplexity int, input UpdateTokenAuthorizationInput) int
 		UpdateTokens             func(childComplexity int, input UpdateTokensInput) int
 		UpdateUser               func(childComplexity int, input UpdateUserInput) int
@@ -320,6 +321,14 @@ type ComplexityRoot struct {
 		ExceptionalOpenings func(childComplexity int) int
 		RegularHours        func(childComplexity int) int
 		Twentyfourseven     func(childComplexity int) int
+	}
+
+	Party struct {
+		CountryCode              func(childComplexity int) int
+		IsIntermediateCdrCapable func(childComplexity int) int
+		PartyID                  func(childComplexity int) int
+		PublishLocation          func(childComplexity int) int
+		PublishNullTariff        func(childComplexity int) int
 	}
 
 	PriceComponent struct {
@@ -440,16 +449,15 @@ type ComplexityRoot struct {
 	}
 
 	Tariff struct {
-		CommissionPercent        func(childComplexity int) int
-		Currency                 func(childComplexity int) int
-		CurrencyRate             func(childComplexity int) int
-		CurrencyRateMsat         func(childComplexity int) int
-		Elements                 func(childComplexity int) int
-		EnergyMix                func(childComplexity int) int
-		ID                       func(childComplexity int) int
-		IsIntermediateCdrCapable func(childComplexity int) int
-		TaxPercent               func(childComplexity int) int
-		Uid                      func(childComplexity int) int
+		CommissionPercent func(childComplexity int) int
+		Currency          func(childComplexity int) int
+		CurrencyRate      func(childComplexity int) int
+		CurrencyRateMsat  func(childComplexity int) int
+		Elements          func(childComplexity int) int
+		EnergyMix         func(childComplexity int) int
+		ID                func(childComplexity int) int
+		TaxPercent        func(childComplexity int) int
+		Uid               func(childComplexity int) int
 	}
 
 	TariffElement struct {
@@ -620,9 +628,10 @@ type MutationResolver interface {
 	VerifyEmailSubscription(ctx context.Context, input VerifyEmailSubscriptionInput) (*db.EmailSubscription, error)
 	UpdateInvoiceRequest(ctx context.Context, input UpdateInvoiceRequestInput) (*db.InvoiceRequest, error)
 	PublishLocation(ctx context.Context, input PublishLocationInput) (*ResultOk, error)
+	CreateParty(ctx context.Context, input CreatePartyInput) (*db.Party, error)
+	UpdateParty(ctx context.Context, input UpdatePartyInput) (*db.Party, error)
 	CreateReferral(ctx context.Context, input CreateReferralInput) (*ResultID, error)
 	UpdateSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error)
-	UpdateTariff(ctx context.Context, input UpdateTariffInput) (*ResultOk, error)
 	CreateToken(ctx context.Context, input CreateTokenInput) (*db.Token, error)
 	UpdateTokens(ctx context.Context, input UpdateTokensInput) (*ResultOk, error)
 	UpdateTokenAuthorization(ctx context.Context, input UpdateTokenAuthorizationInput) (*db.TokenAuthorization, error)
@@ -1825,6 +1834,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateEmailSubscription(childComplexity, args["input"].(CreateEmailSubscriptionInput)), true
 
+	case "Mutation.createParty":
+		if e.complexity.Mutation.CreateParty == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createParty_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateParty(childComplexity, args["input"].(CreatePartyInput)), true
+
 	case "Mutation.createReferral":
 		if e.complexity.Mutation.CreateReferral == nil {
 			break
@@ -1957,6 +1978,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateInvoiceRequest(childComplexity, args["input"].(UpdateInvoiceRequestInput)), true
 
+	case "Mutation.updateParty":
+		if e.complexity.Mutation.UpdateParty == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateParty_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateParty(childComplexity, args["input"].(UpdatePartyInput)), true
+
 	case "Mutation.updateSessionInvoice":
 		if e.complexity.Mutation.UpdateSessionInvoice == nil {
 			break
@@ -1968,18 +2001,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateSessionInvoice(childComplexity, args["id"].(int64)), true
-
-	case "Mutation.updateTariff":
-		if e.complexity.Mutation.UpdateTariff == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateTariff_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateTariff(childComplexity, args["input"].(UpdateTariffInput)), true
 
 	case "Mutation.updateTokenAuthorization":
 		if e.complexity.Mutation.UpdateTokenAuthorization == nil {
@@ -2077,6 +2098,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.OpeningTime.Twentyfourseven(childComplexity), true
+
+	case "Party.countryCode":
+		if e.complexity.Party.CountryCode == nil {
+			break
+		}
+
+		return e.complexity.Party.CountryCode(childComplexity), true
+
+	case "Party.isIntermediateCdrCapable":
+		if e.complexity.Party.IsIntermediateCdrCapable == nil {
+			break
+		}
+
+		return e.complexity.Party.IsIntermediateCdrCapable(childComplexity), true
+
+	case "Party.partyId":
+		if e.complexity.Party.PartyID == nil {
+			break
+		}
+
+		return e.complexity.Party.PartyID(childComplexity), true
+
+	case "Party.publishLocation":
+		if e.complexity.Party.PublishLocation == nil {
+			break
+		}
+
+		return e.complexity.Party.PublishLocation(childComplexity), true
+
+	case "Party.publishNullTariff":
+		if e.complexity.Party.PublishNullTariff == nil {
+			break
+		}
+
+		return e.complexity.Party.PublishNullTariff(childComplexity), true
 
 	case "PriceComponent.commissionMsat":
 		if e.complexity.PriceComponent.CommissionMsat == nil {
@@ -2749,13 +2805,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tariff.ID(childComplexity), true
 
-	case "Tariff.isIntermediateCdrCapable":
-		if e.complexity.Tariff.IsIntermediateCdrCapable == nil {
-			break
-		}
-
-		return e.complexity.Tariff.IsIntermediateCdrCapable(childComplexity), true
-
 	case "Tariff.taxPercent":
 		if e.complexity.Tariff.TaxPercent == nil {
 			break
@@ -2937,6 +2986,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateCredentialInput,
 		ec.unmarshalInputCreateEmailSubscriptionInput,
 		ec.unmarshalInputCreateImageInput,
+		ec.unmarshalInputCreatePartyInput,
 		ec.unmarshalInputCreateReferralInput,
 		ec.unmarshalInputCreateTokenInput,
 		ec.unmarshalInputCreateUserInput,
@@ -2954,7 +3004,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputSyncCredentialInput,
 		ec.unmarshalInputUnregisterCredentialInput,
 		ec.unmarshalInputUpdateInvoiceRequestInput,
-		ec.unmarshalInputUpdateTariffInput,
+		ec.unmarshalInputUpdatePartyInput,
 		ec.unmarshalInputUpdateTokenAuthorizationInput,
 		ec.unmarshalInputUpdateTokensInput,
 		ec.unmarshalInputUpdateUserInput,
@@ -3018,7 +3068,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
-//go:embed "schema/additionalgeolocation.graphqls" "schema/authentication.graphqls" "schema/businessdetail.graphqls" "schema/channelrequest.graphqls" "schema/command.graphqls" "schema/connector.graphqls" "schema/countryaccount.graphqls" "schema/credential.graphqls" "schema/displaytext.graphqls" "schema/elementrestriction.graphqls" "schema/emailsubscription.graphqls" "schema/energymix.graphqls" "schema/energysource.graphqls" "schema/environmentalimpact.graphqls" "schema/evse.graphqls" "schema/exceptionalperiod.graphqls" "schema/geolocation.graphqls" "schema/image.graphqls" "schema/invoicerequest.graphqls" "schema/location.graphqls" "schema/node.graphqls" "schema/openingtime.graphqls" "schema/pricecomponent.graphqls" "schema/promotion.graphqls" "schema/rate.graphqls" "schema/referral.graphqls" "schema/regularhour.graphqls" "schema/result.graphqls" "schema/session.graphqls" "schema/sessioninvoice.graphqls" "schema/statusschedule.graphqls" "schema/tariff.graphqls" "schema/tariffelement.graphqls" "schema/textdescription.graphqls" "schema/token.graphqls" "schema/tokenauthorization.graphqls" "schema/user.graphqls"
+//go:embed "schema/additionalgeolocation.graphqls" "schema/authentication.graphqls" "schema/businessdetail.graphqls" "schema/channelrequest.graphqls" "schema/command.graphqls" "schema/connector.graphqls" "schema/countryaccount.graphqls" "schema/credential.graphqls" "schema/displaytext.graphqls" "schema/elementrestriction.graphqls" "schema/emailsubscription.graphqls" "schema/energymix.graphqls" "schema/energysource.graphqls" "schema/environmentalimpact.graphqls" "schema/evse.graphqls" "schema/exceptionalperiod.graphqls" "schema/geolocation.graphqls" "schema/image.graphqls" "schema/invoicerequest.graphqls" "schema/location.graphqls" "schema/node.graphqls" "schema/openingtime.graphqls" "schema/party.graphqls" "schema/pricecomponent.graphqls" "schema/promotion.graphqls" "schema/rate.graphqls" "schema/referral.graphqls" "schema/regularhour.graphqls" "schema/result.graphqls" "schema/session.graphqls" "schema/sessioninvoice.graphqls" "schema/statusschedule.graphqls" "schema/tariff.graphqls" "schema/tariffelement.graphqls" "schema/textdescription.graphqls" "schema/token.graphqls" "schema/tokenauthorization.graphqls" "schema/user.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -3052,6 +3102,7 @@ var sources = []*ast.Source{
 	{Name: "schema/location.graphqls", Input: sourceData("schema/location.graphqls"), BuiltIn: false},
 	{Name: "schema/node.graphqls", Input: sourceData("schema/node.graphqls"), BuiltIn: false},
 	{Name: "schema/openingtime.graphqls", Input: sourceData("schema/openingtime.graphqls"), BuiltIn: false},
+	{Name: "schema/party.graphqls", Input: sourceData("schema/party.graphqls"), BuiltIn: false},
 	{Name: "schema/pricecomponent.graphqls", Input: sourceData("schema/pricecomponent.graphqls"), BuiltIn: false},
 	{Name: "schema/promotion.graphqls", Input: sourceData("schema/promotion.graphqls"), BuiltIn: false},
 	{Name: "schema/rate.graphqls", Input: sourceData("schema/rate.graphqls"), BuiltIn: false},
@@ -3126,6 +3177,21 @@ func (ec *executionContext) field_Mutation_createEmailSubscription_args(ctx cont
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateEmailSubscriptionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateEmailSubscriptionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createParty_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 CreatePartyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreatePartyInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreatePartyInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3299,6 +3365,21 @@ func (ec *executionContext) field_Mutation_updateInvoiceRequest_args(ctx context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updateParty_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 UpdatePartyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdatePartyInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdatePartyInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateSessionInvoice_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -3311,21 +3392,6 @@ func (ec *executionContext) field_Mutation_updateSessionInvoice_args(ctx context
 		}
 	}
 	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateTariff_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 UpdateTariffInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdateTariffInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateTariffInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
 	return args, nil
 }
 
@@ -4944,8 +5010,6 @@ func (ec *executionContext) fieldContext_Connector_tariff(ctx context.Context, f
 				return ec.fieldContext_Tariff_elements(ctx, field)
 			case "energyMix":
 				return ec.fieldContext_Tariff_energyMix(ctx, field)
-			case "isIntermediateCdrCapable":
-				return ec.fieldContext_Tariff_isIntermediateCdrCapable(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tariff", field.Name)
 		},
@@ -11214,6 +11278,140 @@ func (ec *executionContext) fieldContext_Mutation_publishLocation(ctx context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createParty(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createParty(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateParty(rctx, fc.Args["input"].(CreatePartyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Party)
+	fc.Result = res
+	return ec.marshalNParty2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐParty(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createParty(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "countryCode":
+				return ec.fieldContext_Party_countryCode(ctx, field)
+			case "partyId":
+				return ec.fieldContext_Party_partyId(ctx, field)
+			case "isIntermediateCdrCapable":
+				return ec.fieldContext_Party_isIntermediateCdrCapable(ctx, field)
+			case "publishLocation":
+				return ec.fieldContext_Party_publishLocation(ctx, field)
+			case "publishNullTariff":
+				return ec.fieldContext_Party_publishNullTariff(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Party", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createParty_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateParty(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateParty(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateParty(rctx, fc.Args["input"].(UpdatePartyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Party)
+	fc.Result = res
+	return ec.marshalNParty2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐParty(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateParty(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "countryCode":
+				return ec.fieldContext_Party_countryCode(ctx, field)
+			case "partyId":
+				return ec.fieldContext_Party_partyId(ctx, field)
+			case "isIntermediateCdrCapable":
+				return ec.fieldContext_Party_isIntermediateCdrCapable(ctx, field)
+			case "publishLocation":
+				return ec.fieldContext_Party_publishLocation(ctx, field)
+			case "publishNullTariff":
+				return ec.fieldContext_Party_publishNullTariff(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Party", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateParty_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createReferral(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createReferral(ctx, field)
 	if err != nil {
@@ -11363,65 +11561,6 @@ func (ec *executionContext) fieldContext_Mutation_updateSessionInvoice(ctx conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateSessionInvoice_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateTariff(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateTariff(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateTariff(rctx, fc.Args["input"].(UpdateTariffInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ResultOk)
-	fc.Result = res
-	return ec.marshalNResultOk2ᚖgithubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐResultOk(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateTariff(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "ok":
-				return ec.fieldContext_ResultOk_ok(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type ResultOk", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateTariff_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -12082,6 +12221,226 @@ func (ec *executionContext) fieldContext_OpeningTime_exceptionalClosings(ctx con
 				return ec.fieldContext_ExceptionalPeriod_periodEnd(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ExceptionalPeriod", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Party_countryCode(ctx context.Context, field graphql.CollectedField, obj *db.Party) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Party_countryCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CountryCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Party_countryCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Party",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Party_partyId(ctx context.Context, field graphql.CollectedField, obj *db.Party) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Party_partyId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PartyID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Party_partyId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Party",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Party_isIntermediateCdrCapable(ctx context.Context, field graphql.CollectedField, obj *db.Party) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Party_isIntermediateCdrCapable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsIntermediateCdrCapable, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Party_isIntermediateCdrCapable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Party",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Party_publishLocation(ctx context.Context, field graphql.CollectedField, obj *db.Party) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Party_publishLocation(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PublishLocation, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Party_publishLocation(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Party",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Party_publishNullTariff(ctx context.Context, field graphql.CollectedField, obj *db.Party) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Party_publishNullTariff(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PublishNullTariff, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Party_publishNullTariff(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Party",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -13483,8 +13842,6 @@ func (ec *executionContext) fieldContext_Query_getTariff(ctx context.Context, fi
 				return ec.fieldContext_Tariff_elements(ctx, field)
 			case "energyMix":
 				return ec.fieldContext_Tariff_energyMix(ctx, field)
-			case "isIntermediateCdrCapable":
-				return ec.fieldContext_Tariff_isIntermediateCdrCapable(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tariff", field.Name)
 		},
@@ -16853,50 +17210,6 @@ func (ec *executionContext) fieldContext_Tariff_energyMix(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Tariff_isIntermediateCdrCapable(ctx context.Context, field graphql.CollectedField, obj *db.Tariff) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tariff_isIntermediateCdrCapable(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.IsIntermediateCdrCapable, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Tariff_isIntermediateCdrCapable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Tariff",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _TariffElement_priceComponents(ctx context.Context, field graphql.CollectedField, obj *TariffElement) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TariffElement_priceComponents(ctx, field)
 	if err != nil {
@@ -19980,6 +20293,74 @@ func (ec *executionContext) unmarshalInputCreateImageInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreatePartyInput(ctx context.Context, obj interface{}) (CreatePartyInput, error) {
+	var it CreatePartyInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"credentialId", "countryCode", "partyId", "isIntermediateCdrCapable", "publishLocation", "publishNullTariff"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "credentialId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credentialId"))
+			it.CredentialID, err = ec.unmarshalNID2int64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "countryCode":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("countryCode"))
+			it.CountryCode, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "partyId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partyId"))
+			it.PartyID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isIntermediateCdrCapable":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isIntermediateCdrCapable"))
+			it.IsIntermediateCdrCapable, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publishLocation":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishLocation"))
+			it.PublishLocation, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publishNullTariff":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishNullTariff"))
+			it.PublishNullTariff, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateReferralInput(ctx context.Context, obj interface{}) (CreateReferralInput, error) {
 	var it CreateReferralInput
 	asMap := map[string]interface{}{}
@@ -20728,25 +21109,25 @@ func (ec *executionContext) unmarshalInputUpdateInvoiceRequestInput(ctx context.
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdateTariffInput(ctx context.Context, obj interface{}) (UpdateTariffInput, error) {
-	var it UpdateTariffInput
+func (ec *executionContext) unmarshalInputUpdatePartyInput(ctx context.Context, obj interface{}) (UpdatePartyInput, error) {
+	var it UpdatePartyInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"uid", "countryCode", "partyId", "isIntermediateCdrCapable"}
+	fieldsInOrder := [...]string{"credentialId", "countryCode", "partyId", "isIntermediateCdrCapable", "publishLocation", "publishNullTariff"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "uid":
+		case "credentialId":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
-			it.UID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credentialId"))
+			it.CredentialID, err = ec.unmarshalNID2int64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -20754,7 +21135,7 @@ func (ec *executionContext) unmarshalInputUpdateTariffInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("countryCode"))
-			it.CountryCode, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.CountryCode, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -20762,7 +21143,7 @@ func (ec *executionContext) unmarshalInputUpdateTariffInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partyId"))
-			it.PartyID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.PartyID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -20771,6 +21152,22 @@ func (ec *executionContext) unmarshalInputUpdateTariffInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isIntermediateCdrCapable"))
 			it.IsIntermediateCdrCapable, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publishLocation":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishLocation"))
+			it.PublishLocation, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publishNullTariff":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publishNullTariff"))
+			it.PublishNullTariff, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -23456,6 +23853,24 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createParty":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createParty(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateParty":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateParty(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createReferral":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -23471,15 +23886,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 				return ec._Mutation_updateSessionInvoice(ctx, field)
 			})
 
-		case "updateTariff":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateTariff(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "createToken":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -23668,6 +24074,62 @@ func (ec *executionContext) _OpeningTime(ctx context.Context, sel ast.SelectionS
 				return innerFunc(ctx)
 
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var partyImplementors = []string{"Party"}
+
+func (ec *executionContext) _Party(ctx context.Context, sel ast.SelectionSet, obj *db.Party) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, partyImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Party")
+		case "countryCode":
+
+			out.Values[i] = ec._Party_countryCode(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "partyId":
+
+			out.Values[i] = ec._Party_partyId(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "isIntermediateCdrCapable":
+
+			out.Values[i] = ec._Party_isIntermediateCdrCapable(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "publishLocation":
+
+			out.Values[i] = ec._Party_publishLocation(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "publishNullTariff":
+
+			out.Values[i] = ec._Party_publishNullTariff(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -25186,13 +25648,6 @@ func (ec *executionContext) _Tariff(ctx context.Context, sel ast.SelectionSet, o
 				return innerFunc(ctx)
 
 			})
-		case "isIntermediateCdrCapable":
-
-			out.Values[i] = ec._Tariff_isIntermediateCdrCapable(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -26177,6 +26632,11 @@ func (ec *executionContext) unmarshalNCreateEmailSubscriptionInput2githubᚗcom�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreatePartyInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreatePartyInput(ctx context.Context, v interface{}) (CreatePartyInput, error) {
+	res, err := ec.unmarshalInputCreatePartyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateReferralInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐCreateReferralInput(ctx context.Context, v interface{}) (CreateReferralInput, error) {
 	res, err := ec.unmarshalInputCreateReferralInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -26835,6 +27295,20 @@ func (ec *executionContext) marshalNNode2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatas
 	return ec._Node(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNParty2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐParty(ctx context.Context, sel ast.SelectionSet, v db.Party) graphql.Marshaler {
+	return ec._Party(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNParty2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐParty(ctx context.Context, sel ast.SelectionSet, v *db.Party) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Party(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNPriceComponent2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPriceComponent(ctx context.Context, sel ast.SelectionSet, v db.PriceComponent) graphql.Marshaler {
 	return ec._PriceComponent(ctx, sel, &v)
 }
@@ -27299,8 +27773,8 @@ func (ec *executionContext) unmarshalNUpdateInvoiceRequestInput2githubᚗcomᚋs
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNUpdateTariffInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdateTariffInput(ctx context.Context, v interface{}) (UpdateTariffInput, error) {
-	res, err := ec.unmarshalInputUpdateTariffInput(ctx, v)
+func (ec *executionContext) unmarshalNUpdatePartyInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐUpdatePartyInput(ctx context.Context, v interface{}) (UpdatePartyInput, error) {
+	res, err := ec.unmarshalInputUpdatePartyInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

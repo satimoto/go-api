@@ -63,6 +63,15 @@ type CreateImageInput struct {
 	Height    *int    `json:"height"`
 }
 
+type CreatePartyInput struct {
+	CredentialID             int64  `json:"credentialId"`
+	CountryCode              string `json:"countryCode"`
+	PartyID                  string `json:"partyId"`
+	IsIntermediateCdrCapable bool   `json:"isIntermediateCdrCapable"`
+	PublishLocation          bool   `json:"publishLocation"`
+	PublishNullTariff        bool   `json:"publishNullTariff"`
+}
+
 type CreateReferralInput struct {
 	Code     string `json:"code"`
 	Referrer string `json:"referrer"`
@@ -228,11 +237,13 @@ type UpdateInvoiceRequestInput struct {
 	PaymentRequest string `json:"paymentRequest"`
 }
 
-type UpdateTariffInput struct {
-	UID                      *string `json:"uid"`
-	CountryCode              *string `json:"countryCode"`
-	PartyID                  *string `json:"partyId"`
-	IsIntermediateCdrCapable bool    `json:"isIntermediateCdrCapable"`
+type UpdatePartyInput struct {
+	CredentialID             int64  `json:"credentialId"`
+	CountryCode              string `json:"countryCode"`
+	PartyID                  string `json:"partyId"`
+	IsIntermediateCdrCapable bool   `json:"isIntermediateCdrCapable"`
+	PublishLocation          bool   `json:"publishLocation"`
+	PublishNullTariff        bool   `json:"publishNullTariff"`
 }
 
 type UpdateTokenAuthorizationInput struct {
