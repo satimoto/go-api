@@ -8,7 +8,6 @@ type Tariff {
     taxPercent: Float
     elements: [TariffElement!]!
     energyMix: EnergyMix
-    isIntermediateCdrCapable: Boolean!
 }
 
 input GetTariffInput {
@@ -16,17 +15,6 @@ input GetTariffInput {
     uid: String
 }
 
-input UpdateTariffInput {
-    uid: String
-    countryCode: String
-    partyId: String
-    isIntermediateCdrCapable: Boolean!
-}
-
 extend type Query {
     getTariff(input: GetTariffInput!): Tariff!
-}
-
-extend type Mutation {
-    updateTariff(input: UpdateTariffInput!): ResultOk!
 }
