@@ -269,6 +269,7 @@ type ComplexityRoot struct {
 		Geom               func(childComplexity int) int
 		ID                 func(childComplexity int) int
 		Images             func(childComplexity int) int
+		IsExperimental     func(childComplexity int) int
 		IsRemoteCapable    func(childComplexity int) int
 		IsRfidCapable      func(childComplexity int) int
 		LastUpdated        func(childComplexity int) int
@@ -602,6 +603,8 @@ type LocationResolver interface {
 
 	RelatedLocations(ctx context.Context, obj *db.Location) ([]AddtionalGeoLocation, error)
 	Evses(ctx context.Context, obj *db.Location) ([]db.Evse, error)
+
+	IsExperimental(ctx context.Context, obj *db.Location) (bool, error)
 
 	Directions(ctx context.Context, obj *db.Location) ([]db.DisplayText, error)
 	Operator(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error)
@@ -1689,6 +1692,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Location.Images(childComplexity), true
+
+	case "Location.isExperimental":
+		if e.complexity.Location.IsExperimental == nil {
+			break
+		}
+
+		return e.complexity.Location.IsExperimental(childComplexity), true
 
 	case "Location.isRemoteCapable":
 		if e.complexity.Location.IsRemoteCapable == nil {
@@ -6940,6 +6950,8 @@ func (ec *executionContext) fieldContext_Evse_location(ctx context.Context, fiel
 				return ec.fieldContext_Location_availableEvses(ctx, field)
 			case "totalEvses":
 				return ec.fieldContext_Location_totalEvses(ctx, field)
+			case "isExperimental":
+				return ec.fieldContext_Location_isExperimental(ctx, field)
 			case "isRemoteCapable":
 				return ec.fieldContext_Location_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
@@ -9811,6 +9823,50 @@ func (ec *executionContext) fieldContext_Location_totalEvses(ctx context.Context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Location_isExperimental(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Location_isExperimental(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Location().IsExperimental(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Location_isExperimental(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Location",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -13283,6 +13339,8 @@ func (ec *executionContext) fieldContext_Query_getLocation(ctx context.Context, 
 				return ec.fieldContext_Location_availableEvses(ctx, field)
 			case "totalEvses":
 				return ec.fieldContext_Location_totalEvses(ctx, field)
+			case "isExperimental":
+				return ec.fieldContext_Location_isExperimental(ctx, field)
 			case "isRemoteCapable":
 				return ec.fieldContext_Location_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
@@ -14892,6 +14950,8 @@ func (ec *executionContext) fieldContext_Session_location(ctx context.Context, f
 				return ec.fieldContext_Location_availableEvses(ctx, field)
 			case "totalEvses":
 				return ec.fieldContext_Location_totalEvses(ctx, field)
+			case "isExperimental":
+				return ec.fieldContext_Location_isExperimental(ctx, field)
 			case "isRemoteCapable":
 				return ec.fieldContext_Location_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
@@ -17836,6 +17896,8 @@ func (ec *executionContext) fieldContext_TokenAuthorization_location(ctx context
 				return ec.fieldContext_Location_availableEvses(ctx, field)
 			case "totalEvses":
 				return ec.fieldContext_Location_totalEvses(ctx, field)
+			case "isExperimental":
+				return ec.fieldContext_Location_isExperimental(ctx, field)
 			case "isRemoteCapable":
 				return ec.fieldContext_Location_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
@@ -20761,7 +20823,7 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"country", "interval", "isRemoteCapable", "isRfidCapable", "limit", "xMin", "xMax", "yMin", "yMax"}
+	fieldsInOrder := [...]string{"country", "interval", "isExperimental", "isRemoteCapable", "isRfidCapable", "limit", "xMin", "xMax", "yMin", "yMax"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -20781,6 +20843,14 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("interval"))
 			it.Interval, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isExperimental":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isExperimental"))
+			it.IsExperimental, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -20889,7 +20959,7 @@ func (ec *executionContext) unmarshalInputPublishLocationInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "credentialId", "countryCode", "partyId", "publish"}
+	fieldsInOrder := [...]string{"id", "credentialId", "countryCode", "partyId", "isPublished"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -20928,11 +20998,11 @@ func (ec *executionContext) unmarshalInputPublishLocationInput(ctx context.Conte
 			if err != nil {
 				return it, err
 			}
-		case "publish":
+		case "isPublished":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publish"))
-			it.Publish, err = ec.unmarshalNBoolean2bool(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isPublished"))
+			it.IsPublished, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -23560,6 +23630,26 @@ func (ec *executionContext) _Location(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "isExperimental":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Location_isExperimental(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "isRemoteCapable":
 
 			out.Values[i] = ec._Location_isRemoteCapable(ctx, field, obj)

@@ -26,6 +26,7 @@ type Location {
     evses: [Evse!]!
     availableEvses: Int!
     totalEvses: Int!
+    isExperimental: Boolean!
     isRemoteCapable: Boolean!
     isRfidCapable: Boolean!
     directions: [DisplayText!]!
@@ -50,6 +51,7 @@ input GetLocationInput {
 input ListLocationsInput {
     country: String
     interval: Int
+    isExperimental: Boolean
     isRemoteCapable: Boolean
     isRfidCapable: Boolean
     limit: Int
@@ -64,7 +66,7 @@ input PublishLocationInput {
     credentialId: ID
     countryCode: String
     partyId: String
-    publish: Boolean!
+    isPublished: Boolean!
 }
 
 extend type Query {

@@ -55,6 +55,11 @@ func (r *locationResolver) Evses(ctx context.Context, obj *db.Location) ([]db.Ev
 	return r.LocationRepository.ListActiveEvses(ctx, obj.ID)
 }
 
+// IsExperimental is the resolver for the isExperimental field.
+func (r *locationResolver) IsExperimental(ctx context.Context, obj *db.Location) (bool, error) {
+	return !obj.IsIntermediateCdrCapable, nil
+}
+
 // Directions is the resolver for the directions field.
 func (r *locationResolver) Directions(ctx context.Context, obj *db.Location) ([]db.DisplayText, error) {
 	return r.LocationRepository.ListLocationDirections(ctx, obj.ID)
@@ -150,31 +155,31 @@ func (r *locationResolver) LastUpdated(ctx context.Context, obj *db.Location) (s
 func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
 	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		if input.ID != nil {
-			updateLocationPublishParams := db.UpdateLocationPublishParams{
-				ID:      *input.ID,
-				Publish: input.Publish,
+			updateLocationPublishedParams := db.UpdateLocationPublishedParams{
+				ID:          *input.ID,
+				IsPublished: input.IsPublished,
 			}
 
-			if err := r.LocationRepository.UpdateLocationPublish(ctx, updateLocationPublishParams); err == nil {
+			if err := r.LocationRepository.UpdateLocationPublished(ctx, updateLocationPublishedParams); err == nil {
 				return &graph.ResultOk{Ok: true}, nil
 			}
 		} else if input.CredentialID != nil {
-			updateLocationsPublishByCredentialParams := db.UpdateLocationsPublishByCredentialParams{
+			updateLocationsPublishedByCredentialParams := db.UpdateLocationsPublishedByCredentialParams{
 				CredentialID: *input.CredentialID,
-				Publish:      input.Publish,
+				IsPublished:  input.IsPublished,
 			}
 
-			if err := r.LocationRepository.UpdateLocationsPublishByCredential(ctx, updateLocationsPublishByCredentialParams); err == nil {
+			if err := r.LocationRepository.UpdateLocationsPublishedByCredential(ctx, updateLocationsPublishedByCredentialParams); err == nil {
 				return &graph.ResultOk{Ok: true}, nil
 			}
 		} else if input.PartyID != nil && input.CountryCode != nil {
-			updateLocationsPublishByPartyAndCountryCodeParams := db.UpdateLocationsPublishByPartyAndCountryCodeParams{
+			updateLocationsPublishedByPartyAndCountryCodeParams := db.UpdateLocationsPublishedByPartyAndCountryCodeParams{
 				CountryCode: dbUtil.SqlNullString(input.CountryCode),
 				PartyID:     dbUtil.SqlNullString(input.PartyID),
-				Publish:     input.Publish,
+				IsPublished: input.IsPublished,
 			}
 
-			if err := r.LocationRepository.UpdateLocationsPublishByPartyAndCountryCode(ctx, updateLocationsPublishByPartyAndCountryCodeParams); err == nil {
+			if err := r.LocationRepository.UpdateLocationsPublishedByPartyAndCountryCode(ctx, updateLocationsPublishedByPartyAndCountryCodeParams); err == nil {
 				return &graph.ResultOk{Ok: true}, nil
 			}
 		}
