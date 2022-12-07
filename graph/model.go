@@ -145,6 +145,7 @@ type ListLocation struct {
 type ListLocationsInput struct {
 	Country         *string  `json:"country"`
 	Interval        *int     `json:"interval"`
+	IsExperimental  *bool    `json:"isExperimental"`
 	IsRemoteCapable *bool    `json:"isRemoteCapable"`
 	IsRfidCapable   *bool    `json:"isRfidCapable"`
 	Limit           *int     `json:"limit"`
@@ -164,7 +165,7 @@ type PublishLocationInput struct {
 	CredentialID *int64  `json:"credentialId"`
 	CountryCode  *string `json:"countryCode"`
 	PartyID      *string `json:"partyId"`
-	Publish      bool    `json:"publish"`
+	IsPublished  bool    `json:"isPublished"`
 }
 
 type Rate struct {
