@@ -243,47 +243,49 @@ type ComplexityRoot struct {
 	}
 
 	ListLocation struct {
-		AddedDate       func(childComplexity int) int
-		AvailableEvses  func(childComplexity int) int
-		Country         func(childComplexity int) int
-		CountryCode     func(childComplexity int) int
-		Geom            func(childComplexity int) int
-		IsRemoteCapable func(childComplexity int) int
-		IsRfidCapable   func(childComplexity int) int
-		Name            func(childComplexity int) int
-		PartyID         func(childComplexity int) int
-		TotalEvses      func(childComplexity int) int
-		UID             func(childComplexity int) int
+		AddedDate                func(childComplexity int) int
+		AvailableEvses           func(childComplexity int) int
+		Country                  func(childComplexity int) int
+		CountryCode              func(childComplexity int) int
+		Geom                     func(childComplexity int) int
+		IsIntermediateCdrCapable func(childComplexity int) int
+		IsRemoteCapable          func(childComplexity int) int
+		IsRfidCapable            func(childComplexity int) int
+		Name                     func(childComplexity int) int
+		PartyID                  func(childComplexity int) int
+		TotalEvses               func(childComplexity int) int
+		UID                      func(childComplexity int) int
 	}
 
 	Location struct {
-		Address            func(childComplexity int) int
-		AvailableEvses     func(childComplexity int) int
-		ChargingWhenClosed func(childComplexity int) int
-		City               func(childComplexity int) int
-		Country            func(childComplexity int) int
-		Directions         func(childComplexity int) int
-		EnergyMix          func(childComplexity int) int
-		Evses              func(childComplexity int) int
-		Facilities         func(childComplexity int) int
-		Geom               func(childComplexity int) int
-		ID                 func(childComplexity int) int
-		Images             func(childComplexity int) int
-		IsExperimental     func(childComplexity int) int
-		IsRemoteCapable    func(childComplexity int) int
-		IsRfidCapable      func(childComplexity int) int
-		LastUpdated        func(childComplexity int) int
-		Name               func(childComplexity int) int
-		OpeningTime        func(childComplexity int) int
-		Operator           func(childComplexity int) int
-		Owner              func(childComplexity int) int
-		PostalCode         func(childComplexity int) int
-		RelatedLocations   func(childComplexity int) int
-		Suboperator        func(childComplexity int) int
-		TimeZone           func(childComplexity int) int
-		TotalEvses         func(childComplexity int) int
-		Type               func(childComplexity int) int
-		Uid                func(childComplexity int) int
+		Address                  func(childComplexity int) int
+		AvailableEvses           func(childComplexity int) int
+		ChargingWhenClosed       func(childComplexity int) int
+		City                     func(childComplexity int) int
+		Country                  func(childComplexity int) int
+		Directions               func(childComplexity int) int
+		EnergyMix                func(childComplexity int) int
+		Evses                    func(childComplexity int) int
+		Facilities               func(childComplexity int) int
+		Geom                     func(childComplexity int) int
+		ID                       func(childComplexity int) int
+		Images                   func(childComplexity int) int
+		IsExperimental           func(childComplexity int) int
+		IsIntermediateCdrCapable func(childComplexity int) int
+		IsRemoteCapable          func(childComplexity int) int
+		IsRfidCapable            func(childComplexity int) int
+		LastUpdated              func(childComplexity int) int
+		Name                     func(childComplexity int) int
+		OpeningTime              func(childComplexity int) int
+		Operator                 func(childComplexity int) int
+		Owner                    func(childComplexity int) int
+		PostalCode               func(childComplexity int) int
+		RelatedLocations         func(childComplexity int) int
+		Suboperator              func(childComplexity int) int
+		TimeZone                 func(childComplexity int) int
+		TotalEvses               func(childComplexity int) int
+		Type                     func(childComplexity int) int
+		Uid                      func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -1567,6 +1569,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ListLocation.Geom(childComplexity), true
 
+	case "ListLocation.isIntermediateCdrCapable":
+		if e.complexity.ListLocation.IsIntermediateCdrCapable == nil {
+			break
+		}
+
+		return e.complexity.ListLocation.IsIntermediateCdrCapable(childComplexity), true
+
 	case "ListLocation.isRemoteCapable":
 		if e.complexity.ListLocation.IsRemoteCapable == nil {
 			break
@@ -1699,6 +1708,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Location.IsExperimental(childComplexity), true
+
+	case "Location.isIntermediateCdrCapable":
+		if e.complexity.Location.IsIntermediateCdrCapable == nil {
+			break
+		}
+
+		return e.complexity.Location.IsIntermediateCdrCapable(childComplexity), true
 
 	case "Location.isRemoteCapable":
 		if e.complexity.Location.IsRemoteCapable == nil {
@@ -6952,6 +6968,8 @@ func (ec *executionContext) fieldContext_Evse_location(ctx context.Context, fiel
 				return ec.fieldContext_Location_totalEvses(ctx, field)
 			case "isExperimental":
 				return ec.fieldContext_Location_isExperimental(ctx, field)
+			case "isIntermediateCdrCapable":
+				return ec.fieldContext_Location_isIntermediateCdrCapable(ctx, field)
 			case "isRemoteCapable":
 				return ec.fieldContext_Location_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
@@ -9081,6 +9099,50 @@ func (ec *executionContext) fieldContext_ListLocation_totalEvses(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _ListLocation_isIntermediateCdrCapable(ctx context.Context, field graphql.CollectedField, obj *ListLocation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListLocation_isIntermediateCdrCapable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsIntermediateCdrCapable, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListLocation_isIntermediateCdrCapable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListLocation",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ListLocation_isRemoteCapable(ctx context.Context, field graphql.CollectedField, obj *ListLocation) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ListLocation_isRemoteCapable(ctx, field)
 	if err != nil {
@@ -9865,6 +9927,50 @@ func (ec *executionContext) fieldContext_Location_isExperimental(ctx context.Con
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Location_isIntermediateCdrCapable(ctx context.Context, field graphql.CollectedField, obj *db.Location) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Location_isIntermediateCdrCapable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsIntermediateCdrCapable, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Location_isIntermediateCdrCapable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Location",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
 		},
@@ -13341,6 +13447,8 @@ func (ec *executionContext) fieldContext_Query_getLocation(ctx context.Context, 
 				return ec.fieldContext_Location_totalEvses(ctx, field)
 			case "isExperimental":
 				return ec.fieldContext_Location_isExperimental(ctx, field)
+			case "isIntermediateCdrCapable":
+				return ec.fieldContext_Location_isIntermediateCdrCapable(ctx, field)
 			case "isRemoteCapable":
 				return ec.fieldContext_Location_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
@@ -13440,6 +13548,8 @@ func (ec *executionContext) fieldContext_Query_listLocations(ctx context.Context
 				return ec.fieldContext_ListLocation_availableEvses(ctx, field)
 			case "totalEvses":
 				return ec.fieldContext_ListLocation_totalEvses(ctx, field)
+			case "isIntermediateCdrCapable":
+				return ec.fieldContext_ListLocation_isIntermediateCdrCapable(ctx, field)
 			case "isRemoteCapable":
 				return ec.fieldContext_ListLocation_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
@@ -14952,6 +15062,8 @@ func (ec *executionContext) fieldContext_Session_location(ctx context.Context, f
 				return ec.fieldContext_Location_totalEvses(ctx, field)
 			case "isExperimental":
 				return ec.fieldContext_Location_isExperimental(ctx, field)
+			case "isIntermediateCdrCapable":
+				return ec.fieldContext_Location_isIntermediateCdrCapable(ctx, field)
 			case "isRemoteCapable":
 				return ec.fieldContext_Location_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
@@ -17898,6 +18010,8 @@ func (ec *executionContext) fieldContext_TokenAuthorization_location(ctx context
 				return ec.fieldContext_Location_totalEvses(ctx, field)
 			case "isExperimental":
 				return ec.fieldContext_Location_isExperimental(ctx, field)
+			case "isIntermediateCdrCapable":
+				return ec.fieldContext_Location_isIntermediateCdrCapable(ctx, field)
 			case "isRemoteCapable":
 				return ec.fieldContext_Location_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
@@ -23448,6 +23562,13 @@ func (ec *executionContext) _ListLocation(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "isIntermediateCdrCapable":
+
+			out.Values[i] = ec._ListLocation_isIntermediateCdrCapable(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "isRemoteCapable":
 
 			out.Values[i] = ec._ListLocation_isRemoteCapable(ctx, field, obj)
@@ -23650,6 +23771,13 @@ func (ec *executionContext) _Location(ctx context.Context, sel ast.SelectionSet,
 				return innerFunc(ctx)
 
 			})
+		case "isIntermediateCdrCapable":
+
+			out.Values[i] = ec._Location_isIntermediateCdrCapable(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "isRemoteCapable":
 
 			out.Values[i] = ec._Location_isRemoteCapable(ctx, field, obj)

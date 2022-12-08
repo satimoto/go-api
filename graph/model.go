@@ -129,17 +129,18 @@ type GetTariffInput struct {
 }
 
 type ListLocation struct {
-	UID             string            `json:"uid"`
-	Name            string            `json:"name"`
-	CountryCode     *string           `json:"countryCode"`
-	PartyID         *string           `json:"partyId"`
-	Country         string            `json:"country"`
-	Geom            geom.Geometry4326 `json:"geom"`
-	AvailableEvses  int               `json:"availableEvses"`
-	TotalEvses      int               `json:"totalEvses"`
-	IsRemoteCapable bool              `json:"isRemoteCapable"`
-	IsRfidCapable   bool              `json:"isRfidCapable"`
-	AddedDate       string            `json:"addedDate"`
+	UID                      string            `json:"uid"`
+	Name                     string            `json:"name"`
+	CountryCode              *string           `json:"countryCode"`
+	PartyID                  *string           `json:"partyId"`
+	Country                  string            `json:"country"`
+	Geom                     geom.Geometry4326 `json:"geom"`
+	AvailableEvses           int               `json:"availableEvses"`
+	TotalEvses               int               `json:"totalEvses"`
+	IsIntermediateCdrCapable bool              `json:"isIntermediateCdrCapable"`
+	IsRemoteCapable          bool              `json:"isRemoteCapable"`
+	IsRfidCapable            bool              `json:"isRfidCapable"`
+	AddedDate                string            `json:"addedDate"`
 }
 
 type ListLocationsInput struct {
