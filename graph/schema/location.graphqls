@@ -7,6 +7,7 @@ type ListLocation {
     geom: Geometry! 
     availableEvses: Int!
     totalEvses: Int!
+    isIntermediateCdrCapable: Boolean!
     isRemoteCapable: Boolean!
     isRfidCapable: Boolean!
     addedDate: String!
@@ -27,6 +28,7 @@ type Location {
     availableEvses: Int!
     totalEvses: Int!
     isExperimental: Boolean!
+    isIntermediateCdrCapable: Boolean!
     isRemoteCapable: Boolean!
     isRfidCapable: Boolean!
     directions: [DisplayText!]!
