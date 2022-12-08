@@ -24,16 +24,17 @@ func NewListLocationsByGeomParams(input graph.ListLocationsInput) db.ListLocatio
 
 func NewListLocation(location db.Location) graph.ListLocation {
 	return graph.ListLocation{
-		UID:             location.Uid,
-		CountryCode:     dbUtil.NilString(location.CountryCode),
-		PartyID:         dbUtil.NilString(location.PartyID),
-		Name:            location.Name.String,
-		Country:         location.Country,
-		Geom:            location.Geom,
-		AvailableEvses:  int(location.AvailableEvses),
-		TotalEvses:      int(location.TotalEvses),
-		IsRemoteCapable: location.IsRemoteCapable,
-		IsRfidCapable:   location.IsRfidCapable,
-		AddedDate:       location.AddedDate.Format(time.RFC3339),
+		UID:                      location.Uid,
+		CountryCode:              dbUtil.NilString(location.CountryCode),
+		PartyID:                  dbUtil.NilString(location.PartyID),
+		Name:                     location.Name.String,
+		Country:                  location.Country,
+		Geom:                     location.Geom,
+		AvailableEvses:           int(location.AvailableEvses),
+		TotalEvses:               int(location.TotalEvses),
+		IsIntermediateCdrCapable: location.IsIntermediateCdrCapable,
+		IsRemoteCapable:          location.IsRemoteCapable,
+		IsRfidCapable:            location.IsRfidCapable,
+		AddedDate:                location.AddedDate.Format(time.RFC3339),
 	}
 }
