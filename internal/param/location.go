@@ -33,6 +33,7 @@ func NewListLocation(location db.Location) graph.ListLocation {
 		AvailableEvses:           int(location.AvailableEvses),
 		TotalEvses:               int(location.TotalEvses),
 		IsIntermediateCdrCapable: location.IsIntermediateCdrCapable,
+		IsPublished:              location.IsPublished,
 		IsRemoteCapable:          location.IsRemoteCapable,
 		IsRfidCapable:            location.IsRfidCapable,
 		AddedDate:                location.AddedDate.Format(time.RFC3339),
