@@ -138,6 +138,7 @@ type ListLocation struct {
 	AvailableEvses           int               `json:"availableEvses"`
 	TotalEvses               int               `json:"totalEvses"`
 	IsIntermediateCdrCapable bool              `json:"isIntermediateCdrCapable"`
+	IsPublished              bool              `json:"isPublished"`
 	IsRemoteCapable          bool              `json:"isRemoteCapable"`
 	IsRfidCapable            bool              `json:"isRfidCapable"`
 	AddedDate                string            `json:"addedDate"`

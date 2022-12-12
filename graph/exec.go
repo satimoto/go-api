@@ -249,6 +249,7 @@ type ComplexityRoot struct {
 		CountryCode              func(childComplexity int) int
 		Geom                     func(childComplexity int) int
 		IsIntermediateCdrCapable func(childComplexity int) int
+		IsPublished              func(childComplexity int) int
 		IsRemoteCapable          func(childComplexity int) int
 		IsRfidCapable            func(childComplexity int) int
 		Name                     func(childComplexity int) int
@@ -1575,6 +1576,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ListLocation.IsIntermediateCdrCapable(childComplexity), true
+
+	case "ListLocation.isPublished":
+		if e.complexity.ListLocation.IsPublished == nil {
+			break
+		}
+
+		return e.complexity.ListLocation.IsPublished(childComplexity), true
 
 	case "ListLocation.isRemoteCapable":
 		if e.complexity.ListLocation.IsRemoteCapable == nil {
@@ -9143,6 +9151,50 @@ func (ec *executionContext) fieldContext_ListLocation_isIntermediateCdrCapable(c
 	return fc, nil
 }
 
+func (ec *executionContext) _ListLocation_isPublished(ctx context.Context, field graphql.CollectedField, obj *ListLocation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListLocation_isPublished(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsPublished, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListLocation_isPublished(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListLocation",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ListLocation_isRemoteCapable(ctx context.Context, field graphql.CollectedField, obj *ListLocation) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ListLocation_isRemoteCapable(ctx, field)
 	if err != nil {
@@ -13550,6 +13602,8 @@ func (ec *executionContext) fieldContext_Query_listLocations(ctx context.Context
 				return ec.fieldContext_ListLocation_totalEvses(ctx, field)
 			case "isIntermediateCdrCapable":
 				return ec.fieldContext_ListLocation_isIntermediateCdrCapable(ctx, field)
+			case "isPublished":
+				return ec.fieldContext_ListLocation_isPublished(ctx, field)
 			case "isRemoteCapable":
 				return ec.fieldContext_ListLocation_isRemoteCapable(ctx, field)
 			case "isRfidCapable":
@@ -23565,6 +23619,13 @@ func (ec *executionContext) _ListLocation(ctx context.Context, sel ast.Selection
 		case "isIntermediateCdrCapable":
 
 			out.Values[i] = ec._ListLocation_isIntermediateCdrCapable(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "isPublished":
+
+			out.Values[i] = ec._ListLocation_isPublished(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++

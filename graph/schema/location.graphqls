@@ -8,6 +8,7 @@ type ListLocation {
     availableEvses: Int!
     totalEvses: Int!
     isIntermediateCdrCapable: Boolean!
+    isPublished: Boolean!
     isRemoteCapable: Boolean!
     isRfidCapable: Boolean!
     addedDate: String!
