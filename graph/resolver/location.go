@@ -211,20 +211,21 @@ func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocation
 func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
 	if userID := middleware.GetUserID(ctx); userID != nil {
 		var list []graph.ListLocation
+		var locations []db.Location
+		var err error
 
 		if input.Country != nil && len(*input.Country) > 0 {
-			if locations, err := r.LocationRepository.ListLocationsByCountry(ctx, *input.Country); err == nil {
-				for _, l := range locations {
-					list = append(list, param.NewListLocation(l))
-				}
-			}
-		} else {
+			locations, err = r.LocationRepository.ListLocationsByCountry(ctx, *input.Country)
+		} else if input.XMin != nil && input.XMax != nil && input.YMin != nil && input.YMax != nil {
 			params := param.NewListLocationsByGeomParams(input)
+			locations, err = r.LocationRepository.ListLocationsByGeom(ctx, params)
+		} else if user := middleware.GetUser(ctx, r.UserRepository); user.IsAdmin {
+			locations, err = r.LocationRepository.ListLocations(ctx)
+		}
 
-			if locations, err := r.LocationRepository.ListLocationsByGeom(ctx, params); err == nil {
-				for _, l := range locations {
-					list = append(list, param.NewListLocation(l))
-				}
+		if err == nil {
+			for _, l := range locations {
+				list = append(list, param.NewListLocation(l))
 			}
 		}
 
