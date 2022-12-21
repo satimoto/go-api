@@ -110,6 +110,8 @@ func (r *mutationResolver) PingUser(ctx context.Context, id int64) (*graph.Resul
 func (r *mutationResolver) PongUser(ctx context.Context, input graph.PongUserInput) (*graph.ResultOk, error) {
 	if userID := middleware.GetUserID(ctx); userID != nil {
 		log.Printf("User %v pong received: %v", *userID, input.Pong)
+
+		return &graph.ResultOk{Ok: true}, nil
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
