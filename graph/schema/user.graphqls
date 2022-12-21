@@ -12,16 +12,21 @@ input CreateUserInput {
     deviceToken: String
 }
 
+input PongUserInput {
+    pong: String!
+}
+
 input UpdateUserInput {
     deviceToken: String!
 }
 
 extend type Query {
     getUser: User!
-    pingUser(id: ID!): ResultOk!
 }
 
 extend type Mutation {
     createUser(input: CreateUserInput!): User!
+    pingUser(id: ID!): ResultOk!
+    pongUser(input: PongUserInput!): ResultOk!
     updateUser(input: UpdateUserInput!): User!
 }

@@ -162,6 +162,10 @@ type ListSessionInvoicesInput struct {
 	IsExpired *bool `json:"isExpired"`
 }
 
+type PongUserInput struct {
+	Pong string `json:"pong"`
+}
+
 type PublishLocationInput struct {
 	ID           *int64  `json:"id"`
 	CredentialID *int64  `json:"credentialId"`

@@ -33,6 +33,7 @@ require (
 	github.com/btcsuite/winsvc v1.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/lru v1.0.0 // indirect
+	github.com/dvyukov/go-fuzz v0.0.0-20210602112143-b1f3d6f4ef4e // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -54,7 +55,6 @@ require (
 	github.com/tidwall/gjson v1.6.1 // indirect
 	github.com/tidwall/match v1.0.1 // indirect
 	github.com/tidwall/pretty v1.0.2 // indirect
-	go.etcd.io/bbolt v1.3.6 // indirect
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
@@ -65,10 +65,10 @@ require (
 	github.com/edjumacator/chi-prometheus v0.0.0-20181210190628-e076595e3e86
 	github.com/fiatjaf/go-lnurl v1.11.2
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/lightningnetwork/lnd v0.15.4-beta
+	github.com/lightningnetwork/lnd v0.15.5-beta
 	github.com/prometheus/client_golang v1.13.1
 	github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f
-	github.com/satimoto/go-lsp v0.2.1-0.20221116231523-b2169c1be301
+	github.com/satimoto/go-lsp v0.2.1-0.20221218213748-1b05ffa7abdb
 	github.com/satimoto/go-ocpi v0.2.1-0.20221130222345-8ecc472044b9
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect
