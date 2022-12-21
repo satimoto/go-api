@@ -90,6 +90,7 @@ func (r *mutationResolver) PingUser(ctx context.Context, id int64) (*graph.Resul
 			message := &fcm.Message{
 				To:               toUser.DeviceToken.String,
 				ContentAvailable: true,
+				Priority:         "high",
 				Data:             dataPingMessage,
 			}
 
