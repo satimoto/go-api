@@ -69,7 +69,7 @@ require (
 	github.com/prometheus/client_golang v1.13.1
 	github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f
 	github.com/satimoto/go-lsp v0.2.1-0.20221218213748-1b05ffa7abdb
-	github.com/satimoto/go-ocpi v0.2.1-0.20221130222345-8ecc472044b9
+	github.com/satimoto/go-ocpi v0.2.1-0.20221223204513-df5cc88e8f50
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect
 	google.golang.org/grpc v1.47.0
