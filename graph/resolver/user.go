@@ -96,7 +96,7 @@ func (r *mutationResolver) PingUser(ctx context.Context, id int64) (*graph.Resul
 
 			r.NotificationService.SendNotification(message)
 
-			log.Printf("User %v ping sent: %v", user.ID, pingStr)
+			log.Printf("User %v ping sent: %v", toUser.ID, pingStr)
 
 			return &graph.ResultOk{Ok: true}, nil
 		}
