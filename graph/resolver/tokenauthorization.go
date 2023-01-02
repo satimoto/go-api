@@ -76,6 +76,11 @@ func (r *tokenAuthorizationResolver) Token(ctx context.Context, obj *db.TokenAut
 	return nil, gqlerror.Errorf("Token not found")
 }
 
+// VerificationKey is the resolver for the verificationKey field.
+func (r *tokenAuthorizationResolver) VerificationKey(ctx context.Context, obj *db.TokenAuthorization) (*string, error) {
+	return nil, nil
+}
+
 // TokenAuthorization returns graph.TokenAuthorizationResolver implementation.
 func (r *Resolver) TokenAuthorization() graph.TokenAuthorizationResolver {
 	return &tokenAuthorizationResolver{r}
