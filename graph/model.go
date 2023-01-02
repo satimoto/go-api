@@ -17,6 +17,10 @@ type AddtionalGeoLocation struct {
 	Name      *db.DisplayText `json:"name"`
 }
 
+type Channel struct {
+	ChannelID string `json:"channelId"`
+}
+
 type CreateAuthentication struct {
 	Code  string `json:"code"`
 	LnURL string `json:"lnUrl"`
@@ -59,10 +63,30 @@ type CreateImageInput struct {
 	Height    *int    `json:"height"`
 }
 
+type CreatePartyInput struct {
+	CredentialID             int64  `json:"credentialId"`
+	CountryCode              string `json:"countryCode"`
+	PartyID                  string `json:"partyId"`
+	IsIntermediateCdrCapable bool   `json:"isIntermediateCdrCapable"`
+	PublishLocation          bool   `json:"publishLocation"`
+	PublishNullTariff        bool   `json:"publishNullTariff"`
+}
+
+type CreateReferralInput struct {
+	Code     string `json:"code"`
+	Referrer string `json:"referrer"`
+}
+
+type CreateTokenInput struct {
+	UID     string  `json:"uid"`
+	Type    *string `json:"type"`
+	Allowed *string `json:"allowed"`
+}
+
 type CreateUserInput struct {
-	Code        string `json:"code"`
-	Pubkey      string `json:"pubkey"`
-	DeviceToken string `json:"deviceToken"`
+	Code        string  `json:"code"`
+	Pubkey      string  `json:"pubkey"`
+	DeviceToken *string `json:"deviceToken"`
 }
 
 type ExchangeAuthentication struct {
@@ -75,9 +99,22 @@ type Geolocation struct {
 	Name      *string `json:"name"`
 }
 
+type GetConnectorInput struct {
+	ID         *int64  `json:"id"`
+	Identifier *string `json:"identifier"`
+}
+
+type GetEvseInput struct {
+	ID         *int64  `json:"id"`
+	UID        *string `json:"uid"`
+	EvseID     *string `json:"evseId"`
+	Identifier *string `json:"identifier"`
+}
+
 type GetLocationInput struct {
-	ID  *int64  `json:"id"`
-	UID *string `json:"uid"`
+	ID      *int64  `json:"id"`
+	UID     *string `json:"uid"`
+	Country *string `json:"country"`
 }
 
 type GetSessionInput struct {
@@ -87,27 +124,54 @@ type GetSessionInput struct {
 }
 
 type GetTariffInput struct {
-	ID      *int64  `json:"id"`
-	UID     *string `json:"uid"`
-	Country *string `json:"country"`
+	ID  *int64  `json:"id"`
+	UID *string `json:"uid"`
 }
 
 type ListLocation struct {
-	UID             string            `json:"uid"`
-	Name            string            `json:"name"`
-	Geom            geom.Geometry4326 `json:"geom"`
-	AvailableEvses  int               `json:"availableEvses"`
-	TotalEvses      int               `json:"totalEvses"`
-	IsRemoteCapable bool              `json:"isRemoteCapable"`
-	IsRfidCapable   bool              `json:"isRfidCapable"`
+	UID                      string            `json:"uid"`
+	Name                     string            `json:"name"`
+	CountryCode              *string           `json:"countryCode"`
+	PartyID                  *string           `json:"partyId"`
+	Country                  string            `json:"country"`
+	Geom                     geom.Geometry4326 `json:"geom"`
+	AvailableEvses           int               `json:"availableEvses"`
+	TotalEvses               int               `json:"totalEvses"`
+	IsIntermediateCdrCapable bool              `json:"isIntermediateCdrCapable"`
+	IsPublished              bool              `json:"isPublished"`
+	IsRemoteCapable          bool              `json:"isRemoteCapable"`
+	IsRfidCapable            bool              `json:"isRfidCapable"`
+	AddedDate                string            `json:"addedDate"`
 }
 
 type ListLocationsInput struct {
-	XMin       float64 `json:"xMin"`
-	YMin       float64 `json:"yMin"`
-	XMax       float64 `json:"xMax"`
-	YMax       float64 `json:"yMax"`
-	LastUpdate *string `json:"lastUpdate"`
+	Country         *string  `json:"country"`
+	Interval        *int     `json:"interval"`
+	IsExperimental  *bool    `json:"isExperimental"`
+	IsRemoteCapable *bool    `json:"isRemoteCapable"`
+	IsRfidCapable   *bool    `json:"isRfidCapable"`
+	Limit           *int     `json:"limit"`
+	XMin            *float64 `json:"xMin"`
+	XMax            *float64 `json:"xMax"`
+	YMin            *float64 `json:"yMin"`
+	YMax            *float64 `json:"yMax"`
+}
+
+type ListSessionInvoicesInput struct {
+	IsSettled *bool `json:"isSettled"`
+	IsExpired *bool `json:"isExpired"`
+}
+
+type PongUserInput struct {
+	Pong string `json:"pong"`
+}
+
+type PublishLocationInput struct {
+	ID           *int64  `json:"id"`
+	CredentialID *int64  `json:"credentialId"`
+	CountryCode  *string `json:"countryCode"`
+	PartyID      *string `json:"partyId"`
+	IsPublished  bool    `json:"isPublished"`
 }
 
 type Rate struct {
@@ -121,14 +185,19 @@ type RegisterCredentialInput struct {
 	ClientToken *string `json:"clientToken"`
 }
 
-type Result struct {
+type ResultID struct {
 	ID int64 `json:"id"`
+}
+
+type ResultOk struct {
+	Ok bool `json:"ok"`
 }
 
 type StartSession struct {
 	ID              int64   `json:"id"`
 	Status          string  `json:"status"`
 	AuthorizationID string  `json:"authorizationId"`
+	VerificationKey string  `json:"verificationKey"`
 	LocationUID     string  `json:"locationUid"`
 	EvseUID         *string `json:"evseUid"`
 }
@@ -145,7 +214,15 @@ type StopSession struct {
 }
 
 type StopSessionInput struct {
-	SessionUID string `json:"sessionUid"`
+	AuthorizationID string `json:"authorizationId"`
+}
+
+type SyncCredentialInput struct {
+	ID          int64   `json:"id"`
+	FromDate    *string `json:"fromDate"`
+	CountryCode *string `json:"countryCode"`
+	PartyID     *string `json:"partyId"`
+	WithTariffs *bool   `json:"withTariffs"`
 }
 
 type TariffElement struct {
@@ -160,6 +237,31 @@ type TextDescription struct {
 
 type UnregisterCredentialInput struct {
 	ID int64 `json:"id"`
+}
+
+type UpdateInvoiceRequestInput struct {
+	ID             int64  `json:"id"`
+	PaymentRequest string `json:"paymentRequest"`
+}
+
+type UpdatePartyInput struct {
+	CredentialID             int64  `json:"credentialId"`
+	CountryCode              string `json:"countryCode"`
+	PartyID                  string `json:"partyId"`
+	IsIntermediateCdrCapable bool   `json:"isIntermediateCdrCapable"`
+	PublishLocation          bool   `json:"publishLocation"`
+	PublishNullTariff        bool   `json:"publishNullTariff"`
+}
+
+type UpdateTokenAuthorizationInput struct {
+	AuthorizationID string `json:"authorizationId"`
+	Authorized      bool   `json:"authorized"`
+}
+
+type UpdateTokensInput struct {
+	UserID  int64   `json:"userId"`
+	UID     *string `json:"uid"`
+	Allowed string  `json:"allowed"`
 }
 
 type UpdateUserInput struct {

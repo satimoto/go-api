@@ -13,11 +13,12 @@ import (
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/lnurl"
 	"github.com/satimoto/go-api/internal/lnurl/auth"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-datastore/pkg/db"
-	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// CreateAuthentication is the resolver for the createAuthentication field.
 func (r *mutationResolver) CreateAuthentication(ctx context.Context, action graph.AuthenticationAction) (*graph.CreateAuthentication, error) {
 	authentication, err := r.AuthenticationResolver.Repository.CreateAuthentication(ctx, db.CreateAuthenticationParams{
 		Action:    db.AuthenticationActions(action),
@@ -26,7 +27,7 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, action grap
 	})
 
 	if err != nil {
-		util.LogOnError("API003", "Error creating authentication", err)
+		metrics.RecordError("API003", "Error creating authentication", err)
 		return nil, gqlerror.Errorf("Error creating authentication")
 	}
 
@@ -37,7 +38,7 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, action grap
 	callbackUrl, err := auth.GenerateLnUrl("v1", authentication.Challenge)
 
 	if err != nil {
-		util.LogOnError("API004", "Error generating LNURL", err)
+		metrics.RecordError("API004", "Error generating LNURL", err)
 		return nil, gqlerror.Errorf("Error creating authentication")
 	}
 
@@ -47,11 +48,12 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, action grap
 	}, nil
 }
 
+// ExchangeAuthentication is the resolver for the exchangeAuthentication field.
 func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code string) (*graph.ExchangeAuthentication, error) {
 	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, code)
 
 	if err != nil {
-		util.LogOnError("API005", "Authentication not found", err)
+		metrics.RecordError("API005", "Authentication not found", err)
 		log.Printf("API005: Code=%v", code)
 		return nil, gqlerror.Errorf("Authentication not found")
 	}
@@ -65,14 +67,14 @@ func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code stri
 	user, err := r.UserRepository.GetUserByLinkingPubkey(ctx, auth.LinkingPubkey.String)
 
 	if err != nil {
-		util.LogOnError("API007", "No linked user", err)
+		metrics.RecordError("API007", "No linked user", err)
 		return nil, gqlerror.Errorf("No linked user")
 	}
 
 	token, err := authentication.SignToken(user)
 
 	if err != nil {
-		util.LogOnError("API008", "Error signing token", err)
+		metrics.RecordError("API008", "Error signing token", err)
 		return nil, gqlerror.Errorf("Error signing token")
 	}
 
@@ -83,6 +85,7 @@ func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code stri
 	}, nil
 }
 
+// VerifyAuthentication is the resolver for the verifyAuthentication field.
 func (r *queryResolver) VerifyAuthentication(ctx context.Context, code string) (*graph.VerifyAuthentication, error) {
 	authentication, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, code)
 

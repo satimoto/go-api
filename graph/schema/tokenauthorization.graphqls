@@ -1,0 +1,18 @@
+type TokenAuthorization {
+    countryCode: String
+    partyId: String
+    location: Location
+    token: Token!
+    authorizationId: String!
+    authorized: Boolean!
+    verificationKey: String
+}
+
+input UpdateTokenAuthorizationInput {
+    authorizationId: String!
+    authorized: Boolean!
+}
+
+extend type Mutation {
+    updateTokenAuthorization(input: UpdateTokenAuthorizationInput!): TokenAuthorization!
+}

@@ -8,57 +8,25 @@ import (
 	"time"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/param"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
+	dbUtil "github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocationInput) (*db.Location, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
-		if input.ID != nil {
-			if l, err := r.LocationRepository.GetLocation(ctx, *input.ID); err == nil {
-				return &l, nil
-			}
-		} else if input.UID != nil {
-			if l, err := r.LocationRepository.GetLocationByUid(ctx, *input.UID); err == nil {
-				return &l, nil
-			}
-		}
-
-		return nil, gqlerror.Errorf("Location not found")
-	}
-
-	return nil, gqlerror.Errorf("Not authenticated")
-}
-
-func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
-		var list []graph.ListLocation
-
-		params := param.NewListLocationsByGeomParams(input)
-
-		if locations, err := r.LocationRepository.ListLocationsByGeom(ctx, params); err == nil {
-			for _, l := range locations {
-				list = append(list, param.NewListLocation(l))
-			}
-		}
-
-		return list, nil
-	}
-
-	return nil, gqlerror.Errorf("Not authenticated")
-}
-
+// Type is the resolver for the type field.
 func (r *locationResolver) Type(ctx context.Context, obj *db.Location) (string, error) {
 	return string(obj.Type), nil
 }
 
+// Name is the resolver for the name field.
 func (r *locationResolver) Name(ctx context.Context, obj *db.Location) (*string, error) {
 	return util.NullString(obj.Name)
 }
 
+// RelatedLocations is the resolver for the relatedLocations field.
 func (r *locationResolver) RelatedLocations(ctx context.Context, obj *db.Location) ([]graph.AddtionalGeoLocation, error) {
 	list := []graph.AddtionalGeoLocation{}
 
@@ -82,14 +50,22 @@ func (r *locationResolver) RelatedLocations(ctx context.Context, obj *db.Locatio
 	return list, nil
 }
 
+// Evses is the resolver for the evses field.
 func (r *locationResolver) Evses(ctx context.Context, obj *db.Location) ([]db.Evse, error) {
 	return r.LocationRepository.ListActiveEvses(ctx, obj.ID)
 }
 
+// IsExperimental is the resolver for the isExperimental field.
+func (r *locationResolver) IsExperimental(ctx context.Context, obj *db.Location) (bool, error) {
+	return !obj.IsIntermediateCdrCapable, nil
+}
+
+// Directions is the resolver for the directions field.
 func (r *locationResolver) Directions(ctx context.Context, obj *db.Location) ([]db.DisplayText, error) {
 	return r.LocationRepository.ListLocationDirections(ctx, obj.ID)
 }
 
+// Operator is the resolver for the operator field.
 func (r *locationResolver) Operator(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
 	if obj.OperatorID.Valid {
 		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.OperatorID.Int64); err == nil {
@@ -100,6 +76,7 @@ func (r *locationResolver) Operator(ctx context.Context, obj *db.Location) (*db.
 	return nil, nil
 }
 
+// Suboperator is the resolver for the suboperator field.
 func (r *locationResolver) Suboperator(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
 	if obj.SuboperatorID.Valid {
 		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.SuboperatorID.Int64); err == nil {
@@ -110,6 +87,7 @@ func (r *locationResolver) Suboperator(ctx context.Context, obj *db.Location) (*
 	return nil, nil
 }
 
+// Owner is the resolver for the owner field.
 func (r *locationResolver) Owner(ctx context.Context, obj *db.Location) (*db.BusinessDetail, error) {
 	if obj.OwnerID.Valid {
 		if businessDetail, err := r.BusinessDetailRepository.GetBusinessDetail(ctx, obj.OwnerID.Int64); err == nil {
@@ -120,6 +98,7 @@ func (r *locationResolver) Owner(ctx context.Context, obj *db.Location) (*db.Bus
 	return nil, nil
 }
 
+// Facilities is the resolver for the facilities field.
 func (r *locationResolver) Facilities(ctx context.Context, obj *db.Location) ([]graph.TextDescription, error) {
 	list := []graph.TextDescription{}
 
@@ -135,10 +114,12 @@ func (r *locationResolver) Facilities(ctx context.Context, obj *db.Location) ([]
 	return list, nil
 }
 
+// TimeZone is the resolver for the timeZone field.
 func (r *locationResolver) TimeZone(ctx context.Context, obj *db.Location) (*string, error) {
 	return util.NullString(obj.TimeZone)
 }
 
+// OpeningTime is the resolver for the openingTime field.
 func (r *locationResolver) OpeningTime(ctx context.Context, obj *db.Location) (*db.OpeningTime, error) {
 	if obj.OpeningTimeID.Valid {
 		if openingTime, err := r.OpeningTimeRepository.GetOpeningTime(ctx, obj.OpeningTimeID.Int64); err == nil {
@@ -149,10 +130,12 @@ func (r *locationResolver) OpeningTime(ctx context.Context, obj *db.Location) (*
 	return nil, nil
 }
 
+// Images is the resolver for the images field.
 func (r *locationResolver) Images(ctx context.Context, obj *db.Location) ([]db.Image, error) {
 	return r.LocationRepository.ListLocationImages(ctx, obj.ID)
 }
 
+// EnergyMix is the resolver for the energyMix field.
 func (r *locationResolver) EnergyMix(ctx context.Context, obj *db.Location) (*db.EnergyMix, error) {
 	if obj.EnergyMixID.Valid {
 		if energyMix, err := r.EnergyMixRepository.GetEnergyMix(ctx, obj.EnergyMixID.Int64); err == nil {
@@ -163,8 +146,93 @@ func (r *locationResolver) EnergyMix(ctx context.Context, obj *db.Location) (*db
 	return nil, nil
 }
 
+// LastUpdated is the resolver for the lastUpdated field.
 func (r *locationResolver) LastUpdated(ctx context.Context, obj *db.Location) (string, error) {
 	return obj.LastUpdated.Format(time.RFC3339), nil
+}
+
+// PublishLocation is the resolver for the publishLocation field.
+func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+		if input.ID != nil {
+			updateLocationPublishedParams := db.UpdateLocationPublishedParams{
+				ID:          *input.ID,
+				IsPublished: input.IsPublished,
+			}
+
+			if err := r.LocationRepository.UpdateLocationPublished(ctx, updateLocationPublishedParams); err == nil {
+				return &graph.ResultOk{Ok: true}, nil
+			}
+		} else if input.CredentialID != nil {
+			updateLocationsPublishedByCredentialParams := db.UpdateLocationsPublishedByCredentialParams{
+				CredentialID: *input.CredentialID,
+				IsPublished:  input.IsPublished,
+			}
+
+			if err := r.LocationRepository.UpdateLocationsPublishedByCredential(ctx, updateLocationsPublishedByCredentialParams); err == nil {
+				return &graph.ResultOk{Ok: true}, nil
+			}
+		} else if input.PartyID != nil && input.CountryCode != nil {
+			updateLocationsPublishedByPartyAndCountryCodeParams := db.UpdateLocationsPublishedByPartyAndCountryCodeParams{
+				CountryCode: dbUtil.SqlNullString(input.CountryCode),
+				PartyID:     dbUtil.SqlNullString(input.PartyID),
+				IsPublished: input.IsPublished,
+			}
+
+			if err := r.LocationRepository.UpdateLocationsPublishedByPartyAndCountryCode(ctx, updateLocationsPublishedByPartyAndCountryCodeParams); err == nil {
+				return &graph.ResultOk{Ok: true}, nil
+			}
+		}
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// GetLocation is the resolver for the getLocation field.
+func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocationInput) (*db.Location, error) {
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		if input.ID != nil {
+			if l, err := r.LocationRepository.GetLocation(ctx, *input.ID); err == nil {
+				return &l, nil
+			}
+		} else if input.UID != nil {
+			if l, err := r.LocationRepository.GetLocationByUid(ctx, *input.UID); err == nil {
+				return &l, nil
+			}
+		}
+
+		return nil, gqlerror.Errorf("Location not found")
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// ListLocations is the resolver for the listLocations field.
+func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		var list []graph.ListLocation
+		var locations []db.Location
+		var err error
+
+		if input.Country != nil && len(*input.Country) > 0 {
+			locations, err = r.LocationRepository.ListLocationsByCountry(ctx, *input.Country)
+		} else if input.XMin != nil && input.XMax != nil && input.YMin != nil && input.YMax != nil {
+			params := param.NewListLocationsByGeomParams(input)
+			locations, err = r.LocationRepository.ListLocationsByGeom(ctx, params)
+		} else if user := middleware.GetUser(ctx, r.UserRepository); user.IsAdmin {
+			locations, err = r.LocationRepository.ListLocations(ctx)
+		}
+
+		if err == nil {
+			for _, l := range locations {
+				list = append(list, param.NewListLocation(l))
+			}
+		}
+
+		return list, nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
 // Location returns graph.LocationResolver implementation.

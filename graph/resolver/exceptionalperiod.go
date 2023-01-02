@@ -11,9 +11,12 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 )
 
+// PeriodBegin is the resolver for the periodBegin field.
 func (r *exceptionalPeriodResolver) PeriodBegin(ctx context.Context, obj *db.ExceptionalPeriod) (string, error) {
 	return obj.PeriodBegin.Format(time.RFC3339), nil
 }
+
+// PeriodEnd is the resolver for the periodEnd field.
 func (r *exceptionalPeriodResolver) PeriodEnd(ctx context.Context, obj *db.ExceptionalPeriod) (string, error) {
 	return obj.PeriodEnd.Format(time.RFC3339), nil
 }

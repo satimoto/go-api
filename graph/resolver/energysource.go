@@ -10,6 +10,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 )
 
+// Source is the resolver for the source field.
 func (r *energySourceResolver) Source(ctx context.Context, obj *db.EnergySource) (string, error) {
 	return string(obj.Source), nil
 }

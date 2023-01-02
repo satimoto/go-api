@@ -1,7 +1,9 @@
 type Evse {
     id: ID!
     uid: String!
+    evseId: String
     identifier: String
+    location: Location!
     status: String!
     statusSchedule: [StatusSchedule!]!
     capabilities: [TextDescription!]! 
@@ -15,4 +17,15 @@ type Evse {
     parkingRestrictions: [TextDescription!]!
     images: [Image!]!
     lastUpdated: String!
+}
+
+input GetEvseInput {
+    id: ID
+    uid: String
+    evseId: String
+    identifier: String
+}
+
+extend type Query {
+    getEvse(input: GetEvseInput!): Evse
 }

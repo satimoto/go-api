@@ -5,22 +5,30 @@ package resolver
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/command"
-	"github.com/satimoto/go-datastore/pkg/util"
+	metrics "github.com/satimoto/go-api/internal/metric"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// StartSession is the resolver for the startSession field.
 func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSessionInput) (*graph.StartSession, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
-		startSessionRequest := command.NewStartSessionRequest(*userId, input)
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+		if !user.DeviceToken.Valid {
+			metrics.RecordError("API046", "Error starting session", errors.New("notifications not enabled"))
+			log.Printf("API046: UserID: %#v", user.ID)
+			return nil, gqlerror.Errorf("Notifications not enabled")
+		}
+
+		startSessionRequest := command.NewStartSessionRequest(user.ID, input)
 		startSessionResponse, err := r.OcpiService.StartSession(ctx, startSessionRequest)
 
 		if err != nil {
-			util.LogOnError("API011", "Error starting session", err)
+			metrics.RecordError("API011", "Error starting session", err)
 			log.Printf("API011: StartSessionRequest: %#v", startSessionRequest)
 			return nil, gqlerror.Errorf("Error starting session")
 		}
@@ -28,16 +36,17 @@ func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSe
 		return command.NewStartSession(*startSessionResponse), nil
 	}
 
-	return nil, gqlerror.Errorf("Not Authenticated")
+	return nil, gqlerror.Errorf("Not authenticated")
 }
 
+// StopSession is the resolver for the stopSession field.
 func (r *mutationResolver) StopSession(ctx context.Context, input graph.StopSessionInput) (*graph.StopSession, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
-		stopSessionRequest := command.NewStopSessionRequest(*userId, input)
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		stopSessionRequest := command.NewStopSessionRequest(*userID, input)
 		stopSessionResponse, err := r.OcpiService.StopSession(ctx, stopSessionRequest)
 
 		if err != nil {
-			util.LogOnError("API012", "Error stopping session", err)
+			metrics.RecordError("API012", "Error stopping session", err)
 			log.Printf("API012: StopSessionRequest: %#v", stopSessionRequest)
 			return nil, gqlerror.Errorf("Error stopping session")
 		}
@@ -45,5 +54,5 @@ func (r *mutationResolver) StopSession(ctx context.Context, input graph.StopSess
 		return command.NewStopSession(*stopSessionResponse), nil
 	}
 
-	return nil, gqlerror.Errorf("Not Authenticated")
+	return nil, gqlerror.Errorf("Not authenticated")
 }

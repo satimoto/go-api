@@ -7,7 +7,7 @@ import (
 	"html/template"
 )
 
-//go:embed html/*.html txt/*.txt
+//go:embed html/*.html image/*.png txt/*.txt
 var templates embed.FS
 
 func DefaultTemplate(templateName, extension string) (*template.Template, error) {
@@ -58,4 +58,8 @@ func ParseTemplateWithLocale(templateName, extension, locale string, data interf
 	}
 
 	return buf.String(), nil
+}
+
+func ReadFile(fileName string) ([]byte, error) {
+	return templates.ReadFile(fileName)
 }

@@ -7,13 +7,14 @@ import (
 	"context"
 
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
+	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// GetTariff is the resolver for the getTariff field.
 func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInput) (*db.Tariff, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		if input.ID != nil {
 			if t, err := r.TariffRepository.GetTariff(ctx, *input.ID); err == nil {
 				return &t, nil
@@ -30,6 +31,7 @@ func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInpu
 	return nil, gqlerror.Errorf("Not authenticated")
 }
 
+// CurrencyRate is the resolver for the currencyRate field.
 func (r *tariffResolver) CurrencyRate(ctx context.Context, obj *db.Tariff) (int, error) {
 	currencyRate, err := r.FerpService.GetRate(obj.Currency)
 
@@ -40,6 +42,7 @@ func (r *tariffResolver) CurrencyRate(ctx context.Context, obj *db.Tariff) (int,
 	return int(currencyRate.Rate), nil
 }
 
+// CurrencyRateMsat is the resolver for the currencyRateMsat field.
 func (r *tariffResolver) CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (int, error) {
 	currencyRate, err := r.FerpService.GetRate(obj.Currency)
 
@@ -50,8 +53,9 @@ func (r *tariffResolver) CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (
 	return int(currencyRate.RateMsat), nil
 }
 
+// CommissionPercent is the resolver for the commissionPercent field.
 func (r *tariffResolver) CommissionPercent(ctx context.Context, obj *db.Tariff) (float64, error) {
-	user := authentication.GetUser(ctx, r.UserRepository)
+	user := middleware.GetUser(ctx, r.UserRepository)
 
 	if user == nil {
 		return 0, gqlerror.Errorf("Error retrieving user commission")
@@ -60,6 +64,12 @@ func (r *tariffResolver) CommissionPercent(ctx context.Context, obj *db.Tariff) 
 	return user.CommissionPercent, nil
 }
 
+// IsIntermediateCdrCapable is the resolver for the isIntermediateCdrCapable field.
+func (r *tariffResolver) IsIntermediateCdrCapable(ctx context.Context, obj *db.Tariff) (bool, error) {
+	return false, nil
+}
+
+// TaxPercent is the resolver for the taxPercent field.
 func (r *tariffResolver) TaxPercent(ctx context.Context, obj *db.Tariff) (*float64, error) {
 	taxPercent, err := r.calculateTaxPercent(ctx)
 
@@ -70,6 +80,7 @@ func (r *tariffResolver) TaxPercent(ctx context.Context, obj *db.Tariff) (*float
 	return taxPercent, nil
 }
 
+// Elements is the resolver for the elements field.
 func (r *tariffResolver) Elements(ctx context.Context, obj *db.Tariff) ([]graph.TariffElement, error) {
 	list := []graph.TariffElement{}
 
@@ -94,6 +105,7 @@ func (r *tariffResolver) Elements(ctx context.Context, obj *db.Tariff) ([]graph.
 	return list, nil
 }
 
+// EnergyMix is the resolver for the energyMix field.
 func (r *tariffResolver) EnergyMix(ctx context.Context, obj *db.Tariff) (*db.EnergyMix, error) {
 	if obj.EnergyMixID.Valid {
 		if energyMix, err := r.EnergyMixRepository.GetEnergyMix(ctx, obj.EnergyMixID.Int64); err == nil {

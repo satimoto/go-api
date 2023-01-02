@@ -1,0 +1,27 @@
+type Token {
+    id: ID!
+    uid: String!
+    type: String!
+    authId: String!
+    visualNumber: String
+}
+
+input CreateTokenInput {
+    uid: String!
+    type: String
+    allowed: String
+}
+
+input UpdateTokensInput {
+    userId: ID!
+    uid: String
+    allowed: String!
+}
+
+extend type Query {
+    listTokens: [Token!]!
+}
+extend type Mutation {
+    createToken(input: CreateTokenInput!): Token!
+    updateTokens(input: UpdateTokensInput!): ResultOk!
+}

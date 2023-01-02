@@ -15,12 +15,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-
-	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/ferp"
+	metrics "github.com/satimoto/go-api/internal/metric"
+	apiMiddleware "github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/user"
+
 	"github.com/satimoto/go-datastore/pkg/util"
 )
 
@@ -52,7 +52,7 @@ func (rs *RestService) Handler() *chi.Mux {
 	// Set middleware
 	router.Use(render.SetContentType(render.ContentTypeJSON), middleware.RedirectSlashes, middleware.Recoverer)
 	router.Use(middleware.Timeout(120 * time.Second))
-	router.Use(authentication.AuthorizationContext())
+	router.Use(apiMiddleware.AuthorizationContext())
 	router.Use(chiprometheus.NewMiddleware("api"))
 
 	router.Use(cors.Handler(cors.Options{
@@ -63,7 +63,6 @@ func (rs *RestService) Handler() *chi.Mux {
 	}))
 
 	router.Mount("/health", rs.mountHealth())
-	router.Mount("/metrics", promhttp.Handler())
 	router.Mount("/v1", rs.mountV1())
 
 	return router
@@ -97,7 +96,7 @@ func (rs *RestService) listenAndServe() {
 	err := rs.Server.ListenAndServe()
 
 	if err != nil && err != http.ErrServerClosed {
-		util.LogOnError("API023", "Error in Rest service", err)
+		metrics.RecordError("API023", "Error in Rest service", err)
 	}
 }
 
@@ -109,6 +108,6 @@ func (rs *RestService) shutdown() {
 	err := rs.Server.Shutdown(ctx)
 
 	if err != nil {
-		util.LogOnError("API024", "Error shutting down Rest service", err)
+		metrics.RecordError("API024", "Error shutting down Rest service", err)
 	}
 }

@@ -2,6 +2,7 @@ type StartSession {
     id: ID!
     status: String!
     authorizationId: String!
+    verificationKey: String!
     locationUid: String!
     evseUid: String
 }
@@ -18,7 +19,7 @@ type StopSession {
 }
 
 input StopSessionInput {
-    sessionUid: String!
+    authorizationId: String! 
 }
 
 extend type Mutation {
