@@ -5,7 +5,6 @@ type TokenAuthorization {
     token: Token!
     authorizationId: String!
     authorized: Boolean!
-    verificationKey: String
 }
 
 input UpdateTokenAuthorizationInput {

@@ -2,7 +2,6 @@ type StartSession {
     id: ID!
     status: String!
     authorizationId: String!
-    verificationKey: String!
     locationUid: String!
     evseUid: String
 }
