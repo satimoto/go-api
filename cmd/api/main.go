@@ -12,6 +12,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/satimoto/go-api/internal/ferp"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/rest"
 	"github.com/satimoto/go-datastore/pkg/util"
 )
@@ -50,6 +51,9 @@ func main() {
 
 	ferpService := ferp.NewService(os.Getenv("FERP_RPC_ADDRESS"))
 	ferpService.Start(shutdownCtx, waitGroup)
+
+	metricsService := metrics.NewMetrics()
+	metricsService.StartMetrics(shutdownCtx, waitGroup)
 
 	restService := rest.NewRest(database, ferpService)
 	restService.StartRest(shutdownCtx, waitGroup)

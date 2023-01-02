@@ -11,6 +11,7 @@ type Session {
     connector: Connector!
     meterId: String
     sessionInvoices: [SessionInvoice!]!
+    invoiceRequest: InvoiceRequest
     status: String!
     lastUpdated: String!
 }

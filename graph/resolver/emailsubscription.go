@@ -20,6 +20,7 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// CreateEmailSubscription is the resolver for the createEmailSubscription field.
 func (r *mutationResolver) CreateEmailSubscription(ctx context.Context, input graph.CreateEmailSubscriptionInput) (*db.EmailSubscription, error) {
 	emailSubscription, err := r.EmailSubscriptionRepository.CreateEmailSubscription(ctx, db.CreateEmailSubscriptionParams{
 		Email:            strings.ToLower(input.Email),
@@ -58,6 +59,7 @@ func (r *mutationResolver) CreateEmailSubscription(ctx context.Context, input gr
 	return &emailSubscription, nil
 }
 
+// VerifyEmailSubscription is the resolver for the verifyEmailSubscription field.
 func (r *mutationResolver) VerifyEmailSubscription(ctx context.Context, input graph.VerifyEmailSubscriptionInput) (*db.EmailSubscription, error) {
 	emailSubscription, err := r.EmailSubscriptionRepository.GetEmailSubscriptionByEmail(ctx, strings.ToLower(input.Email))
 

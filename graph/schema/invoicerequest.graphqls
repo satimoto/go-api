@@ -1,0 +1,29 @@
+type InvoiceRequest {
+    id: ID!
+    promotion: Promotion!
+    currency: String!
+    memo: String!
+    priceFiat: Float
+    priceMsat: Int
+    commissionFiat: Float
+    commissionMsat: Int
+    taxFiat: Float
+    taxMsat: Int
+    totalFiat: Float!
+    totalMsat: Int!
+    paymentRequest: String
+    isSettled: Boolean!
+}
+
+input UpdateInvoiceRequestInput {
+    id: ID!
+    paymentRequest: String!
+}
+
+extend type Query {
+    listInvoiceRequests: [InvoiceRequest!]!
+}
+
+extend type Mutation {
+    updateInvoiceRequest(input: UpdateInvoiceRequestInput!): InvoiceRequest!
+}

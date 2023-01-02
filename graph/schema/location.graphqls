@@ -1,11 +1,17 @@
 type ListLocation {
     uid: String!
     name: String!
+    countryCode: String
+    partyId: String
+    country: String!
     geom: Geometry! 
     availableEvses: Int!
     totalEvses: Int!
+    isIntermediateCdrCapable: Boolean!
+    isPublished: Boolean!
     isRemoteCapable: Boolean!
     isRfidCapable: Boolean!
+    addedDate: String!
 }
 
 type Location {
@@ -22,6 +28,8 @@ type Location {
     evses: [Evse!]!
     availableEvses: Int!
     totalEvses: Int!
+    isExperimental: Boolean!
+    isIntermediateCdrCapable: Boolean!
     isRemoteCapable: Boolean!
     isRfidCapable: Boolean!
     directions: [DisplayText!]!
@@ -40,19 +48,37 @@ type Location {
 input GetLocationInput {
     id: ID
     uid: String
+    country: String
 }
 
 input ListLocationsInput {
-    xMin: Float!
-    yMin: Float!
-    xMax: Float!
-    yMax: Float!
-    lastUpdate: String
+    country: String
+    interval: Int
+    isExperimental: Boolean
+    isRemoteCapable: Boolean
+    isRfidCapable: Boolean
+    limit: Int
+    xMin: Float
+    xMax: Float
+    yMin: Float
+    yMax: Float
+}
+
+input PublishLocationInput {
+    id: ID
+    credentialId: ID
+    countryCode: String
+    partyId: String
+    isPublished: Boolean!
 }
 
 extend type Query {
-    getLocation(input: GetLocationInput!): Location!
+    getLocation(input: GetLocationInput!): Location
     listLocations(input: ListLocationsInput!): [ListLocation!]!
+}
+
+extend type Mutation {
+    publishLocation(input: PublishLocationInput!): ResultOk!
 }
 
 scalar Geometry

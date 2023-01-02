@@ -2,6 +2,7 @@ type Connector {
     id: ID!
     uid: String!
     identifier: String
+    evse: Evse!
     standard: String!
     format: String!
     powerType: String!
@@ -12,4 +13,13 @@ type Connector {
     tariff: Tariff
     termsAndConditions: String
     lastUpdated: String!
+}
+
+input GetConnectorInput {
+    id: ID
+    identifier: String
+}
+
+extend type Query {
+    getConnector(input: GetConnectorInput!): Connector
 }

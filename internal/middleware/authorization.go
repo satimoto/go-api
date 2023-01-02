@@ -1,11 +1,14 @@
-package authentication
+package middleware
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/satimoto/go-api/internal/authentication"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/user"
 )
@@ -19,9 +22,9 @@ func AuthorizationContext() func(http.Handler) http.Handler {
 			if len(authorization) == 2 {
 				token := authorization[1]
 
-				if ok, claims := VerifyToken(token); ok {
-					userId := int64(claims["user_id"].(float64))
-					ctx = context.WithValue(ctx, "user_id", &userId)
+				if ok, claims := authentication.VerifyToken(token); ok {
+					userID := int64(claims["user_id"].(float64))
+					ctx = context.WithValue(ctx, "user_id", &userID)
 				}
 			}
 
@@ -30,11 +33,11 @@ func AuthorizationContext() func(http.Handler) http.Handler {
 	}
 }
 
-func GetUserId(ctx context.Context) *int64 {
-	ctxUserId := ctx.Value("user_id")
+func GetUserID(ctx context.Context) *int64 {
+	ctxUserID := ctx.Value("user_id")
 
-	if ctxUserId != nil {
-		return ctxUserId.(*int64)
+	if ctxUserID != nil {
+		return ctxUserID.(*int64)
 	}
 
 	return nil
@@ -48,13 +51,19 @@ func GetUser(ctx context.Context, r user.UserRepository) *db.User {
 		return ctxUser.(*db.User)
 	}
 
-	userId := GetUserId(ctx)
+	userID := GetUserID(ctx)
 
-	if userId != nil {
-		if user, err := r.GetUser(ctx, *userId); err == nil {
-			operationCtx.Variables["user"] = &user
-			return &user
+	if userID != nil {
+		user, err := r.GetUser(ctx, *userID)
+
+		if err != nil {
+			metrics.RecordError("API019", "Error retrieving user", err)
+			log.Printf("API019: UserID=%v", userID)
+			return nil
 		}
+
+		operationCtx.Variables["user"] = &user
+		return &user
 	}
 
 	return nil

@@ -1,0 +1,8 @@
+input CreateReferralInput {
+    code: String!
+    referrer: String!
+}
+
+extend type Mutation {
+    createReferral(input: CreateReferralInput!): ResultId!
+}

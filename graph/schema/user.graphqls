@@ -1,20 +1,32 @@
 type User {
     id: ID!
     pubkey: String!
-    deviceToken: String!
+    deviceToken: String
+    referralCode: String
+    node: Node
 }
 
 input CreateUserInput {
     code: String!
     pubkey: String!
-    deviceToken: String!
+    deviceToken: String
+}
+
+input PongUserInput {
+    pong: String!
 }
 
 input UpdateUserInput {
     deviceToken: String!
 }
 
+extend type Query {
+    getUser: User!
+}
+
 extend type Mutation {
     createUser(input: CreateUserInput!): User!
+    pingUser(id: ID!): ResultOk!
+    pongUser(input: PongUserInput!): ResultOk!
     updateUser(input: UpdateUserInput!): User!
 }

@@ -7,19 +7,25 @@ import (
 	"context"
 	"log"
 
+	"github.com/appleboy/go-fcm"
+	"github.com/google/uuid"
 	"github.com/satimoto/go-api/graph"
-	"github.com/satimoto/go-api/internal/authentication"
-	"github.com/satimoto/go-datastore/pkg/param"
+	metrics "github.com/satimoto/go-api/internal/metric"
+	"github.com/satimoto/go-api/internal/middleware"
+	"github.com/satimoto/go-api/internal/notification"
+	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
-	"github.com/satimoto/go-datastore/pkg/util"
+	"github.com/satimoto/go-datastore/pkg/param"
+	dbUtil "github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+// CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUserInput) (*db.User, error) {
 	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, input.Code)
 
 	if err != nil {
-		util.LogOnError("API016", "Authentication not found", err)
+		metrics.RecordError("API016", "Authentication not found", err)
 		log.Printf("API016: Code=%v", input.Code)
 		return nil, gqlerror.Errorf("Authentication not found")
 	}
@@ -30,48 +36,154 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
-	u, err := r.UserRepository.CreateUser(ctx, db.CreateUserParams{
-		CommissionPercent: util.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
-		DeviceToken:       input.DeviceToken,
+	var circuitUserID *int64
+	ipAddress := middleware.GetIPAddress(ctx)
+
+	if ipAddress != nil && len(*ipAddress) > 0 {
+		if referral, err := r.ReferralRepository.GetReferralByIpAddress(ctx, *ipAddress); err == nil {
+			circuitUserID = &referral.UserID
+		}
+	}
+
+	referralCode := r.generateReferralCode(ctx)
+	createUserParams := db.CreateUserParams{
+		CommissionPercent: dbUtil.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
+		DeviceToken:       dbUtil.SqlNullString(input.DeviceToken),
 		LinkingPubkey:     auth.LinkingPubkey.String,
 		Pubkey:            input.Pubkey,
-	})
+		ReferralCode:      dbUtil.SqlNullString(referralCode),
+		CircuitUserID:     dbUtil.SqlNullInt64(circuitUserID),
+	}
+
+	user, err := r.UserRepository.CreateUser(ctx, createUserParams)
 
 	if err != nil {
-		util.LogOnError("API018", "User already exists", err)
+		metrics.RecordError("API018", "User already exists", err)
+		log.Printf("API018: Params=%#v", createUserParams)
 		return nil, gqlerror.Errorf("User already exists")
 	}
 
-	_, err = r.TokenResolver.CreateToken(ctx, u.ID)
+	_, err = r.TokenResolver.CreateToken(ctx, user.ID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &u, nil
+	return &user, nil
 }
 
-func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUserInput) (*db.User, error) {
-	if userId := authentication.GetUserId(ctx); userId != nil {
-		u, err := r.UserRepository.GetUser(ctx, *userId)
+// PingUser is the resolver for the pingUser field.
+func (r *mutationResolver) PingUser(ctx context.Context, id int64) (*graph.ResultOk, error) {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+		if toUser, err := r.UserRepository.GetUser(ctx, id); err == nil && toUser.DeviceToken.Valid {
+			ping, err := uuid.NewUUID()
 
-		if err != nil {
-			util.LogOnError("API019", "Error retrieving user", err)
-			return nil, gqlerror.Errorf("Error updating user")
+			if err != nil {
+				metrics.RecordError("API057", "Error generating UUID", err)
+				log.Printf("API057: UserID=%v", id)
+				return nil, gqlerror.Errorf("Error generating UUID")
+			}
+
+			pingStr := ping.String()
+			dataPingMessage := notification.CreateDataPingNotificationDto(pingStr)
+
+			message := &fcm.Message{
+				To:               toUser.DeviceToken.String,
+				ContentAvailable: true,
+				Priority:         "high",
+				Data:             dataPingMessage,
+			}
+
+			r.NotificationService.SendNotification(message)
+
+			log.Printf("User %v ping sent: %v", toUser.ID, pingStr)
+
+			return &graph.ResultOk{Ok: true}, nil
 		}
 
-		updateUserParams := param.NewUpdateUserParams(u)
-		updateUserParams.DeviceToken = input.DeviceToken
-
-		u, err = r.UserRepository.UpdateUser(ctx, updateUserParams)
-
-		if err != nil {
-			util.LogOnError("API020", "Error updating user", err)
-			return nil, gqlerror.Errorf("Error updating user")
-		}
-
-		return &u, nil
+		return &graph.ResultOk{Ok: false}, nil
 	}
 
-	return nil, gqlerror.Errorf("Not Authenticated")
+	return nil, gqlerror.Errorf("Not authenticated")
 }
+
+// PongUser is the resolver for the pongUser field.
+func (r *mutationResolver) PongUser(ctx context.Context, input graph.PongUserInput) (*graph.ResultOk, error) {
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		log.Printf("User %v pong received: %v", *userID, input.Pong)
+
+		return &graph.ResultOk{Ok: true}, nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// UpdateUser is the resolver for the updateUser field.
+func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUserInput) (*db.User, error) {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+		updateUserParams := param.NewUpdateUserParams(*user)
+		updateUserParams.DeviceToken = dbUtil.SqlNullString(input.DeviceToken)
+
+		updatedUser, err := r.UserRepository.UpdateUser(ctx, updateUserParams)
+
+		if err != nil {
+			metrics.RecordError("API020", "Error updating user", err)
+			log.Printf("API020: Params=%#v", updateUserParams)
+			return nil, gqlerror.Errorf("Error updating user")
+		}
+
+		updatePendingNotificationByUserParams := db.UpdatePendingNotificationsByUserParams{
+			DeviceToken: dbUtil.SqlNullString(input.DeviceToken),
+			UserID:      user.ID,
+		}
+
+		err = r.PendingNotificationRepository.UpdatePendingNotificationsByUser(ctx, updatePendingNotificationByUserParams)
+
+		if err != nil {
+			metrics.RecordError("API027", "Error updating pending notifications", err)
+			log.Printf("API027: Params=%#v", updatePendingNotificationByUserParams)
+			return nil, gqlerror.Errorf("Error updating pending notifications")
+		}
+
+		return &updatedUser, nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// GetUser is the resolver for the getUser field.
+func (r *queryResolver) GetUser(ctx context.Context) (*db.User, error) {
+	user := middleware.GetUser(ctx, r.UserRepository)
+
+	if user != nil {
+		return user, nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// DeviceToken is the resolver for the deviceToken field.
+func (r *userResolver) DeviceToken(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.DeviceToken)
+}
+
+// ReferralCode is the resolver for the referralCode field.
+func (r *userResolver) ReferralCode(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.ReferralCode)
+}
+
+// Node is the resolver for the node field.
+func (r *userResolver) Node(ctx context.Context, obj *db.User) (*db.Node, error) {
+	if obj.NodeID.Valid {
+		if node, err := r.NodeRepository.GetNode(ctx, obj.NodeID.Int64); err == nil {
+			return &node, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// User returns graph.UserResolver implementation.
+func (r *Resolver) User() graph.UserResolver { return &userResolver{r} }
+
+type userResolver struct{ *Resolver }

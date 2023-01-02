@@ -20,6 +20,8 @@ service_desired_count = 1
 
 service_container_port = 9000
 
+service_metric_port = 9100
+
 task_network_mode = "awsvpc"
 
 task_cpu = 256
@@ -39,6 +41,8 @@ subdomain_name = "api"
 env_channel_request_max_amount = 450000
 
 env_default_commission_percent = 7
+
+env_fcm_api_key = "AAAA3ZJBhzw:APA91bHCxjgYChy0QnDfUihevkVyni_klXxH5GkVLdHAdcjgnWbSAxnpeP9b0GmMiUTPbStB8uAzNw147CPUWbbBlCMUDiFOCMp9Mqp9YGNZhYHTiv0AMSV3BAAmWn6_vQraENT4CTQ8"
 
 env_ferp_rpc_port = 50000
 

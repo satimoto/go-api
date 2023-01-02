@@ -10,14 +10,17 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 )
 
+// RegularHours is the resolver for the regularHours field.
 func (r *openingTimeResolver) RegularHours(ctx context.Context, obj *db.OpeningTime) ([]db.RegularHour, error) {
 	return r.OpeningTimeRepository.ListRegularHours(ctx, obj.ID)
 }
 
+// ExceptionalOpenings is the resolver for the exceptionalOpenings field.
 func (r *openingTimeResolver) ExceptionalOpenings(ctx context.Context, obj *db.OpeningTime) ([]db.ExceptionalPeriod, error) {
 	return r.OpeningTimeRepository.ListExceptionalOpeningPeriods(ctx, obj.ID)
 }
 
+// ExceptionalClosings is the resolver for the exceptionalClosings field.
 func (r *openingTimeResolver) ExceptionalClosings(ctx context.Context, obj *db.OpeningTime) ([]db.ExceptionalPeriod, error) {
 	return r.OpeningTimeRepository.ListExceptionalClosingPeriods(ctx, obj.ID)
 }

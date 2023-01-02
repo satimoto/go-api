@@ -42,6 +42,10 @@ variable "service_container_port" {
   description = "The port on the container to associate with the load balancer"
 }
 
+variable "service_metric_port" {
+  description = "The port to associate with metric collection"
+}
+
 variable "task_network_mode" {
   description = "The Docker networking mode to use for the containers in the task"
 }
@@ -80,6 +84,10 @@ variable "env_channel_request_max_amount" {
 
 variable "env_default_commission_percent" {
   description = "The environment variable to set the default commission percent"
+}
+
+variable "env_fcm_api_key" {
+  description = "The environment variable to set the FCM API key"
 }
 
 variable "env_ferp_rpc_port" {

@@ -1,0 +1,30 @@
+type Party {
+    countryCode: String!
+    partyId: String!
+    isIntermediateCdrCapable: Boolean!
+    publishLocation: Boolean!
+    publishNullTariff: Boolean!
+}
+
+input CreatePartyInput {
+    credentialId: ID!
+    countryCode: String!
+    partyId: String!
+    isIntermediateCdrCapable: Boolean!
+    publishLocation: Boolean!
+    publishNullTariff: Boolean!
+}
+
+input UpdatePartyInput {
+    credentialId: ID!
+    countryCode: String!
+    partyId: String!
+    isIntermediateCdrCapable: Boolean!
+    publishLocation: Boolean!
+    publishNullTariff: Boolean!
+}
+
+extend type Mutation {
+    createParty(input: CreatePartyInput!): Party!
+    updateParty(input: UpdatePartyInput!): Party!
+}

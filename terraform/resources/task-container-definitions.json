@@ -15,10 +15,14 @@
       {
         "protocol": "tcp",
         "containerPort": ${service_container_port}
+      },
+      {
+        "protocol": "tcp",
+        "containerPort": ${service_metric_port}
       }
     ],
     "dockerLabels": {
-      "PROMETHEUS_EXPORTER_PORT": "${env_rest_port}",
+      "PROMETHEUS_EXPORTER_PORT": "${service_metric_port}",
       "PROMETHEUS_EXPORTER_JOB_NAME": "${service_name}"
     },
     "environment": [
@@ -51,12 +55,20 @@
         "value": "${env_default_commission_percent}"
       },
       {
+        "name": "FCM_API_KEY",
+        "value": "${env_fcm_api_key}"
+      },
+      {
         "name": "FERP_RPC_ADDRESS",
         "value": "${env_ferp_rpc_address}"
       },
       {
         "name": "JWT_SECRET",
         "value": "${env_jwt_secret}"
+      },
+      {
+        "name": "METRIC_PORT",
+        "value": "${env_metric_port}"
       },
       {
         "name": "OCPI_RPC_ADDRESS",

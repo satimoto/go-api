@@ -11,18 +11,22 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 )
 
+// EnergySources is the resolver for the energySources field.
 func (r *energyMixResolver) EnergySources(ctx context.Context, obj *db.EnergyMix) ([]db.EnergySource, error) {
 	return r.EnergyMixRepository.ListEnergySources(ctx, obj.ID)
 }
 
+// EnvironmentalImpact is the resolver for the environmentalImpact field.
 func (r *energyMixResolver) EnvironmentalImpact(ctx context.Context, obj *db.EnergyMix) ([]db.EnvironmentalImpact, error) {
 	return r.EnergyMixRepository.ListEnvironmentalImpacts(ctx, obj.ID)
 }
 
+// SupplierName is the resolver for the supplierName field.
 func (r *energyMixResolver) SupplierName(ctx context.Context, obj *db.EnergyMix) (*string, error) {
 	return util.NullString(obj.SupplierName)
 }
 
+// EnergyProductName is the resolver for the energyProductName field.
 func (r *energyMixResolver) EnergyProductName(ctx context.Context, obj *db.EnergyMix) (*string, error) {
 	return util.NullString(obj.EnergyProductName)
 }

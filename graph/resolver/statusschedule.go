@@ -12,13 +12,17 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 )
 
+// PeriodBegin is the resolver for the periodBegin field.
 func (r *statusScheduleResolver) PeriodBegin(ctx context.Context, obj *db.StatusSchedule) (string, error) {
 	return obj.PeriodBegin.Format(time.RFC3339), nil
 }
 
+// PeriodEnd is the resolver for the periodEnd field.
 func (r *statusScheduleResolver) PeriodEnd(ctx context.Context, obj *db.StatusSchedule) (*string, error) {
 	return util.NullTime(obj.PeriodEnd, time.RFC3339)
 }
+
+// Status is the resolver for the status field.
 func (r *statusScheduleResolver) Status(ctx context.Context, obj *db.StatusSchedule) (string, error) {
 	return string(obj.Status), nil
 }
