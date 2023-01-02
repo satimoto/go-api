@@ -39,7 +39,6 @@ func (r *mutationResolver) UpdateSessionInvoice(ctx context.Context, id int64) (
 					return nil, gqlerror.Errorf("Error retrieving node")
 				}
 
-				// TODO: This request should be a non-blocking goroutine
 				lspService := lsp.NewService(node.LspAddr)
 
 				updateSessionInvoiceRequest := &lsprpc.UpdateSessionInvoiceRequest{
