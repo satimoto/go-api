@@ -5,7 +5,6 @@ package resolver
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"log"
 	"time"
@@ -102,11 +101,6 @@ func (r *queryResolver) ListSessionInvoices(ctx context.Context, input graph.Lis
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
-}
-
-// Signature is the resolver for the signature field.
-func (r *sessionInvoiceResolver) Signature(ctx context.Context, obj *db.SessionInvoice) (string, error) {
-	return hex.EncodeToString(obj.Signature), nil
 }
 
 // LastUpdated is the resolver for the lastUpdated field.

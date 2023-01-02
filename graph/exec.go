@@ -438,7 +438,6 @@ type ComplexityRoot struct {
 		ID              func(childComplexity int) int
 		LocationUID     func(childComplexity int) int
 		Status          func(childComplexity int) int
-		VerificationKey func(childComplexity int) int
 	}
 
 	StatusSchedule struct {
@@ -491,7 +490,6 @@ type ComplexityRoot struct {
 		Location        func(childComplexity int) int
 		PartyID         func(childComplexity int) int
 		Token           func(childComplexity int) int
-		VerificationKey func(childComplexity int) int
 	}
 
 	User struct {
@@ -701,8 +699,6 @@ type SessionResolver interface {
 	LastUpdated(ctx context.Context, obj *db.Session) (string, error)
 }
 type SessionInvoiceResolver interface {
-	Signature(ctx context.Context, obj *db.SessionInvoice) (string, error)
-
 	LastUpdated(ctx context.Context, obj *db.SessionInvoice) (string, error)
 }
 type StatusScheduleResolver interface {
@@ -729,8 +725,6 @@ type TokenAuthorizationResolver interface {
 	PartyID(ctx context.Context, obj *db.TokenAuthorization) (*string, error)
 	Location(ctx context.Context, obj *db.TokenAuthorization) (*db.Location, error)
 	Token(ctx context.Context, obj *db.TokenAuthorization) (*db.Token, error)
-
-	VerificationKey(ctx context.Context, obj *db.TokenAuthorization) (*string, error)
 }
 type UserResolver interface {
 	DeviceToken(ctx context.Context, obj *db.User) (*string, error)
@@ -2757,13 +2751,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StartSession.Status(childComplexity), true
 
-	case "StartSession.verificationKey":
-		if e.complexity.StartSession.VerificationKey == nil {
-			break
-		}
-
-		return e.complexity.StartSession.VerificationKey(childComplexity), true
-
 	case "StatusSchedule.periodBegin":
 		if e.complexity.StatusSchedule.PeriodBegin == nil {
 			break
@@ -2980,13 +2967,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TokenAuthorization.Token(childComplexity), true
-
-	case "TokenAuthorization.verificationKey":
-		if e.complexity.TokenAuthorization.VerificationKey == nil {
-			break
-		}
-
-		return e.complexity.TokenAuthorization.VerificationKey(childComplexity), true
 
 	case "User.deviceToken":
 		if e.complexity.User.DeviceToken == nil {
@@ -10928,8 +10908,6 @@ func (ec *executionContext) fieldContext_Mutation_startSession(ctx context.Conte
 				return ec.fieldContext_StartSession_status(ctx, field)
 			case "authorizationId":
 				return ec.fieldContext_StartSession_authorizationId(ctx, field)
-			case "verificationKey":
-				return ec.fieldContext_StartSession_verificationKey(ctx, field)
 			case "locationUid":
 				return ec.fieldContext_StartSession_locationUid(ctx, field)
 			case "evseUid":
@@ -11999,8 +11977,6 @@ func (ec *executionContext) fieldContext_Mutation_updateTokenAuthorization(ctx c
 				return ec.fieldContext_TokenAuthorization_authorizationId(ctx, field)
 			case "authorized":
 				return ec.fieldContext_TokenAuthorization_authorized(ctx, field)
-			case "verificationKey":
-				return ec.fieldContext_TokenAuthorization_verificationKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TokenAuthorization", field.Name)
 		},
@@ -16270,7 +16246,7 @@ func (ec *executionContext) _SessionInvoice_signature(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.SessionInvoice().Signature(rctx, obj)
+		return obj.Signature, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -16291,8 +16267,8 @@ func (ec *executionContext) fieldContext_SessionInvoice_signature(ctx context.Co
 	fc = &graphql.FieldContext{
 		Object:     "SessionInvoice",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -16728,50 +16704,6 @@ func (ec *executionContext) _StartSession_authorizationId(ctx context.Context, f
 }
 
 func (ec *executionContext) fieldContext_StartSession_authorizationId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "StartSession",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _StartSession_verificationKey(ctx context.Context, field graphql.CollectedField, obj *StartSession) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_StartSession_verificationKey(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.VerificationKey, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_StartSession_verificationKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "StartSession",
 		Field:      field,
@@ -18327,47 +18259,6 @@ func (ec *executionContext) fieldContext_TokenAuthorization_authorized(ctx conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _TokenAuthorization_verificationKey(ctx context.Context, field graphql.CollectedField, obj *db.TokenAuthorization) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TokenAuthorization_verificationKey(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.TokenAuthorization().VerificationKey(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_TokenAuthorization_verificationKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "TokenAuthorization",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -25679,25 +25570,12 @@ func (ec *executionContext) _SessionInvoice(ctx context.Context, sel ast.Selecti
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "signature":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._SessionInvoice_signature(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._SessionInvoice_signature(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
 			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		case "isSettled":
 
 			out.Values[i] = ec._SessionInvoice_isSettled(ctx, field, obj)
@@ -25798,13 +25676,6 @@ func (ec *executionContext) _StartSession(ctx context.Context, sel ast.Selection
 		case "authorizationId":
 
 			out.Values[i] = ec._StartSession_authorizationId(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "verificationKey":
-
-			out.Values[i] = ec._StartSession_verificationKey(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -26365,23 +26236,6 @@ func (ec *executionContext) _TokenAuthorization(ctx context.Context, sel ast.Sel
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "verificationKey":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._TokenAuthorization_verificationKey(ctx, field, obj)
-				return res
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
