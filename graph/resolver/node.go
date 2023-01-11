@@ -23,8 +23,10 @@ func (r *nodeResolver) Addr(ctx context.Context, obj *db.Node) (string, error) {
 }
 
 // ListChannels is the resolver for the listChannels field.
-func (r *queryResolver) ListChannels(ctx context.Context) ([]graph.Channel, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+func (r *queryResolver) ListChannels(reqCtx context.Context) ([]graph.Channel, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
 		if !user.NodeID.Valid {
 			metrics.RecordError("API052", "Error user has no node", errors.New("no node available"))
 			log.Printf("API052: UserID=%v", user.ID)

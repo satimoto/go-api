@@ -16,8 +16,10 @@ import (
 )
 
 // StartSession is the resolver for the startSession field.
-func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSessionInput) (*graph.StartSession, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+func (r *mutationResolver) StartSession(reqCtx context.Context, input graph.StartSessionInput) (*graph.StartSession, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
 		if !user.DeviceToken.Valid {
 			metrics.RecordError("API046", "Error starting session", errors.New("notifications not enabled"))
 			log.Printf("API046: UserID: %#v", user.ID)
@@ -40,8 +42,10 @@ func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSe
 }
 
 // StopSession is the resolver for the stopSession field.
-func (r *mutationResolver) StopSession(ctx context.Context, input graph.StopSessionInput) (*graph.StopSession, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *mutationResolver) StopSession(reqCtx context.Context, input graph.StopSessionInput) (*graph.StopSession, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		stopSessionRequest := command.NewStopSessionRequest(*userID, input)
 		stopSessionResponse, err := r.OcpiService.StopSession(ctx, stopSessionRequest)
 

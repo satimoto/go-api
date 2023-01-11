@@ -117,8 +117,10 @@ func (r *evseResolver) LastUpdated(ctx context.Context, obj *db.Evse) (string, e
 }
 
 // GetEvse is the resolver for the getEvse field.
-func (r *queryResolver) GetEvse(ctx context.Context, input graph.GetEvseInput) (*db.Evse, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *queryResolver) GetEvse(reqCtx context.Context, input graph.GetEvseInput) (*db.Evse, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		if input.ID != nil {
 			if evse, err := r.EvseRepository.GetEvse(ctx, *input.ID); err == nil {
 				return &evse, nil
