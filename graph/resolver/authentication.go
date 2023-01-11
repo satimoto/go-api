@@ -49,7 +49,8 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, action grap
 }
 
 // ExchangeAuthentication is the resolver for the exchangeAuthentication field.
-func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code string) (*graph.ExchangeAuthentication, error) {
+func (r *mutationResolver) ExchangeAuthentication(reqCtx context.Context, code string) (*graph.ExchangeAuthentication, error) {
+	ctx := context.Background()
 	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, code)
 
 	if err != nil {
@@ -86,7 +87,8 @@ func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code stri
 }
 
 // VerifyAuthentication is the resolver for the verifyAuthentication field.
-func (r *queryResolver) VerifyAuthentication(ctx context.Context, code string) (*graph.VerifyAuthentication, error) {
+func (r *queryResolver) VerifyAuthentication(reqCtx context.Context, code string) (*graph.VerifyAuthentication, error) {
+	ctx := context.Background()
 	authentication, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, code)
 
 	if err != nil || !authentication.Signature.Valid {

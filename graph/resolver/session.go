@@ -15,8 +15,10 @@ import (
 )
 
 // GetSession is the resolver for the getSession field.
-func (r *queryResolver) GetSession(ctx context.Context, input graph.GetSessionInput) (*db.Session, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *queryResolver) GetSession(reqCtx context.Context, input graph.GetSessionInput) (*db.Session, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		if input.ID != nil {
 			if s, err := r.SessionRepository.GetSession(ctx, *input.ID); err == nil && *userID == s.UserID {
 				return &s, nil

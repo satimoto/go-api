@@ -5,7 +5,6 @@ package resolver
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	"github.com/satimoto/go-api/graph"
@@ -19,10 +18,12 @@ import (
 )
 
 // CreateToken is the resolver for the createToken field.
-func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTokenInput) (*db.Token, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *mutationResolver) CreateToken(reqCtx context.Context, input graph.CreateTokenInput) (*db.Token, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		if _, err := r.TokenResolver.Repository.GetTokenByUid(ctx, input.UID); err == nil {
-			return nil, errors.New("Error creating token")
+			return nil, gqlerror.Errorf("Error creating token")
 		}
 
 		createTokenRequest := &ocpirpc.CreateTokenRequest{
@@ -45,7 +46,7 @@ func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTo
 		if err != nil {
 			metrics.RecordError("API041", "Error creating token", err)
 			log.Printf("API041: CreateTokenRequest=%#v", createTokenRequest)
-			return nil, errors.New("Error creating token")
+			return nil, gqlerror.Errorf("Error creating token")
 		}
 
 		return token.NewCreateToken(*createTokenResponse), nil
@@ -55,8 +56,10 @@ func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTo
 }
 
 // UpdateTokens is the resolver for the updateTokens field.
-func (r *mutationResolver) UpdateTokens(ctx context.Context, input graph.UpdateTokensInput) (*graph.ResultOk, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *mutationResolver) UpdateTokens(reqCtx context.Context, input graph.UpdateTokensInput) (*graph.ResultOk, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
 		updateTokensRequest := &ocpirpc.UpdateTokensRequest{
 			UserId:  input.UserID,
 			Allowed: input.Allowed,
@@ -71,7 +74,7 @@ func (r *mutationResolver) UpdateTokens(ctx context.Context, input graph.UpdateT
 		if err != nil {
 			metrics.RecordError("API042", "Error updating token", err)
 			log.Printf("API042: UpdateTokensRequest=%#v", updateTokensResponse)
-			return nil, errors.New("Error updating token")
+			return nil, gqlerror.Errorf("Error updating token")
 		}
 
 		return &graph.ResultOk{Ok: true}, nil
@@ -81,8 +84,10 @@ func (r *mutationResolver) UpdateTokens(ctx context.Context, input graph.UpdateT
 }
 
 // ListTokens is the resolver for the listTokens field.
-func (r *queryResolver) ListTokens(ctx context.Context) ([]db.Token, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *queryResolver) ListTokens(reqCtx context.Context) ([]db.Token, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		return r.TokenResolver.Repository.ListRfidTokensByUserID(ctx, *userID)
 	}
 
