@@ -63,8 +63,10 @@ func (r *invoiceRequestResolver) PaymentRequest(ctx context.Context, obj *db.Inv
 }
 
 // UpdateInvoiceRequest is the resolver for the updateInvoiceRequest field.
-func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph.UpdateInvoiceRequestInput) (*db.InvoiceRequest, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+func (r *mutationResolver) UpdateInvoiceRequest(reqCtx context.Context, input graph.UpdateInvoiceRequestInput) (*db.InvoiceRequest, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
 		if !user.NodeID.Valid {
 			metrics.RecordError("API026", "Error user has no node", errors.New("no node available"))
 			log.Printf("API026: Input=%#v", input)
@@ -112,8 +114,10 @@ func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph
 }
 
 // ListInvoiceRequests is the resolver for the listInvoiceRequests field.
-func (r *queryResolver) ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRequest, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *queryResolver) ListInvoiceRequests(reqCtx context.Context) ([]db.InvoiceRequest, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		if invoiceRequests, err := r.InvoiceRequestRepository.ListUnsettledInvoiceRequests(ctx, *userID); err == nil {
 			return invoiceRequests, nil
 		}
