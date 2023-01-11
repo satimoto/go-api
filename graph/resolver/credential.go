@@ -16,8 +16,10 @@ import (
 )
 
 // CreateCredential is the resolver for the createCredential field.
-func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.CreateCredentialInput) (*db.Credential, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *mutationResolver) CreateCredential(reqCtx context.Context, input graph.CreateCredentialInput) (*db.Credential, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewCreateCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.CreateCredential(ctx, credentialRequest)
 
@@ -34,8 +36,10 @@ func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.Cre
 }
 
 // RegisterCredential is the resolver for the registerCredential field.
-func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.RegisterCredentialInput) (*graph.ResultID, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *mutationResolver) RegisterCredential(reqCtx context.Context, input graph.RegisterCredentialInput) (*graph.ResultID, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewRegisterCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.RegisterCredential(ctx, credentialRequest)
 
@@ -52,8 +56,10 @@ func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.R
 }
 
 // SyncCredential is the resolver for the syncCredential field.
-func (r *mutationResolver) SyncCredential(ctx context.Context, input graph.SyncCredentialInput) (*graph.ResultID, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *mutationResolver) SyncCredential(reqCtx context.Context, input graph.SyncCredentialInput) (*graph.ResultID, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewSyncCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.SyncCredential(ctx, credentialRequest)
 
@@ -70,8 +76,10 @@ func (r *mutationResolver) SyncCredential(ctx context.Context, input graph.SyncC
 }
 
 // UnregisterCredential is the resolver for the unregisterCredential field.
-func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph.UnregisterCredentialInput) (*graph.ResultID, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *mutationResolver) UnregisterCredential(reqCtx context.Context, input graph.UnregisterCredentialInput) (*graph.ResultID, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewUnregisterCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.UnregisterCredential(ctx, credentialRequest)
 
@@ -88,8 +96,10 @@ func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph
 }
 
 // ListCredentials is the resolver for the listCredentials field.
-func (r *queryResolver) ListCredentials(ctx context.Context) ([]db.Credential, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *queryResolver) ListCredentials(reqCtx context.Context) ([]db.Credential, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
 		return r.CredentialRepository.ListCredentials(ctx)
 	}
 

@@ -21,8 +21,10 @@ import (
 )
 
 // UpdateSessionInvoice is the resolver for the updateSessionInvoice field.
-func (r *mutationResolver) UpdateSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+func (r *mutationResolver) UpdateSessionInvoice(reqCtx context.Context, id int64) (*db.SessionInvoice, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
 		if sessionInvoice, err := r.SessionRepository.GetSessionInvoice(ctx, id); err == nil && user.ID == sessionInvoice.UserID {
 			if sessionInvoice.IsExpired && !sessionInvoice.IsSettled {
 				if !user.NodeID.Valid {
@@ -78,8 +80,10 @@ func (r *mutationResolver) UpdateSessionInvoice(ctx context.Context, id int64) (
 }
 
 // GetSessionInvoice is the resolver for the getSessionInvoice field.
-func (r *queryResolver) GetSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *queryResolver) GetSessionInvoice(reqCtx context.Context, id int64) (*db.SessionInvoice, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		if s, err := r.SessionRepository.GetSessionInvoice(ctx, id); err == nil && *userID == s.UserID {
 			return &s, nil
 		}
@@ -91,8 +95,10 @@ func (r *queryResolver) GetSessionInvoice(ctx context.Context, id int64) (*db.Se
 }
 
 // ListSessionInvoices is the resolver for the listSessionInvoices field.
-func (r *queryResolver) ListSessionInvoices(ctx context.Context, input graph.ListSessionInvoicesInput) ([]db.SessionInvoice, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *queryResolver) ListSessionInvoices(reqCtx context.Context, input graph.ListSessionInvoicesInput) ([]db.SessionInvoice, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		listSessionInvoicesByUserIDParams := param.NewListSessionInvoicesByUserIDParams(*userID, input)
 
 		if s, err := r.SessionRepository.ListSessionInvoicesByUserID(ctx, listSessionInvoicesByUserIDParams); err == nil {

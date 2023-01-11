@@ -64,8 +64,10 @@ func (r *channelRequestResolver) Scid(ctx context.Context, obj *db.ChannelReques
 }
 
 // CreateChannelRequest is the resolver for the createChannelRequest field.
-func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+func (r *mutationResolver) CreateChannelRequest(reqCtx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
+	ctx := context.Background()
+
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
 		paymentHashBytes, err := base64.StdEncoding.DecodeString(input.PaymentHash)
 
 		if err != nil {

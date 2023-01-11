@@ -21,7 +21,8 @@ import (
 )
 
 // CreateEmailSubscription is the resolver for the createEmailSubscription field.
-func (r *mutationResolver) CreateEmailSubscription(ctx context.Context, input graph.CreateEmailSubscriptionInput) (*db.EmailSubscription, error) {
+func (r *mutationResolver) CreateEmailSubscription(reqCtx context.Context, input graph.CreateEmailSubscriptionInput) (*db.EmailSubscription, error) {
+	ctx := context.Background()
 	emailSubscription, err := r.EmailSubscriptionRepository.CreateEmailSubscription(ctx, db.CreateEmailSubscriptionParams{
 		Email:            strings.ToLower(input.Email),
 		Locale:           util.DefaultString(input.Locale, "en"),
@@ -60,7 +61,8 @@ func (r *mutationResolver) CreateEmailSubscription(ctx context.Context, input gr
 }
 
 // VerifyEmailSubscription is the resolver for the verifyEmailSubscription field.
-func (r *mutationResolver) VerifyEmailSubscription(ctx context.Context, input graph.VerifyEmailSubscriptionInput) (*db.EmailSubscription, error) {
+func (r *mutationResolver) VerifyEmailSubscription(reqCtx context.Context, input graph.VerifyEmailSubscriptionInput) (*db.EmailSubscription, error) {
+	ctx := context.Background()
 	emailSubscription, err := r.EmailSubscriptionRepository.GetEmailSubscriptionByEmail(ctx, strings.ToLower(input.Email))
 
 	if err != nil {

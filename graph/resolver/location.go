@@ -152,8 +152,10 @@ func (r *locationResolver) LastUpdated(ctx context.Context, obj *db.Location) (s
 }
 
 // PublishLocation is the resolver for the publishLocation field.
-func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *mutationResolver) PublishLocation(reqCtx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
+	ctx := context.Background()
+	
+	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
 		if input.ID != nil {
 			updateLocationPublishedParams := db.UpdateLocationPublishedParams{
 				ID:          *input.ID,
@@ -189,8 +191,10 @@ func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.Publ
 }
 
 // GetLocation is the resolver for the getLocation field.
-func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocationInput) (*db.Location, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *queryResolver) GetLocation(reqCtx context.Context, input graph.GetLocationInput) (*db.Location, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		if input.ID != nil {
 			if l, err := r.LocationRepository.GetLocation(ctx, *input.ID); err == nil {
 				return &l, nil
@@ -208,8 +212,10 @@ func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocation
 }
 
 // ListLocations is the resolver for the listLocations field.
-func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *queryResolver) ListLocations(reqCtx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		var list []graph.ListLocation
 		var locations []db.Location
 		var err error
@@ -219,7 +225,7 @@ func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocat
 		} else if input.XMin != nil && input.XMax != nil && input.YMin != nil && input.YMax != nil {
 			params := param.NewListLocationsByGeomParams(input)
 			locations, err = r.LocationRepository.ListLocationsByGeom(ctx, params)
-		} else if user := middleware.GetUser(ctx, r.UserRepository); user.IsAdmin {
+		} else if user := middleware.GetUser(reqCtx, r.UserRepository); user.IsAdmin {
 			locations, err = r.LocationRepository.ListLocations(ctx)
 		}
 
