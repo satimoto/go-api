@@ -17,7 +17,8 @@ import (
 )
 
 // CreateReferral is the resolver for the createReferral field.
-func (r *mutationResolver) CreateReferral(ctx context.Context, input graph.CreateReferralInput) (*graph.ResultID, error) {
+func (r *mutationResolver) CreateReferral(reqCtx context.Context, input graph.CreateReferralInput) (*graph.ResultID, error) {
+	ctx := context.Background()
 	user, err := r.UserRepository.GetUserByReferralCode(ctx, util.SqlNullString(input.Referrer))
 
 	if err != nil {
@@ -34,7 +35,7 @@ func (r *mutationResolver) CreateReferral(ctx context.Context, input graph.Creat
 		return nil, gqlerror.Errorf("Error creating referral")
 	}
 
-	ipAddress := middleware.GetIPAddress(ctx)
+	ipAddress := middleware.GetIPAddress(reqCtx)
 
 	if ipAddress == nil {
 		metrics.RecordError("API035", "Error ip address not found", err)
