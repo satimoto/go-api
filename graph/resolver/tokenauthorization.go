@@ -5,7 +5,6 @@ package resolver
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	"github.com/satimoto/go-api/graph"
@@ -18,8 +17,10 @@ import (
 )
 
 // UpdateTokenAuthorization is the resolver for the updateTokenAuthorization field.
-func (r *mutationResolver) UpdateTokenAuthorization(ctx context.Context, input graph.UpdateTokenAuthorizationInput) (*db.TokenAuthorization, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *mutationResolver) UpdateTokenAuthorization(reqCtx context.Context, input graph.UpdateTokenAuthorizationInput) (*db.TokenAuthorization, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		updateTokenAuthorizationRequest := &ocpirpc.UpdateTokenAuthorizationRequest{
 			AuthorizationId: input.AuthorizationID,
 			Authorize:       input.Authorized,
@@ -37,7 +38,7 @@ func (r *mutationResolver) UpdateTokenAuthorization(ctx context.Context, input g
 		if err != nil {
 			metrics.RecordError("API043", "Error retrieving token authorization", err)
 			log.Printf("API043: AuthorizationID=%v", input.AuthorizationID)
-			return nil, errors.New("Error updating token authorization")
+			return nil, gqlerror.Errorf("Error updating token authorization")
 		}
 
 		return &tokenAuthorization, nil

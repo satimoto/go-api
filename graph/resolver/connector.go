@@ -73,8 +73,10 @@ func (r *connectorResolver) LastUpdated(ctx context.Context, obj *db.Connector) 
 }
 
 // GetConnector is the resolver for the getConnector field.
-func (r *queryResolver) GetConnector(ctx context.Context, input graph.GetConnectorInput) (*db.Connector, error) {
-	if userID := middleware.GetUserID(ctx); userID != nil {
+func (r *queryResolver) GetConnector(reqCtx context.Context, input graph.GetConnectorInput) (*db.Connector, error) {
+	ctx := context.Background()
+	
+	if userID := middleware.GetUserID(reqCtx); userID != nil {
 		if input.ID != nil {
 			if connector, err := r.ConnectorRepository.GetConnector(ctx, *input.ID); err == nil {
 				return &connector, nil
