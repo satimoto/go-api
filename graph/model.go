@@ -197,7 +197,7 @@ type StartSession struct {
 	ID              int64   `json:"id"`
 	Status          string  `json:"status"`
 	AuthorizationID string  `json:"authorizationId"`
-	VerificationKey string  `json:"verificationKey"`
+	VerificationKey *string `json:"verificationKey"`
 	LocationUID     string  `json:"locationUid"`
 	EvseUID         *string `json:"evseUid"`
 }

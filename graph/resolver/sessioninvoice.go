@@ -5,7 +5,6 @@ package resolver
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"log"
 	"time"
@@ -41,7 +40,6 @@ func (r *mutationResolver) UpdateSessionInvoice(reqCtx context.Context, id int64
 					return nil, gqlerror.Errorf("Error retrieving node")
 				}
 
-				// TODO: This request should be a non-blocking goroutine
 				lspService := lsp.NewService(node.LspAddr)
 
 				updateSessionInvoiceRequest := &lsprpc.UpdateSessionInvoiceRequest{
@@ -109,11 +107,6 @@ func (r *queryResolver) ListSessionInvoices(reqCtx context.Context, input graph.
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
-}
-
-// Signature is the resolver for the signature field.
-func (r *sessionInvoiceResolver) Signature(ctx context.Context, obj *db.SessionInvoice) (string, error) {
-	return hex.EncodeToString(obj.Signature), nil
 }
 
 // LastUpdated is the resolver for the lastUpdated field.

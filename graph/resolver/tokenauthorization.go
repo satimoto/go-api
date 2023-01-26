@@ -5,7 +5,6 @@ package resolver
 
 import (
 	"context"
-	"encoding/hex"
 	"log"
 
 	"github.com/satimoto/go-api/graph"
@@ -14,7 +13,6 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/util"
 	"github.com/satimoto/go-ocpi/ocpirpc"
-	ocpiTokenAuthorization "github.com/satimoto/go-ocpi/pkg/ocpi/tokenauthorization"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -81,12 +79,7 @@ func (r *tokenAuthorizationResolver) Token(ctx context.Context, obj *db.TokenAut
 
 // VerificationKey is the resolver for the verificationKey field.
 func (r *tokenAuthorizationResolver) VerificationKey(ctx context.Context, obj *db.TokenAuthorization) (*string, error) {
-	if verificationKey, err := ocpiTokenAuthorization.CreateVerificationKey(*obj); err == nil {
-		encodedVerificationKey := hex.EncodeToString(verificationKey)
-		return &encodedVerificationKey, nil
-	}
-
-	return nil, gqlerror.Errorf("Error generating verification key")
+	return nil, nil
 }
 
 // TokenAuthorization returns graph.TokenAuthorizationResolver implementation.
