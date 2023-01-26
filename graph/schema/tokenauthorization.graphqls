@@ -5,7 +5,7 @@ type TokenAuthorization {
     token: Token!
     authorizationId: String!
     authorized: Boolean!
-    verificationKey: String
+    verificationKey: String @deprecated(reason: "No longer used")
 }
 
 input UpdateTokenAuthorizationInput {

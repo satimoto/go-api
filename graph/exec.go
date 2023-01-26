@@ -701,8 +701,6 @@ type SessionResolver interface {
 	LastUpdated(ctx context.Context, obj *db.Session) (string, error)
 }
 type SessionInvoiceResolver interface {
-	Signature(ctx context.Context, obj *db.SessionInvoice) (string, error)
-
 	LastUpdated(ctx context.Context, obj *db.SessionInvoice) (string, error)
 }
 type StatusScheduleResolver interface {
@@ -16270,7 +16268,7 @@ func (ec *executionContext) _SessionInvoice_signature(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.SessionInvoice().Signature(rctx, obj)
+		return obj.Signature, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -16291,8 +16289,8 @@ func (ec *executionContext) fieldContext_SessionInvoice_signature(ctx context.Co
 	fc = &graphql.FieldContext{
 		Object:     "SessionInvoice",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -16761,14 +16759,11 @@ func (ec *executionContext) _StartSession_verificationKey(ctx context.Context, f
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_StartSession_verificationKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -25679,25 +25674,12 @@ func (ec *executionContext) _SessionInvoice(ctx context.Context, sel ast.Selecti
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "signature":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._SessionInvoice_signature(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._SessionInvoice_signature(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
 			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		case "isSettled":
 
 			out.Values[i] = ec._SessionInvoice_isSettled(ctx, field, obj)
@@ -25806,9 +25788,6 @@ func (ec *executionContext) _StartSession(ctx context.Context, sel ast.Selection
 
 			out.Values[i] = ec._StartSession_verificationKey(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "locationUid":
 
 			out.Values[i] = ec._StartSession_locationUid(ctx, field, obj)
