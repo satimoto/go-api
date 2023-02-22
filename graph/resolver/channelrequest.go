@@ -64,10 +64,10 @@ func (r *channelRequestResolver) Scid(ctx context.Context, obj *db.ChannelReques
 }
 
 // CreateChannelRequest is the resolver for the createChannelRequest field.
-func (r *mutationResolver) CreateChannelRequest(reqCtx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
-	ctx := context.Background()
+func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
+	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
 		paymentHashBytes, err := base64.StdEncoding.DecodeString(input.PaymentHash)
 
 		if err != nil {
@@ -98,11 +98,11 @@ func (r *mutationResolver) CreateChannelRequest(reqCtx context.Context, input gr
 		var node *db.Node
 
 		if user.NodeID.Valid {
-			if n, err := r.NodeRepository.GetNode(ctx, user.NodeID.Int64); err == nil {
+			if n, err := r.NodeRepository.GetNode(backgroundCtx, user.NodeID.Int64); err == nil {
 				node = &n
 			}
 		} else {
-			if nodes, err := r.NodeRepository.ListActiveNodes(ctx); err == nil && len(nodes) > 0 {
+			if nodes, err := r.NodeRepository.ListActiveNodes(backgroundCtx); err == nil && len(nodes) > 0 {
 				for _, n := range nodes {
 					node = &n
 					break
@@ -116,7 +116,7 @@ func (r *mutationResolver) CreateChannelRequest(reqCtx context.Context, input gr
 			userUpdateParams := param.NewUpdateUserParams(*user)
 			userUpdateParams.NodeID = dbUtil.SqlNullInt64(node.ID)
 
-			r.UserRepository.UpdateUser(ctx, userUpdateParams)
+			r.UserRepository.UpdateUser(backgroundCtx, userUpdateParams)
 		}
 
 		// TODO: This request should be a non-blocking goroutine
@@ -128,7 +128,7 @@ func (r *mutationResolver) CreateChannelRequest(reqCtx context.Context, input gr
 			AmountMsat: amountMsat,
 		}
 
-		openChannelResponse, err := lspService.OpenChannel(ctx, openChannelRequest)
+		openChannelResponse, err := lspService.OpenChannel(backgroundCtx, openChannelRequest)
 
 		if err != nil {
 			metrics.RecordError("API009", "Error allocating scid", err)
@@ -155,7 +155,7 @@ func (r *mutationResolver) CreateChannelRequest(reqCtx context.Context, input gr
 			CltvExpiryDelta:           int64(openChannelResponse.CltvExpiryDelta),
 		}
 
-		channelRequest, err := r.ChannelRequestRepository.CreateChannelRequest(ctx, createChannelRequestParams)
+		channelRequest, err := r.ChannelRequestRepository.CreateChannelRequest(backgroundCtx, createChannelRequestParams)
 
 		if err != nil {
 			metrics.RecordError("API010", "Error creating channel request", err)

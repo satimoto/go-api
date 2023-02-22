@@ -16,10 +16,10 @@ import (
 )
 
 // StartSession is the resolver for the startSession field.
-func (r *mutationResolver) StartSession(reqCtx context.Context, input graph.StartSessionInput) (*graph.StartSession, error) {
-	ctx := context.Background()
-	
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
+func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSessionInput) (*graph.StartSession, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
 		if !user.DeviceToken.Valid {
 			metrics.RecordError("API046", "Error starting session", errors.New("notifications not enabled"))
 			log.Printf("API046: UserID: %#v", user.ID)
@@ -27,7 +27,7 @@ func (r *mutationResolver) StartSession(reqCtx context.Context, input graph.Star
 		}
 
 		startSessionRequest := command.NewStartSessionRequest(user.ID, input)
-		startSessionResponse, err := r.OcpiService.StartSession(ctx, startSessionRequest)
+		startSessionResponse, err := r.OcpiService.StartSession(backgroundCtx, startSessionRequest)
 
 		if err != nil {
 			metrics.RecordError("API011", "Error starting session", err)
@@ -42,12 +42,12 @@ func (r *mutationResolver) StartSession(reqCtx context.Context, input graph.Star
 }
 
 // StopSession is the resolver for the stopSession field.
-func (r *mutationResolver) StopSession(reqCtx context.Context, input graph.StopSessionInput) (*graph.StopSession, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
+func (r *mutationResolver) StopSession(ctx context.Context, input graph.StopSessionInput) (*graph.StopSession, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		stopSessionRequest := command.NewStopSessionRequest(*userID, input)
-		stopSessionResponse, err := r.OcpiService.StopSession(ctx, stopSessionRequest)
+		stopSessionResponse, err := r.OcpiService.StopSession(backgroundCtx, stopSessionRequest)
 
 		if err != nil {
 			metrics.RecordError("API012", "Error stopping session", err)

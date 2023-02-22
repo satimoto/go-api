@@ -152,17 +152,17 @@ func (r *locationResolver) LastUpdated(ctx context.Context, obj *db.Location) (s
 }
 
 // PublishLocation is the resolver for the publishLocation field.
-func (r *mutationResolver) PublishLocation(reqCtx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
-	ctx := context.Background()
-	
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		if input.ID != nil {
 			updateLocationPublishedParams := db.UpdateLocationPublishedParams{
 				ID:          *input.ID,
 				IsPublished: input.IsPublished,
 			}
 
-			if err := r.LocationRepository.UpdateLocationPublished(ctx, updateLocationPublishedParams); err == nil {
+			if err := r.LocationRepository.UpdateLocationPublished(backgroundCtx, updateLocationPublishedParams); err == nil {
 				return &graph.ResultOk{Ok: true}, nil
 			}
 		} else if input.CredentialID != nil {
@@ -171,7 +171,7 @@ func (r *mutationResolver) PublishLocation(reqCtx context.Context, input graph.P
 				IsPublished:  input.IsPublished,
 			}
 
-			if err := r.LocationRepository.UpdateLocationsPublishedByCredential(ctx, updateLocationsPublishedByCredentialParams); err == nil {
+			if err := r.LocationRepository.UpdateLocationsPublishedByCredential(backgroundCtx, updateLocationsPublishedByCredentialParams); err == nil {
 				return &graph.ResultOk{Ok: true}, nil
 			}
 		} else if input.PartyID != nil && input.CountryCode != nil {
@@ -181,7 +181,7 @@ func (r *mutationResolver) PublishLocation(reqCtx context.Context, input graph.P
 				IsPublished: input.IsPublished,
 			}
 
-			if err := r.LocationRepository.UpdateLocationsPublishedByPartyAndCountryCode(ctx, updateLocationsPublishedByPartyAndCountryCodeParams); err == nil {
+			if err := r.LocationRepository.UpdateLocationsPublishedByPartyAndCountryCode(backgroundCtx, updateLocationsPublishedByPartyAndCountryCodeParams); err == nil {
 				return &graph.ResultOk{Ok: true}, nil
 			}
 		}
@@ -191,16 +191,16 @@ func (r *mutationResolver) PublishLocation(reqCtx context.Context, input graph.P
 }
 
 // GetLocation is the resolver for the getLocation field.
-func (r *queryResolver) GetLocation(reqCtx context.Context, input graph.GetLocationInput) (*db.Location, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
+func (r *queryResolver) GetLocation(ctx context.Context, input graph.GetLocationInput) (*db.Location, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		if input.ID != nil {
-			if l, err := r.LocationRepository.GetLocation(ctx, *input.ID); err == nil {
+			if l, err := r.LocationRepository.GetLocation(backgroundCtx, *input.ID); err == nil {
 				return &l, nil
 			}
 		} else if input.UID != nil {
-			if l, err := r.LocationRepository.GetLocationByUid(ctx, *input.UID); err == nil {
+			if l, err := r.LocationRepository.GetLocationByUid(backgroundCtx, *input.UID); err == nil {
 				return &l, nil
 			}
 		}
@@ -212,21 +212,21 @@ func (r *queryResolver) GetLocation(reqCtx context.Context, input graph.GetLocat
 }
 
 // ListLocations is the resolver for the listLocations field.
-func (r *queryResolver) ListLocations(reqCtx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
+func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocationsInput) ([]graph.ListLocation, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		var list []graph.ListLocation
 		var locations []db.Location
 		var err error
 
 		if input.Country != nil && len(*input.Country) > 0 {
-			locations, err = r.LocationRepository.ListLocationsByCountry(ctx, *input.Country)
+			locations, err = r.LocationRepository.ListLocationsByCountry(backgroundCtx, *input.Country)
 		} else if input.XMin != nil && input.XMax != nil && input.YMin != nil && input.YMax != nil {
 			params := param.NewListLocationsByGeomParams(input)
-			locations, err = r.LocationRepository.ListLocationsByGeom(ctx, params)
-		} else if user := middleware.GetUser(reqCtx, r.UserRepository); user.IsAdmin {
-			locations, err = r.LocationRepository.ListLocations(ctx)
+			locations, err = r.LocationRepository.ListLocationsByGeom(backgroundCtx, params)
+		} else if user := middleware.GetUser(ctx, r.UserRepository); user.IsAdmin {
+			locations, err = r.LocationRepository.ListLocations(backgroundCtx)
 		}
 
 		if err == nil {

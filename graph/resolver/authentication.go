@@ -49,9 +49,9 @@ func (r *mutationResolver) CreateAuthentication(ctx context.Context, action grap
 }
 
 // ExchangeAuthentication is the resolver for the exchangeAuthentication field.
-func (r *mutationResolver) ExchangeAuthentication(reqCtx context.Context, code string) (*graph.ExchangeAuthentication, error) {
-	ctx := context.Background()
-	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, code)
+func (r *mutationResolver) ExchangeAuthentication(ctx context.Context, code string) (*graph.ExchangeAuthentication, error) {
+	backgroundCtx := context.Background()
+	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(backgroundCtx, code)
 
 	if err != nil {
 		metrics.RecordError("API005", "Authentication not found", err)
@@ -65,7 +65,7 @@ func (r *mutationResolver) ExchangeAuthentication(reqCtx context.Context, code s
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
-	user, err := r.UserRepository.GetUserByLinkingPubkey(ctx, auth.LinkingPubkey.String)
+	user, err := r.UserRepository.GetUserByLinkingPubkey(backgroundCtx, auth.LinkingPubkey.String)
 
 	if err != nil {
 		metrics.RecordError("API007", "No linked user", err)
@@ -79,7 +79,7 @@ func (r *mutationResolver) ExchangeAuthentication(reqCtx context.Context, code s
 		return nil, gqlerror.Errorf("Error signing token")
 	}
 
-	r.AuthenticationResolver.Repository.DeleteAuthentication(ctx, auth.ID)
+	r.AuthenticationResolver.Repository.DeleteAuthentication(backgroundCtx, auth.ID)
 
 	return &graph.ExchangeAuthentication{
 		Token: token,
@@ -87,9 +87,9 @@ func (r *mutationResolver) ExchangeAuthentication(reqCtx context.Context, code s
 }
 
 // VerifyAuthentication is the resolver for the verifyAuthentication field.
-func (r *queryResolver) VerifyAuthentication(reqCtx context.Context, code string) (*graph.VerifyAuthentication, error) {
-	ctx := context.Background()
-	authentication, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, code)
+func (r *queryResolver) VerifyAuthentication(ctx context.Context, code string) (*graph.VerifyAuthentication, error) {
+	backgroundCtx := context.Background()
+	authentication, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(backgroundCtx, code)
 
 	if err != nil || !authentication.Signature.Valid {
 		return &graph.VerifyAuthentication{
