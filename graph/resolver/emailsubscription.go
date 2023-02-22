@@ -21,9 +21,9 @@ import (
 )
 
 // CreateEmailSubscription is the resolver for the createEmailSubscription field.
-func (r *mutationResolver) CreateEmailSubscription(reqCtx context.Context, input graph.CreateEmailSubscriptionInput) (*db.EmailSubscription, error) {
-	ctx := context.Background()
-	emailSubscription, err := r.EmailSubscriptionRepository.CreateEmailSubscription(ctx, db.CreateEmailSubscriptionParams{
+func (r *mutationResolver) CreateEmailSubscription(ctx context.Context, input graph.CreateEmailSubscriptionInput) (*db.EmailSubscription, error) {
+	backgroundCtx := context.Background()
+	emailSubscription, err := r.EmailSubscriptionRepository.CreateEmailSubscription(backgroundCtx, db.CreateEmailSubscriptionParams{
 		Email:            strings.ToLower(input.Email),
 		Locale:           util.DefaultString(input.Locale, "en"),
 		VerificationCode: util.RandomVerificationCode(),
@@ -61,16 +61,16 @@ func (r *mutationResolver) CreateEmailSubscription(reqCtx context.Context, input
 }
 
 // VerifyEmailSubscription is the resolver for the verifyEmailSubscription field.
-func (r *mutationResolver) VerifyEmailSubscription(reqCtx context.Context, input graph.VerifyEmailSubscriptionInput) (*db.EmailSubscription, error) {
-	ctx := context.Background()
-	emailSubscription, err := r.EmailSubscriptionRepository.GetEmailSubscriptionByEmail(ctx, strings.ToLower(input.Email))
+func (r *mutationResolver) VerifyEmailSubscription(ctx context.Context, input graph.VerifyEmailSubscriptionInput) (*db.EmailSubscription, error) {
+	backgroundCtx := context.Background()
+	emailSubscription, err := r.EmailSubscriptionRepository.GetEmailSubscriptionByEmail(backgroundCtx, strings.ToLower(input.Email))
 
 	if err != nil {
 		return nil, gqlerror.Errorf("Email subscription not found")
 	}
 
 	if emailSubscription.VerificationCode == input.VerificationCode {
-		emailSubscription, err = r.EmailSubscriptionRepository.UpdateEmailSubscription(ctx, db.UpdateEmailSubscriptionParams{
+		emailSubscription, err = r.EmailSubscriptionRepository.UpdateEmailSubscription(backgroundCtx, db.UpdateEmailSubscriptionParams{
 			ID:               emailSubscription.ID,
 			Email:            emailSubscription.Email,
 			Locale:           emailSubscription.Locale,

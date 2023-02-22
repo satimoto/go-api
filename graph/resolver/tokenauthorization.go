@@ -17,23 +17,23 @@ import (
 )
 
 // UpdateTokenAuthorization is the resolver for the updateTokenAuthorization field.
-func (r *mutationResolver) UpdateTokenAuthorization(reqCtx context.Context, input graph.UpdateTokenAuthorizationInput) (*db.TokenAuthorization, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
+func (r *mutationResolver) UpdateTokenAuthorization(ctx context.Context, input graph.UpdateTokenAuthorizationInput) (*db.TokenAuthorization, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		updateTokenAuthorizationRequest := &ocpirpc.UpdateTokenAuthorizationRequest{
 			AuthorizationId: input.AuthorizationID,
 			Authorize:       input.Authorized,
 		}
 
-		_, err := r.OcpiService.UpdateTokenAuthorization(ctx, updateTokenAuthorizationRequest)
+		_, err := r.OcpiService.UpdateTokenAuthorization(backgroundCtx, updateTokenAuthorizationRequest)
 
 		if err != nil {
 			metrics.RecordError("API042", "Error updating token authorization", err)
 			log.Printf("API042: Params=%#v", updateTokenAuthorizationRequest)
 		}
 
-		tokenAuthorization, err := r.TokenAuthorizationRepository.GetTokenAuthorizationByAuthorizationID(ctx, input.AuthorizationID)
+		tokenAuthorization, err := r.TokenAuthorizationRepository.GetTokenAuthorizationByAuthorizationID(backgroundCtx, input.AuthorizationID)
 
 		if err != nil {
 			metrics.RecordError("API043", "Error retrieving token authorization", err)

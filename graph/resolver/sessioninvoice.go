@@ -20,11 +20,11 @@ import (
 )
 
 // UpdateSessionInvoice is the resolver for the updateSessionInvoice field.
-func (r *mutationResolver) UpdateSessionInvoice(reqCtx context.Context, id int64) (*db.SessionInvoice, error) {
-	ctx := context.Background()
-	
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
-		if sessionInvoice, err := r.SessionRepository.GetSessionInvoice(ctx, id); err == nil && user.ID == sessionInvoice.UserID {
+func (r *mutationResolver) UpdateSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+		if sessionInvoice, err := r.SessionRepository.GetSessionInvoice(backgroundCtx, id); err == nil && user.ID == sessionInvoice.UserID {
 			if sessionInvoice.IsExpired && !sessionInvoice.IsSettled {
 				if !user.NodeID.Valid {
 					metrics.RecordError("API048", "Error user has no node", errors.New("no node available"))
@@ -32,7 +32,7 @@ func (r *mutationResolver) UpdateSessionInvoice(reqCtx context.Context, id int64
 					return nil, gqlerror.Errorf("No node available")
 				}
 
-				node, err := r.NodeRepository.GetNode(ctx, user.NodeID.Int64)
+				node, err := r.NodeRepository.GetNode(backgroundCtx, user.NodeID.Int64)
 
 				if err != nil {
 					metrics.RecordError("API049", "Error retrieving node", err)
@@ -47,7 +47,7 @@ func (r *mutationResolver) UpdateSessionInvoice(reqCtx context.Context, id int64
 					UserId: user.ID,
 				}
 
-				updateSessionInvoiceResponse, err := lspService.UpdateSessionInvoice(ctx, updateSessionInvoiceRequest)
+				updateSessionInvoiceResponse, err := lspService.UpdateSessionInvoice(backgroundCtx, updateSessionInvoiceRequest)
 
 				if err != nil {
 					metrics.RecordError("API050", "Error updating session invoice", err)
@@ -55,7 +55,7 @@ func (r *mutationResolver) UpdateSessionInvoice(reqCtx context.Context, id int64
 					return nil, gqlerror.Errorf("Error updating session invoice")
 				}
 
-				updatedSessionInvoice, err := r.SessionRepository.GetSessionInvoice(ctx, id)
+				updatedSessionInvoice, err := r.SessionRepository.GetSessionInvoice(backgroundCtx, id)
 
 				if err != nil {
 					metrics.RecordError("API051", "Error updating invoice", err)
@@ -78,11 +78,11 @@ func (r *mutationResolver) UpdateSessionInvoice(reqCtx context.Context, id int64
 }
 
 // GetSessionInvoice is the resolver for the getSessionInvoice field.
-func (r *queryResolver) GetSessionInvoice(reqCtx context.Context, id int64) (*db.SessionInvoice, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
-		if s, err := r.SessionRepository.GetSessionInvoice(ctx, id); err == nil && *userID == s.UserID {
+func (r *queryResolver) GetSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		if s, err := r.SessionRepository.GetSessionInvoice(backgroundCtx, id); err == nil && *userID == s.UserID {
 			return &s, nil
 		}
 
@@ -93,13 +93,13 @@ func (r *queryResolver) GetSessionInvoice(reqCtx context.Context, id int64) (*db
 }
 
 // ListSessionInvoices is the resolver for the listSessionInvoices field.
-func (r *queryResolver) ListSessionInvoices(reqCtx context.Context, input graph.ListSessionInvoicesInput) ([]db.SessionInvoice, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
+func (r *queryResolver) ListSessionInvoices(ctx context.Context, input graph.ListSessionInvoicesInput) ([]db.SessionInvoice, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		listSessionInvoicesByUserIDParams := param.NewListSessionInvoicesByUserIDParams(*userID, input)
 
-		if s, err := r.SessionRepository.ListSessionInvoicesByUserID(ctx, listSessionInvoicesByUserIDParams); err == nil {
+		if s, err := r.SessionRepository.ListSessionInvoicesByUserID(backgroundCtx, listSessionInvoicesByUserIDParams); err == nil {
 			return s, nil
 		}
 

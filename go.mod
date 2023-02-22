@@ -11,8 +11,9 @@ require (
 	github.com/go-chi/render v1.0.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
+	github.com/johnfercher/maroto v0.39.0
 	github.com/joho/godotenv v1.4.0
-	github.com/satimoto/go-datastore v0.3.1-0.20230102194740-a5839718733c
+	github.com/satimoto/go-datastore v0.3.1-0.20230222104924-c9bc7dee0e80
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.5.1
 )
@@ -20,6 +21,7 @@ require (
 require (
 	github.com/aead/siphash v1.0.1 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/btcsuite/btcd v0.23.4 // indirect
 	github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f // indirect
 	github.com/btcsuite/btcwallet v0.16.5 // indirect
@@ -41,6 +43,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jrick/logrotate v1.0.0 // indirect
+	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/kkdai/bstream v1.0.0 // indirect
 	github.com/lib/pq v1.10.3 // indirect
 	github.com/lightninglabs/gozmq v0.0.0-20191113021534-d20a764486bf // indirect
@@ -51,6 +54,7 @@ require (
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/paulmach/orb v0.7.1 // indirect
+	github.com/ruudk/golang-pdf417 v0.0.0-20201230142125-a7e3863a1245 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	github.com/tidwall/gjson v1.6.1 // indirect
 	github.com/tidwall/match v1.0.1 // indirect
@@ -70,7 +74,7 @@ require (
 	github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f
 	github.com/satimoto/go-lsp v0.3.1-0.20230102080541-d6a2636034ed
 	github.com/satimoto/go-ocpi v0.3.2-0.20230102200516-0c83f6d9f88e
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.6.0
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.1 // indirect

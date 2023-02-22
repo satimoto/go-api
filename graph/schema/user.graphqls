@@ -18,6 +18,10 @@ input PongUserInput {
 
 input UpdateUserInput {
     deviceToken: String!
+    name: String
+    address: String
+    postalCode: String
+    city: String
 }
 
 extend type Query {

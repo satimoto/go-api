@@ -16,13 +16,13 @@ import (
 )
 
 // CreateParty is the resolver for the createParty field.
-func (r *mutationResolver) CreateParty(reqCtx context.Context, input graph.CreatePartyInput) (*db.Party, error) {
-	ctx := context.Background()
-	
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *mutationResolver) CreateParty(ctx context.Context, input graph.CreatePartyInput) (*db.Party, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		createPartyParams := param.NewCreatePartyParams(input)
 
-		party, err := r.PartyRepository.CreateParty(ctx, createPartyParams)
+		party, err := r.PartyRepository.CreateParty(backgroundCtx, createPartyParams)
 
 		if err != nil {
 			metrics.RecordError("API055", "Error creating party", err)
@@ -37,13 +37,13 @@ func (r *mutationResolver) CreateParty(reqCtx context.Context, input graph.Creat
 }
 
 // UpdateParty is the resolver for the updateParty field.
-func (r *mutationResolver) UpdateParty(reqCtx context.Context, input graph.UpdatePartyInput) (*db.Party, error) {
-	ctx := context.Background()
-	
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *mutationResolver) UpdateParty(ctx context.Context, input graph.UpdatePartyInput) (*db.Party, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		updatePartyByCredentialParams := param.NewUpdatePartyByCredentialParams(input)
 
-		party, err := r.PartyRepository.UpdatePartyByCredential(ctx, updatePartyByCredentialParams)
+		party, err := r.PartyRepository.UpdatePartyByCredential(backgroundCtx, updatePartyByCredentialParams)
 
 		if err != nil {
 			metrics.RecordError("API056", "Error updating party", err)
