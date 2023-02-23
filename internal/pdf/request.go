@@ -16,10 +16,8 @@ import (
 	"github.com/johnfercher/maroto/pkg/props"
 	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
-	"github.com/satimoto/go-api/internal/util"
-
-	//"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/template"
+	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
 	dbUtil "github.com/satimoto/go-datastore/pkg/util"
 )
