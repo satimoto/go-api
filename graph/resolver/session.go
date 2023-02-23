@@ -44,7 +44,7 @@ func (r *queryResolver) ListSessions(ctx context.Context) ([]db.Session, error) 
 	backgroundCtx := context.Background()
 
 	if userID := middleware.GetUserID(ctx); userID != nil {
-		if s, err := r.SessionRepository.ListCompletedSessionsByUserID(backgroundCtx, *userID); err == nil {
+		if s, err := r.SessionRepository.ListInvoicedSessionsByUserID(backgroundCtx, *userID); err == nil {
 			return s, nil
 		}
 
