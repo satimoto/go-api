@@ -155,7 +155,7 @@ func (r *locationResolver) LastUpdated(ctx context.Context, obj *db.Location) (s
 func (r *mutationResolver) PublishLocation(ctx context.Context, input graph.PublishLocationInput) (*graph.ResultOk, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		if input.ID != nil {
 			updateLocationPublishedParams := db.UpdateLocationPublishedParams{
 				ID:          *input.ID,
@@ -225,7 +225,7 @@ func (r *queryResolver) ListLocations(ctx context.Context, input graph.ListLocat
 		} else if input.XMin != nil && input.XMax != nil && input.YMin != nil && input.YMax != nil {
 			params := param.NewListLocationsByGeomParams(input)
 			locations, err = r.LocationRepository.ListLocationsByGeom(backgroundCtx, params)
-		} else if user := middleware.GetUser(ctx, r.UserRepository); user.IsAdmin {
+		} else if user := middleware.GetCtxUser(ctx, r.UserRepository); user.IsAdmin {
 			locations, err = r.LocationRepository.ListLocations(backgroundCtx)
 		}
 

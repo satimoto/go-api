@@ -19,7 +19,7 @@ import (
 func (r *mutationResolver) StartSession(ctx context.Context, input graph.StartSessionInput) (*graph.StartSession, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
 		if !user.DeviceToken.Valid {
 			metrics.RecordError("API046", "Error starting session", errors.New("notifications not enabled"))
 			log.Printf("API046: UserID: %#v", user.ID)

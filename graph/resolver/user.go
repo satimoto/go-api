@@ -77,7 +77,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 func (r *mutationResolver) PingUser(ctx context.Context, id int64) (*graph.ResultOk, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		if toUser, err := r.UserRepository.GetUser(backgroundCtx, id); err == nil && toUser.DeviceToken.Valid {
 			ping, err := uuid.NewUUID()
 
@@ -125,7 +125,7 @@ func (r *mutationResolver) PongUser(ctx context.Context, input graph.PongUserInp
 func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUserInput) (*db.User, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
 		updateUserParams := param.NewUpdateUserParams(*user)
 		updateUserParams.DeviceToken = dbUtil.SqlNullString(input.DeviceToken)
 		updateUserParams.Name = dbUtil.SqlNullString(input.Name)
@@ -162,7 +162,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 
 // GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context) (*db.User, error) {
-	user := middleware.GetUser(ctx, r.UserRepository)
+	user := middleware.GetCtxUser(ctx, r.UserRepository)
 
 	if user != nil {
 		return user, nil

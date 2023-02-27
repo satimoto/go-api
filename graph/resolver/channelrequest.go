@@ -67,7 +67,7 @@ func (r *channelRequestResolver) Scid(ctx context.Context, obj *db.ChannelReques
 func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph.CreateChannelRequestInput) (*db.ChannelRequest, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
 		paymentHashBytes, err := base64.StdEncoding.DecodeString(input.PaymentHash)
 
 		if err != nil {
