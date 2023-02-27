@@ -57,7 +57,7 @@ func (r *tariffResolver) CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (
 
 // CommissionPercent is the resolver for the commissionPercent field.
 func (r *tariffResolver) CommissionPercent(ctx context.Context, obj *db.Tariff) (float64, error) {
-	user := middleware.GetUser(ctx, r.UserRepository)
+	user := middleware.GetCtxUser(ctx, r.UserRepository)
 
 	if user == nil {
 		return 0, gqlerror.Errorf("Error retrieving user commission")

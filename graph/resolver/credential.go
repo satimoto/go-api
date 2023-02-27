@@ -19,7 +19,7 @@ import (
 func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.CreateCredentialInput) (*db.Credential, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewCreateCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.CreateCredential(backgroundCtx, credentialRequest)
 
@@ -39,7 +39,7 @@ func (r *mutationResolver) CreateCredential(ctx context.Context, input graph.Cre
 func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.RegisterCredentialInput) (*graph.ResultID, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewRegisterCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.RegisterCredential(backgroundCtx, credentialRequest)
 
@@ -59,7 +59,7 @@ func (r *mutationResolver) RegisterCredential(ctx context.Context, input graph.R
 func (r *mutationResolver) SyncCredential(ctx context.Context, input graph.SyncCredentialInput) (*graph.ResultID, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewSyncCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.SyncCredential(backgroundCtx, credentialRequest)
 
@@ -79,7 +79,7 @@ func (r *mutationResolver) SyncCredential(ctx context.Context, input graph.SyncC
 func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph.UnregisterCredentialInput) (*graph.ResultID, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		credentialRequest := credential.NewUnregisterCredentialRequest(input)
 		credentialResponse, err := r.OcpiService.UnregisterCredential(backgroundCtx, credentialRequest)
 
@@ -99,7 +99,7 @@ func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph
 func (r *queryResolver) ListCredentials(ctx context.Context) ([]db.Credential, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		return r.CredentialRepository.ListCredentials(backgroundCtx)
 	}
 

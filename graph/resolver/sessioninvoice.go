@@ -23,7 +23,7 @@ import (
 func (r *mutationResolver) UpdateSessionInvoice(ctx context.Context, id int64) (*db.SessionInvoice, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
 		if sessionInvoice, err := r.SessionRepository.GetSessionInvoice(backgroundCtx, id); err == nil && user.ID == sessionInvoice.UserID {
 			if sessionInvoice.IsExpired && !sessionInvoice.IsSettled {
 				if !user.NodeID.Valid {

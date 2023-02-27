@@ -19,7 +19,7 @@ import (
 func (r *mutationResolver) CreateParty(ctx context.Context, input graph.CreatePartyInput) (*db.Party, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		createPartyParams := param.NewCreatePartyParams(input)
 
 		party, err := r.PartyRepository.CreateParty(backgroundCtx, createPartyParams)
@@ -40,7 +40,7 @@ func (r *mutationResolver) CreateParty(ctx context.Context, input graph.CreatePa
 func (r *mutationResolver) UpdateParty(ctx context.Context, input graph.UpdatePartyInput) (*db.Party, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		updatePartyByCredentialParams := param.NewUpdatePartyByCredentialParams(input)
 
 		party, err := r.PartyRepository.UpdatePartyByCredential(backgroundCtx, updatePartyByCredentialParams)

@@ -66,7 +66,7 @@ func (r *invoiceRequestResolver) PaymentRequest(ctx context.Context, obj *db.Inv
 func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph.UpdateInvoiceRequestInput) (*db.InvoiceRequest, error) {
 	backgroundCtx := context.Background()
 
-	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
 		if !user.NodeID.Valid {
 			metrics.RecordError("API026", "Error user has no node", errors.New("no node available"))
 			log.Printf("API026: Input=%#v", input)
