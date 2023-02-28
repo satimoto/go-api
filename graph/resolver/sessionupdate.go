@@ -12,7 +12,7 @@ import (
 )
 
 // ListSessionUpdates is the resolver for the listSessionUpdates field.
-func (r *queryResolver) ListSessionUpdates(ctx context.Context, id int64) ([]db.SessionUpdate, error) {	
+func (r *queryResolver) ListSessionUpdates(ctx context.Context, id int64) ([]db.SessionUpdate, error) {
 	return r.SessionRepository.ListSessionUpdatesBySessionID(ctx, id)
 }
 

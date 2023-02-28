@@ -237,6 +237,7 @@ type ComplexityRoot struct {
 		PriceFiat      func(childComplexity int) int
 		PriceMsat      func(childComplexity int) int
 		Promotion      func(childComplexity int) int
+		ReleaseDate    func(childComplexity int) int
 		TaxFiat        func(childComplexity int) int
 		TaxMsat        func(childComplexity int) int
 		TotalFiat      func(childComplexity int) int
@@ -611,6 +612,8 @@ type InvoiceRequestResolver interface {
 	TaxMsat(ctx context.Context, obj *db.InvoiceRequest) (*int, error)
 
 	PaymentRequest(ctx context.Context, obj *db.InvoiceRequest) (*string, error)
+
+	ReleaseDate(ctx context.Context, obj *db.InvoiceRequest) (*string, error)
 }
 type LocationResolver interface {
 	Type(ctx context.Context, obj *db.Location) (string, error)
@@ -1524,6 +1527,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.InvoiceRequest.Promotion(childComplexity), true
+
+	case "InvoiceRequest.releaseDate":
+		if e.complexity.InvoiceRequest.ReleaseDate == nil {
+			break
+		}
+
+		return e.complexity.InvoiceRequest.ReleaseDate(childComplexity), true
 
 	case "InvoiceRequest.taxFiat":
 		if e.complexity.InvoiceRequest.TaxFiat == nil {
@@ -8877,6 +8887,47 @@ func (ec *executionContext) fieldContext_InvoiceRequest_isSettled(ctx context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _InvoiceRequest_releaseDate(ctx context.Context, field graphql.CollectedField, obj *db.InvoiceRequest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_InvoiceRequest_releaseDate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.InvoiceRequest().ReleaseDate(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_InvoiceRequest_releaseDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "InvoiceRequest",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ListLocation_uid(ctx context.Context, field graphql.CollectedField, obj *ListLocation) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ListLocation_uid(ctx, field)
 	if err != nil {
@@ -11542,6 +11593,8 @@ func (ec *executionContext) fieldContext_Mutation_updateInvoiceRequest(ctx conte
 				return ec.fieldContext_InvoiceRequest_paymentRequest(ctx, field)
 			case "isSettled":
 				return ec.fieldContext_InvoiceRequest_isSettled(ctx, field)
+			case "releaseDate":
+				return ec.fieldContext_InvoiceRequest_releaseDate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type InvoiceRequest", field.Name)
 		},
@@ -13662,6 +13715,8 @@ func (ec *executionContext) fieldContext_Query_listInvoiceRequests(ctx context.C
 				return ec.fieldContext_InvoiceRequest_paymentRequest(ctx, field)
 			case "isSettled":
 				return ec.fieldContext_InvoiceRequest_isSettled(ctx, field)
+			case "releaseDate":
+				return ec.fieldContext_InvoiceRequest_releaseDate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type InvoiceRequest", field.Name)
 		},
@@ -15874,6 +15929,8 @@ func (ec *executionContext) fieldContext_Session_invoiceRequest(ctx context.Cont
 				return ec.fieldContext_InvoiceRequest_paymentRequest(ctx, field)
 			case "isSettled":
 				return ec.fieldContext_InvoiceRequest_isSettled(ctx, field)
+			case "releaseDate":
+				return ec.fieldContext_InvoiceRequest_releaseDate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type InvoiceRequest", field.Name)
 		},
@@ -24152,6 +24209,23 @@ func (ec *executionContext) _InvoiceRequest(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "releaseDate":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._InvoiceRequest_releaseDate(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

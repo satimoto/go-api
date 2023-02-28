@@ -671,8 +671,6 @@ github.com/ruudk/golang-pdf417 v0.0.0-20181029194003-1af4ab5afa58/go.mod h1:6lfF
 github.com/ruudk/golang-pdf417 v0.0.0-20201230142125-a7e3863a1245 h1:K1Xf3bKttbF+koVGaX5xngRIZ5bVjbmPnaxE/dR08uY=
 github.com/ruudk/golang-pdf417 v0.0.0-20201230142125-a7e3863a1245/go.mod h1:pQAZKsJ8yyVxGRWYNEm9oFB8ieLgKFnamEyDmSA0BRk=
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
-github.com/satimoto/go-datastore v0.3.1-0.20230222104924-c9bc7dee0e80 h1:F8QeLrEAwp64TQaaLwgJ+LqK4WAO6eub2Q3/lvJNU/k=
-github.com/satimoto/go-datastore v0.3.1-0.20230222104924-c9bc7dee0e80/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
 github.com/satimoto/go-datastore v0.3.1-0.20230223215809-138fec7fa023 h1:HeNyDfALfq2Q2aOhU/5llyPX+5pxT9glHc/+BgD5GfY=
 github.com/satimoto/go-datastore v0.3.1-0.20230223215809-138fec7fa023/go.mod h1:SvM8losYPwH6hJgUKLkjNtQwVv06lZgCMWl8cGdllCM=
 github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f h1:emb13r6KZW3+8sUySFsfdK63+r6MVyoF+uvX+9KzsLQ=

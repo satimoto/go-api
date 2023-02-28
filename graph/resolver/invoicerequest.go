@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/satimoto/go-api/graph"
 	metrics "github.com/satimoto/go-api/internal/metric"
@@ -60,6 +61,11 @@ func (r *invoiceRequestResolver) TaxMsat(ctx context.Context, obj *db.InvoiceReq
 // PaymentRequest is the resolver for the paymentRequest field.
 func (r *invoiceRequestResolver) PaymentRequest(ctx context.Context, obj *db.InvoiceRequest) (*string, error) {
 	return util.NullString(obj.PaymentRequest)
+}
+
+// ReleaseDate is the resolver for the releaseDate field.
+func (r *invoiceRequestResolver) ReleaseDate(ctx context.Context, obj *db.InvoiceRequest) (*string, error) {
+	return util.NullTime(obj.ReleaseDate, time.RFC3339)
 }
 
 // UpdateInvoiceRequest is the resolver for the updateInvoiceRequest field.
