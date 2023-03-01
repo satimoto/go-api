@@ -17,9 +17,9 @@ import (
 )
 
 // CreateReferral is the resolver for the createReferral field.
-func (r *mutationResolver) CreateReferral(reqCtx context.Context, input graph.CreateReferralInput) (*graph.ResultID, error) {
-	ctx := context.Background()
-	user, err := r.UserRepository.GetUserByReferralCode(ctx, util.SqlNullString(input.Referrer))
+func (r *mutationResolver) CreateReferral(ctx context.Context, input graph.CreateReferralInput) (*graph.ResultID, error) {
+	backgroundCtx := context.Background()
+	user, err := r.UserRepository.GetUserByReferralCode(backgroundCtx, util.SqlNullString(input.Referrer))
 
 	if err != nil {
 		metrics.RecordError("API033", "Error retrieving user", err)
@@ -27,7 +27,7 @@ func (r *mutationResolver) CreateReferral(reqCtx context.Context, input graph.Cr
 		return nil, gqlerror.Errorf("Error creating referral")
 	}
 
-	promotion, err := r.PromotionRepository.GetPromotionByCode(ctx, input.Code)
+	promotion, err := r.PromotionRepository.GetPromotionByCode(backgroundCtx, input.Code)
 
 	if err != nil {
 		metrics.RecordError("API034", "Error retrieving promotion", err)
@@ -35,7 +35,7 @@ func (r *mutationResolver) CreateReferral(reqCtx context.Context, input graph.Cr
 		return nil, gqlerror.Errorf("Error creating referral")
 	}
 
-	ipAddress := middleware.GetIPAddress(reqCtx)
+	ipAddress := middleware.GetIPAddress(ctx)
 
 	if ipAddress == nil {
 		metrics.RecordError("API035", "Error ip address not found", err)
@@ -50,7 +50,7 @@ func (r *mutationResolver) CreateReferral(reqCtx context.Context, input graph.Cr
 		LastUpdated: time.Now(),
 	}
 
-	referrer, err := r.ReferralRepository.CreateReferral(ctx, createReferralParams)
+	referrer, err := r.ReferralRepository.CreateReferral(backgroundCtx, createReferralParams)
 
 	if err != nil {
 		metrics.RecordError("API036", "Error creating referral", err)

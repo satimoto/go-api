@@ -13,6 +13,7 @@ type InvoiceRequest {
     totalMsat: Int!
     paymentRequest: String
     isSettled: Boolean!
+    releaseDate: String
 }
 
 input UpdateInvoiceRequestInput {

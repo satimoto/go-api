@@ -18,11 +18,11 @@ import (
 )
 
 // CreateToken is the resolver for the createToken field.
-func (r *mutationResolver) CreateToken(reqCtx context.Context, input graph.CreateTokenInput) (*db.Token, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
-		if _, err := r.TokenResolver.Repository.GetTokenByUid(ctx, input.UID); err == nil {
+func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTokenInput) (*db.Token, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		if _, err := r.TokenResolver.Repository.GetTokenByUid(backgroundCtx, input.UID); err == nil {
 			return nil, gqlerror.Errorf("Error creating token")
 		}
 
@@ -41,7 +41,7 @@ func (r *mutationResolver) CreateToken(reqCtx context.Context, input graph.Creat
 			createTokenRequest.Type = *input.Type
 		}
 
-		createTokenResponse, err := r.OcpiService.CreateToken(ctx, createTokenRequest)
+		createTokenResponse, err := r.OcpiService.CreateToken(backgroundCtx, createTokenRequest)
 
 		if err != nil {
 			metrics.RecordError("API041", "Error creating token", err)
@@ -56,10 +56,10 @@ func (r *mutationResolver) CreateToken(reqCtx context.Context, input graph.Creat
 }
 
 // UpdateTokens is the resolver for the updateTokens field.
-func (r *mutationResolver) UpdateTokens(reqCtx context.Context, input graph.UpdateTokensInput) (*graph.ResultOk, error) {
-	ctx := context.Background()
-	
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
+func (r *mutationResolver) UpdateTokens(ctx context.Context, input graph.UpdateTokensInput) (*graph.ResultOk, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
 		updateTokensRequest := &ocpirpc.UpdateTokensRequest{
 			UserId:  input.UserID,
 			Allowed: input.Allowed,
@@ -69,7 +69,7 @@ func (r *mutationResolver) UpdateTokens(reqCtx context.Context, input graph.Upda
 			updateTokensRequest.Uid = *input.UID
 		}
 
-		updateTokensResponse, err := r.OcpiService.UpdateTokens(ctx, updateTokensRequest)
+		updateTokensResponse, err := r.OcpiService.UpdateTokens(backgroundCtx, updateTokensRequest)
 
 		if err != nil {
 			metrics.RecordError("API042", "Error updating token", err)
@@ -84,11 +84,11 @@ func (r *mutationResolver) UpdateTokens(reqCtx context.Context, input graph.Upda
 }
 
 // ListTokens is the resolver for the listTokens field.
-func (r *queryResolver) ListTokens(reqCtx context.Context) ([]db.Token, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
-		return r.TokenResolver.Repository.ListRfidTokensByUserID(ctx, *userID)
+func (r *queryResolver) ListTokens(ctx context.Context) ([]db.Token, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		return r.TokenResolver.Repository.ListRfidTokensByUserID(backgroundCtx, *userID)
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")

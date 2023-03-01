@@ -11,6 +11,7 @@ type Session {
     connector: Connector!
     meterId: String
     sessionInvoices: [SessionInvoice!]!
+    sessionUpdates: [SessionUpdate!]!
     invoiceRequest: InvoiceRequest
     status: String!
     lastUpdated: String!
@@ -24,4 +25,5 @@ input GetSessionInput {
 
 extend type Query {
     getSession(input: GetSessionInput!): Session!
+    listSessions: [Session!]!
 }

@@ -117,20 +117,20 @@ func (r *evseResolver) LastUpdated(ctx context.Context, obj *db.Evse) (string, e
 }
 
 // GetEvse is the resolver for the getEvse field.
-func (r *queryResolver) GetEvse(reqCtx context.Context, input graph.GetEvseInput) (*db.Evse, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
+func (r *queryResolver) GetEvse(ctx context.Context, input graph.GetEvseInput) (*db.Evse, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		if input.ID != nil {
-			if evse, err := r.EvseRepository.GetEvse(ctx, *input.ID); err == nil {
+			if evse, err := r.EvseRepository.GetEvse(backgroundCtx, *input.ID); err == nil {
 				return &evse, nil
 			}
 		} else if input.UID != nil {
-			if evse, err := r.EvseRepository.GetEvseByUid(ctx, *input.UID); err == nil {
+			if evse, err := r.EvseRepository.GetEvseByUid(backgroundCtx, *input.UID); err == nil {
 				return &evse, nil
 			}
 		} else if input.EvseID != nil {
-			evse, err := r.EvseRepository.GetEvseByEvseID(ctx, dbUtil.SqlNullString(input.EvseID))
+			evse, err := r.EvseRepository.GetEvseByEvseID(backgroundCtx, dbUtil.SqlNullString(input.EvseID))
 
 			if err != nil {
 				// Like search to get the best match
@@ -140,7 +140,7 @@ func (r *queryResolver) GetEvse(reqCtx context.Context, input graph.GetEvseInput
 					likeEvseID = fmt.Sprintf("%s%%", *input.EvseID)
 				}
 
-				if evses, err := r.EvseRepository.ListEvsesLikeEvseID(ctx, dbUtil.SqlNullString(likeEvseID)); err == nil {
+				if evses, err := r.EvseRepository.ListEvsesLikeEvseID(backgroundCtx, dbUtil.SqlNullString(likeEvseID)); err == nil {
 					log.Printf("Like search for %v matched %v result(s)", likeEvseID, len(evses))
 
 					if len(evses) > 0 {
@@ -156,7 +156,7 @@ func (r *queryResolver) GetEvse(reqCtx context.Context, input graph.GetEvseInput
 			dashRegex := regexp.MustCompile(`-`)
 			identifier := strings.ToUpper(dashRegex.ReplaceAllString(*input.Identifier, "*"))
 
-			if evse, err := r.EvseRepository.GetEvseByIdentifier(ctx, dbUtil.SqlNullString(identifier)); err == nil {
+			if evse, err := r.EvseRepository.GetEvseByIdentifier(backgroundCtx, dbUtil.SqlNullString(identifier)); err == nil {
 				return &evse, nil
 			}
 		}

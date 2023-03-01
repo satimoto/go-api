@@ -23,17 +23,17 @@ func (r *nodeResolver) Addr(ctx context.Context, obj *db.Node) (string, error) {
 }
 
 // ListChannels is the resolver for the listChannels field.
-func (r *queryResolver) ListChannels(reqCtx context.Context) ([]graph.Channel, error) {
-	ctx := context.Background()
-	
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
+func (r *queryResolver) ListChannels(ctx context.Context) ([]graph.Channel, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
 		if !user.NodeID.Valid {
 			metrics.RecordError("API052", "Error user has no node", errors.New("no node available"))
 			log.Printf("API052: UserID=%v", user.ID)
 			return nil, gqlerror.Errorf("No node available")
 		}
 
-		node, err := r.NodeRepository.GetNode(ctx, user.NodeID.Int64)
+		node, err := r.NodeRepository.GetNode(backgroundCtx, user.NodeID.Int64)
 
 		if err != nil {
 			metrics.RecordError("API053", "Error retrieving node", err)
@@ -43,7 +43,7 @@ func (r *queryResolver) ListChannels(reqCtx context.Context) ([]graph.Channel, e
 
 		// TODO: This request should be a non-blocking goroutine
 		lspService := lsp.NewService(node.LspAddr)
-		listChannels, err := lspService.ListChannels(ctx, &lsprpc.ListChannelsRequest{})
+		listChannels, err := lspService.ListChannels(backgroundCtx, &lsprpc.ListChannelsRequest{})
 
 		if err != nil {
 			metrics.RecordError("API054", "Error listing channels", err)
