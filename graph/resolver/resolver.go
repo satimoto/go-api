@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/satimoto/go-api/internal/account"
 	"github.com/satimoto/go-api/internal/authentication"
 	"github.com/satimoto/go-api/internal/aws/email"
-	"github.com/satimoto/go-api/internal/countryaccount"
 	"github.com/satimoto/go-api/internal/ferp"
 	"github.com/satimoto/go-api/internal/notification"
 	"github.com/satimoto/go-api/internal/token"
@@ -50,11 +50,11 @@ type Resolver struct {
 	NotificationService           notification.Notification
 	OcpiService                   ocpi.Ocpi
 	Emailer                       email.Emailer
+	AccountResolver               *account.AccountResolver
 	AuthenticationResolver        *authentication.AuthenticationResolver
 	BusinessDetailRepository      businessdetail.BusinessDetailRepository
 	ChannelRequestRepository      channelrequest.ChannelRequestRepository
 	ConnectorRepository           connector.ConnectorRepository
-	CountryAccountResolver        *countryaccount.CountryAccountResolver
 	CredentialRepository          credential.CredentialRepository
 	DisplayTextRepository         displaytext.DisplayTextRepository
 	EmailSubscriptionRepository   emailsubscription.EmailSubscriptionRepository
@@ -96,11 +96,11 @@ func NewResolverWithServices(repositoryService *db.RepositoryService, ferpServic
 		NotificationService:           notificationService,
 		OcpiService:                   ocpiService,
 		Emailer:                       emailer,
+		AccountResolver:               account.NewResolver(repositoryService),
 		AuthenticationResolver:        authentication.NewResolver(repositoryService),
 		BusinessDetailRepository:      businessdetail.NewRepository(repositoryService),
 		ChannelRequestRepository:      channelrequest.NewRepository(repositoryService),
 		ConnectorRepository:           connector.NewRepository(repositoryService),
-		CountryAccountResolver:        countryaccount.NewResolver(repositoryService),
 		CredentialRepository:          credential.NewRepository(repositoryService),
 		DisplayTextRepository:         displaytext.NewRepository(repositoryService),
 		EmailSubscriptionRepository:   emailsubscription.NewRepository(repositoryService),
@@ -132,7 +132,7 @@ func (r *Resolver) calculateTaxPercent(ctx context.Context) (*float64, error) {
 		inputVariables := input.(map[string]interface{})
 
 		if country, ok := inputVariables["country"]; ok {
-			taxPercent := r.CountryAccountResolver.GetTaxPercentByCountry(ctx, country.(string), r.defaultTaxPercent)
+			taxPercent := r.AccountResolver.GetTaxPercentByCountry(ctx, country.(string), r.defaultTaxPercent)
 
 			return &taxPercent, nil
 		}

@@ -15,25 +15,40 @@ import (
 )
 
 // GetSession is the resolver for the getSession field.
-func (r *queryResolver) GetSession(reqCtx context.Context, input graph.GetSessionInput) (*db.Session, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
+func (r *queryResolver) GetSession(ctx context.Context, input graph.GetSessionInput) (*db.Session, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		if input.ID != nil {
-			if s, err := r.SessionRepository.GetSession(ctx, *input.ID); err == nil && *userID == s.UserID {
+			if s, err := r.SessionRepository.GetSession(backgroundCtx, *input.ID); err == nil && *userID == s.UserID {
 				return &s, nil
 			}
 		} else if input.UID != nil {
-			if s, err := r.SessionRepository.GetSessionByUid(ctx, *input.UID); err == nil && *userID == s.UserID {
+			if s, err := r.SessionRepository.GetSessionByUid(backgroundCtx, *input.UID); err == nil && *userID == s.UserID {
 				return &s, nil
 			}
 		} else if input.AuthorizationID != nil {
-			if s, err := r.SessionRepository.GetSessionByAuthorizationID(ctx, *input.AuthorizationID); err == nil && *userID == s.UserID {
+			if s, err := r.SessionRepository.GetSessionByAuthorizationID(backgroundCtx, *input.AuthorizationID); err == nil && *userID == s.UserID {
 				return &s, nil
 			}
 		}
 
 		return nil, gqlerror.Errorf("Session not found")
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// ListSessions is the resolver for the listSessions field.
+func (r *queryResolver) ListSessions(ctx context.Context) ([]db.Session, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		if s, err := r.SessionRepository.ListInvoicedSessionsByUserID(backgroundCtx, *userID); err == nil {
+			return s, nil
+		}
+
+		return nil, gqlerror.Errorf("Sessions not found")
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
@@ -94,6 +109,11 @@ func (r *sessionResolver) MeterID(ctx context.Context, obj *db.Session) (*string
 // SessionInvoices is the resolver for the sessionInvoices field.
 func (r *sessionResolver) SessionInvoices(ctx context.Context, obj *db.Session) ([]db.SessionInvoice, error) {
 	return r.SessionRepository.ListSessionInvoicesBySessionID(ctx, obj.ID)
+}
+
+// SessionUpdates is the resolver for the sessionUpdates field.
+func (r *sessionResolver) SessionUpdates(ctx context.Context, obj *db.Session) ([]db.SessionUpdate, error) {
+	return r.SessionRepository.ListSessionUpdatesBySessionID(ctx, obj.ID)
 }
 
 // InvoiceRequest is the resolver for the invoiceRequest field.

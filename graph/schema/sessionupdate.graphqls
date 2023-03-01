@@ -1,0 +1,10 @@
+type SessionUpdate {
+    id: ID!
+    kwh: Float!
+    status: String!
+    lastUpdated: String!
+}
+
+extend type Query {
+    listSessionUpdates(id: ID!): [SessionUpdate!]!
+}

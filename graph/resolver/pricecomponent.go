@@ -91,7 +91,7 @@ type priceComponentResolver struct{ *Resolver }
 type OperationalContextVariable map[string]interface{}
 
 func (r *priceComponentResolver) calculateCommissionMsat(ctx context.Context, currencyRate *rate.CurrencyRate, obj *db.PriceComponent) (*int, error) {
-	user := middleware.GetUser(ctx, r.Resolver.UserRepository)
+	user := middleware.GetCtxUser(ctx, r.Resolver.UserRepository)
 
 	if user == nil {
 		// Error retrieving user

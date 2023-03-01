@@ -44,13 +44,6 @@ func GetUserID(ctx context.Context) *int64 {
 }
 
 func GetUser(ctx context.Context, r user.UserRepository) *db.User {
-	operationCtx := graphql.GetOperationContext(ctx)
-	ctxUser := operationCtx.Variables["user"]
-
-	if ctxUser != nil {
-		return ctxUser.(*db.User)
-	}
-
 	userID := GetUserID(ctx)
 
 	if userID != nil {
@@ -62,8 +55,23 @@ func GetUser(ctx context.Context, r user.UserRepository) *db.User {
 			return nil
 		}
 
-		operationCtx.Variables["user"] = &user
 		return &user
+	}
+
+	return nil
+}
+
+func GetCtxUser(ctx context.Context, r user.UserRepository) *db.User {
+	operationCtx := graphql.GetOperationContext(ctx)
+	ctxUser := operationCtx.Variables["user"]
+
+	if ctxUser != nil {
+		return ctxUser.(*db.User)
+	}
+
+	if user := GetUser(ctx, r); user != nil {
+		operationCtx.Variables["user"] = user
+		return user
 	}
 
 	return nil

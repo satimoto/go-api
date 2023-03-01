@@ -29,11 +29,11 @@ func (r *countryAccountResolver) Zoom(ctx context.Context, obj *db.CountryAccoun
 }
 
 // ListCountryAccounts is the resolver for the listCountryAccounts field.
-func (r *queryResolver) ListCountryAccounts(reqCtx context.Context) ([]db.CountryAccount, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
-		return r.CountryAccountResolver.Repository.ListCountryAccounts(ctx)
+func (r *queryResolver) ListCountryAccounts(ctx context.Context) ([]db.CountryAccount, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		return r.AccountResolver.Repository.ListCountryAccounts(backgroundCtx)
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")

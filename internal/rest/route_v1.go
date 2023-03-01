@@ -14,6 +14,7 @@ func (rs *RestService) mountV1() *chi.Mux {
 	router.Mount("/", rs.mountGraphql())
 	router.Mount("/image", rs.mountImage())
 	router.Mount("/lnurl", rs.mountLnUrl())
+	router.Mount("/pdf", rs.mountPdf())
 
 	return router
 }

@@ -21,9 +21,9 @@ import (
 )
 
 // CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(reqCtx context.Context, input graph.CreateUserInput) (*db.User, error) {
-	ctx := context.Background()
-	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(ctx, input.Code)
+func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUserInput) (*db.User, error) {
+	backgroundCtx := context.Background()
+	auth, err := r.AuthenticationResolver.Repository.GetAuthenticationByCode(backgroundCtx, input.Code)
 
 	if err != nil {
 		metrics.RecordError("API016", "Authentication not found", err)
@@ -38,15 +38,15 @@ func (r *mutationResolver) CreateUser(reqCtx context.Context, input graph.Create
 	}
 
 	var circuitUserID *int64
-	ipAddress := middleware.GetIPAddress(reqCtx)
+	ipAddress := middleware.GetIPAddress(ctx)
 
 	if ipAddress != nil && len(*ipAddress) > 0 {
-		if referral, err := r.ReferralRepository.GetReferralByIpAddress(ctx, *ipAddress); err == nil {
+		if referral, err := r.ReferralRepository.GetReferralByIpAddress(backgroundCtx, *ipAddress); err == nil {
 			circuitUserID = &referral.UserID
 		}
 	}
 
-	referralCode := r.generateReferralCode(ctx)
+	referralCode := r.generateReferralCode(backgroundCtx)
 	createUserParams := db.CreateUserParams{
 		CommissionPercent: dbUtil.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
 		DeviceToken:       dbUtil.SqlNullString(input.DeviceToken),
@@ -56,7 +56,7 @@ func (r *mutationResolver) CreateUser(reqCtx context.Context, input graph.Create
 		CircuitUserID:     dbUtil.SqlNullInt64(circuitUserID),
 	}
 
-	user, err := r.UserRepository.CreateUser(ctx, createUserParams)
+	user, err := r.UserRepository.CreateUser(backgroundCtx, createUserParams)
 
 	if err != nil {
 		metrics.RecordError("API018", "User already exists", err)
@@ -64,7 +64,7 @@ func (r *mutationResolver) CreateUser(reqCtx context.Context, input graph.Create
 		return nil, gqlerror.Errorf("User already exists")
 	}
 
-	_, err = r.TokenResolver.CreateToken(ctx, user.ID)
+	_, err = r.TokenResolver.CreateToken(backgroundCtx, user.ID)
 
 	if err != nil {
 		return nil, err
@@ -74,11 +74,11 @@ func (r *mutationResolver) CreateUser(reqCtx context.Context, input graph.Create
 }
 
 // PingUser is the resolver for the pingUser field.
-func (r *mutationResolver) PingUser(reqCtx context.Context, id int64) (*graph.ResultOk, error) {
-	ctx := context.Background()
-	
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil && user.IsAdmin {
-		if toUser, err := r.UserRepository.GetUser(ctx, id); err == nil && toUser.DeviceToken.Valid {
+func (r *mutationResolver) PingUser(ctx context.Context, id int64) (*graph.ResultOk, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil && user.IsAdmin {
+		if toUser, err := r.UserRepository.GetUser(backgroundCtx, id); err == nil && toUser.DeviceToken.Valid {
 			ping, err := uuid.NewUUID()
 
 			if err != nil {
@@ -111,8 +111,8 @@ func (r *mutationResolver) PingUser(reqCtx context.Context, id int64) (*graph.Re
 }
 
 // PongUser is the resolver for the pongUser field.
-func (r *mutationResolver) PongUser(reqCtx context.Context, input graph.PongUserInput) (*graph.ResultOk, error) {	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
+func (r *mutationResolver) PongUser(ctx context.Context, input graph.PongUserInput) (*graph.ResultOk, error) {
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		log.Printf("User %v pong received: %v", *userID, input.Pong)
 
 		return &graph.ResultOk{Ok: true}, nil
@@ -122,14 +122,18 @@ func (r *mutationResolver) PongUser(reqCtx context.Context, input graph.PongUser
 }
 
 // UpdateUser is the resolver for the updateUser field.
-func (r *mutationResolver) UpdateUser(reqCtx context.Context, input graph.UpdateUserInput) (*db.User, error) {
-	ctx := context.Background()
-	
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
+func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUserInput) (*db.User, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
 		updateUserParams := param.NewUpdateUserParams(*user)
 		updateUserParams.DeviceToken = dbUtil.SqlNullString(input.DeviceToken)
+		updateUserParams.Name = dbUtil.SqlNullString(input.Name)
+		updateUserParams.Address = dbUtil.SqlNullString(input.Address)
+		updateUserParams.PostalCode = dbUtil.SqlNullString(input.PostalCode)
+		updateUserParams.City = dbUtil.SqlNullString(input.City)
 
-		updatedUser, err := r.UserRepository.UpdateUser(ctx, updateUserParams)
+		updatedUser, err := r.UserRepository.UpdateUser(backgroundCtx, updateUserParams)
 
 		if err != nil {
 			metrics.RecordError("API020", "Error updating user", err)
@@ -142,7 +146,7 @@ func (r *mutationResolver) UpdateUser(reqCtx context.Context, input graph.Update
 			UserID:      user.ID,
 		}
 
-		err = r.PendingNotificationRepository.UpdatePendingNotificationsByUser(ctx, updatePendingNotificationByUserParams)
+		err = r.PendingNotificationRepository.UpdatePendingNotificationsByUser(backgroundCtx, updatePendingNotificationByUserParams)
 
 		if err != nil {
 			metrics.RecordError("API027", "Error updating pending notifications", err)
@@ -157,8 +161,8 @@ func (r *mutationResolver) UpdateUser(reqCtx context.Context, input graph.Update
 }
 
 // GetUser is the resolver for the getUser field.
-func (r *queryResolver) GetUser(reqCtx context.Context) (*db.User, error) {
-	user := middleware.GetUser(reqCtx, r.UserRepository)
+func (r *queryResolver) GetUser(ctx context.Context) (*db.User, error) {
+	user := middleware.GetCtxUser(ctx, r.UserRepository)
 
 	if user != nil {
 		return user, nil

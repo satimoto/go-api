@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/satimoto/go-api/graph"
 	metrics "github.com/satimoto/go-api/internal/metric"
@@ -62,18 +63,23 @@ func (r *invoiceRequestResolver) PaymentRequest(ctx context.Context, obj *db.Inv
 	return util.NullString(obj.PaymentRequest)
 }
 
+// ReleaseDate is the resolver for the releaseDate field.
+func (r *invoiceRequestResolver) ReleaseDate(ctx context.Context, obj *db.InvoiceRequest) (*string, error) {
+	return util.NullTime(obj.ReleaseDate, time.RFC3339)
+}
+
 // UpdateInvoiceRequest is the resolver for the updateInvoiceRequest field.
-func (r *mutationResolver) UpdateInvoiceRequest(reqCtx context.Context, input graph.UpdateInvoiceRequestInput) (*db.InvoiceRequest, error) {
-	ctx := context.Background()
-	
-	if user := middleware.GetUser(reqCtx, r.UserRepository); user != nil {
+func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph.UpdateInvoiceRequestInput) (*db.InvoiceRequest, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
 		if !user.NodeID.Valid {
 			metrics.RecordError("API026", "Error user has no node", errors.New("no node available"))
 			log.Printf("API026: Input=%#v", input)
 			return nil, gqlerror.Errorf("No node available")
 		}
 
-		node, err := r.NodeRepository.GetNode(ctx, user.NodeID.Int64)
+		node, err := r.NodeRepository.GetNode(backgroundCtx, user.NodeID.Int64)
 
 		if err != nil {
 			metrics.RecordError("API030", "Error retrieving node", err)
@@ -90,7 +96,7 @@ func (r *mutationResolver) UpdateInvoiceRequest(reqCtx context.Context, input gr
 			PaymentRequest: input.PaymentRequest,
 		}
 
-		updateInvoiceResponse, err := lspService.UpdateInvoiceRequest(ctx, updateInvoiceRequest)
+		updateInvoiceResponse, err := lspService.UpdateInvoiceRequest(backgroundCtx, updateInvoiceRequest)
 
 		if err != nil {
 			metrics.RecordError("API031", "Error updating invoice", err)
@@ -98,7 +104,7 @@ func (r *mutationResolver) UpdateInvoiceRequest(reqCtx context.Context, input gr
 			return nil, gqlerror.Errorf("Error updating invoice")
 		}
 
-		invoiceRequest, err := r.InvoiceRequestRepository.GetInvoiceRequest(ctx, input.ID)
+		invoiceRequest, err := r.InvoiceRequestRepository.GetInvoiceRequest(backgroundCtx, input.ID)
 
 		if err != nil {
 			metrics.RecordError("API032", "Error updating invoice", err)
@@ -114,11 +120,11 @@ func (r *mutationResolver) UpdateInvoiceRequest(reqCtx context.Context, input gr
 }
 
 // ListInvoiceRequests is the resolver for the listInvoiceRequests field.
-func (r *queryResolver) ListInvoiceRequests(reqCtx context.Context) ([]db.InvoiceRequest, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
-		if invoiceRequests, err := r.InvoiceRequestRepository.ListUnsettledInvoiceRequests(ctx, *userID); err == nil {
+func (r *queryResolver) ListInvoiceRequests(ctx context.Context) ([]db.InvoiceRequest, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
+		if invoiceRequests, err := r.InvoiceRequestRepository.ListUnsettledInvoiceRequests(backgroundCtx, *userID); err == nil {
 			return invoiceRequests, nil
 		}
 	}

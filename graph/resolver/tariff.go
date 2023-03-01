@@ -13,16 +13,16 @@ import (
 )
 
 // GetTariff is the resolver for the getTariff field.
-func (r *queryResolver) GetTariff(reqCtx context.Context, input graph.GetTariffInput) (*db.Tariff, error) {
-	ctx := context.Background()
-	
-	if userID := middleware.GetUserID(reqCtx); userID != nil {
+func (r *queryResolver) GetTariff(ctx context.Context, input graph.GetTariffInput) (*db.Tariff, error) {
+	backgroundCtx := context.Background()
+
+	if userID := middleware.GetUserID(ctx); userID != nil {
 		if input.ID != nil {
-			if t, err := r.TariffRepository.GetTariff(ctx, *input.ID); err == nil {
+			if t, err := r.TariffRepository.GetTariff(backgroundCtx, *input.ID); err == nil {
 				return &t, nil
 			}
 		} else if input.UID != nil {
-			if t, err := r.TariffRepository.GetTariffByUid(ctx, *input.UID); err == nil {
+			if t, err := r.TariffRepository.GetTariffByUid(backgroundCtx, *input.UID); err == nil {
 				return &t, nil
 			}
 		}
@@ -57,7 +57,7 @@ func (r *tariffResolver) CurrencyRateMsat(ctx context.Context, obj *db.Tariff) (
 
 // CommissionPercent is the resolver for the commissionPercent field.
 func (r *tariffResolver) CommissionPercent(ctx context.Context, obj *db.Tariff) (float64, error) {
-	user := middleware.GetUser(ctx, r.UserRepository)
+	user := middleware.GetCtxUser(ctx, r.UserRepository)
 
 	if user == nil {
 		return 0, gqlerror.Errorf("Error retrieving user commission")

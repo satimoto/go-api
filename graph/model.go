@@ -265,7 +265,11 @@ type UpdateTokensInput struct {
 }
 
 type UpdateUserInput struct {
-	DeviceToken string `json:"deviceToken"`
+	DeviceToken string  `json:"deviceToken"`
+	Name        *string `json:"name"`
+	Address     *string `json:"address"`
+	PostalCode  *string `json:"postalCode"`
+	City        *string `json:"city"`
 }
 
 type VerifyAuthentication struct {
