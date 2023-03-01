@@ -70,7 +70,7 @@ func GetCtxUser(ctx context.Context, r user.UserRepository) *db.User {
 	}
 
 	if user := GetUser(ctx, r); user != nil {
-		operationCtx.Variables["user"] = &user
+		operationCtx.Variables["user"] = user
 		return user
 	}
 
