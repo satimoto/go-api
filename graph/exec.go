@@ -2308,7 +2308,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Poi.Name(childComplexity), true
 
-	case "Poi.opening_times":
+	case "Poi.openingTimes":
 		if e.complexity.Poi.OpeningTimes == nil {
 			break
 		}
@@ -13810,8 +13810,8 @@ func (ec *executionContext) fieldContext_Poi_paymentLnTap(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Poi_opening_times(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Poi_opening_times(ctx, field)
+func (ec *executionContext) _Poi_openingTimes(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_openingTimes(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -13838,7 +13838,7 @@ func (ec *executionContext) _Poi_opening_times(ctx context.Context, field graphq
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Poi_opening_times(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Poi_openingTimes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Poi",
 		Field:      field,
@@ -15048,8 +15048,8 @@ func (ec *executionContext) fieldContext_Query_getPoi(ctx context.Context, field
 				return ec.fieldContext_Poi_paymentLn(ctx, field)
 			case "paymentLnTap":
 				return ec.fieldContext_Poi_paymentLnTap(ctx, field)
-			case "opening_times":
-				return ec.fieldContext_Poi_opening_times(ctx, field)
+			case "openingTimes":
+				return ec.fieldContext_Poi_openingTimes(ctx, field)
 			case "phone":
 				return ec.fieldContext_Poi_phone(ctx, field)
 			case "website":
@@ -15141,8 +15141,8 @@ func (ec *executionContext) fieldContext_Query_listPois(ctx context.Context, fie
 				return ec.fieldContext_Poi_paymentLn(ctx, field)
 			case "paymentLnTap":
 				return ec.fieldContext_Poi_paymentLnTap(ctx, field)
-			case "opening_times":
-				return ec.fieldContext_Poi_opening_times(ctx, field)
+			case "openingTimes":
+				return ec.fieldContext_Poi_openingTimes(ctx, field)
 			case "phone":
 				return ec.fieldContext_Poi_phone(ctx, field)
 			case "website":
@@ -26707,7 +26707,7 @@ func (ec *executionContext) _Poi(ctx context.Context, sel ast.SelectionSet, obj 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "opening_times":
+		case "openingTimes":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -26716,7 +26716,7 @@ func (ec *executionContext) _Poi(ctx context.Context, sel ast.SelectionSet, obj 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Poi_opening_times(ctx, field, obj)
+				res = ec._Poi_openingTimes(ctx, field, obj)
 				return res
 			}
 

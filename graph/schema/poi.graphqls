@@ -13,7 +13,7 @@ type Poi {
     paymentOnChain: Boolean!
     paymentLn: Boolean!
     paymentLnTap: Boolean!
-    opening_times: String
+    openingTimes: String
     phone: String
     website: String
     lastUpdated: String!
