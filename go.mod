@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/johnfercher/maroto v0.39.0
 	github.com/joho/godotenv v1.4.0
-	github.com/satimoto/go-datastore v0.3.1-0.20230223215809-138fec7fa023
+	github.com/satimoto/go-datastore v0.5.1-0.20230301204822-200bc1f09f89
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.5.1
 )
