@@ -117,6 +117,10 @@ type GetLocationInput struct {
 	Country *string `json:"country"`
 }
 
+type GetPoiInput struct {
+	UID *string `json:"uid"`
+}
+
 type GetSessionInput struct {
 	ID              *int64  `json:"id"`
 	UID             *string `json:"uid"`
@@ -155,6 +159,13 @@ type ListLocationsInput struct {
 	XMax            *float64 `json:"xMax"`
 	YMin            *float64 `json:"yMin"`
 	YMax            *float64 `json:"yMax"`
+}
+
+type ListPoisInput struct {
+	XMin *float64 `json:"xMin"`
+	XMax *float64 `json:"xMax"`
+	YMin *float64 `json:"yMin"`
+	YMax *float64 `json:"yMax"`
 }
 
 type ListSessionInvoicesInput struct {

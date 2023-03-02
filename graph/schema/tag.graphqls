@@ -1,0 +1,4 @@
+type Tag {
+    key: String!
+    value: String!
+}
