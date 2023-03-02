@@ -13,6 +13,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/johnfercher/maroto v0.39.0
 	github.com/joho/godotenv v1.4.0
+	github.com/paulmach/orb v0.7.1
 	github.com/satimoto/go-datastore v0.5.1-0.20230301204822-200bc1f09f89
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.5.1
@@ -53,7 +54,6 @@ require (
 	github.com/lightningnetwork/lnd/ticker v1.1.0 // indirect
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
-	github.com/paulmach/orb v0.7.1 // indirect
 	github.com/ruudk/golang-pdf417 v0.0.0-20201230142125-a7e3863a1245 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	github.com/tidwall/gjson v1.6.1 // indirect

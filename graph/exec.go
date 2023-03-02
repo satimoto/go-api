@@ -54,6 +54,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Node() NodeResolver
 	OpeningTime() OpeningTimeResolver
+	Poi() PoiResolver
 	PriceComponent() PriceComponentResolver
 	Query() QueryResolver
 	RegularHour() RegularHourResolver
@@ -339,6 +340,27 @@ type ComplexityRoot struct {
 		PublishNullTariff        func(childComplexity int) int
 	}
 
+	Poi struct {
+		Address        func(childComplexity int) int
+		City           func(childComplexity int) int
+		Description    func(childComplexity int) int
+		Geom           func(childComplexity int) int
+		LastUpdated    func(childComplexity int) int
+		Name           func(childComplexity int) int
+		OpeningTimes   func(childComplexity int) int
+		PaymentLn      func(childComplexity int) int
+		PaymentLnTap   func(childComplexity int) int
+		PaymentOnChain func(childComplexity int) int
+		Phone          func(childComplexity int) int
+		PostalCode     func(childComplexity int) int
+		Source         func(childComplexity int) int
+		TagKey         func(childComplexity int) int
+		TagValue       func(childComplexity int) int
+		Tags           func(childComplexity int) int
+		Uid            func(childComplexity int) int
+		Website        func(childComplexity int) int
+	}
+
 	PriceComponent struct {
 		CommissionMsat func(childComplexity int) int
 		Price          func(childComplexity int) int
@@ -357,6 +379,7 @@ type ComplexityRoot struct {
 		GetConnector         func(childComplexity int, input GetConnectorInput) int
 		GetEvse              func(childComplexity int, input GetEvseInput) int
 		GetLocation          func(childComplexity int, input GetLocationInput) int
+		GetPoi               func(childComplexity int, input GetPoiInput) int
 		GetRate              func(childComplexity int, currency string) int
 		GetSession           func(childComplexity int, input GetSessionInput) int
 		GetSessionInvoice    func(childComplexity int, id int64) int
@@ -367,6 +390,7 @@ type ComplexityRoot struct {
 		ListCredentials      func(childComplexity int) int
 		ListInvoiceRequests  func(childComplexity int) int
 		ListLocations        func(childComplexity int, input ListLocationsInput) int
+		ListPois             func(childComplexity int, input ListPoisInput) int
 		ListSessionInvoices  func(childComplexity int, input ListSessionInvoicesInput) int
 		ListSessionUpdates   func(childComplexity int, id int64) int
 		ListSessions         func(childComplexity int) int
@@ -463,6 +487,11 @@ type ComplexityRoot struct {
 		ID         func(childComplexity int) int
 		SessionUID func(childComplexity int) int
 		Status     func(childComplexity int) int
+	}
+
+	Tag struct {
+		Key   func(childComplexity int) int
+		Value func(childComplexity int) int
 	}
 
 	Tariff struct {
@@ -671,6 +700,19 @@ type OpeningTimeResolver interface {
 	ExceptionalOpenings(ctx context.Context, obj *db.OpeningTime) ([]db.ExceptionalPeriod, error)
 	ExceptionalClosings(ctx context.Context, obj *db.OpeningTime) ([]db.ExceptionalPeriod, error)
 }
+type PoiResolver interface {
+	Description(ctx context.Context, obj *db.Poi) (*string, error)
+	Address(ctx context.Context, obj *db.Poi) (*string, error)
+	City(ctx context.Context, obj *db.Poi) (*string, error)
+	PostalCode(ctx context.Context, obj *db.Poi) (*string, error)
+
+	Tags(ctx context.Context, obj *db.Poi) ([]db.Tag, error)
+
+	OpeningTimes(ctx context.Context, obj *db.Poi) (*string, error)
+	Phone(ctx context.Context, obj *db.Poi) (*string, error)
+	Website(ctx context.Context, obj *db.Poi) (*string, error)
+	LastUpdated(ctx context.Context, obj *db.Poi) (string, error)
+}
 type PriceComponentResolver interface {
 	Type(ctx context.Context, obj *db.PriceComponent) (string, error)
 
@@ -688,6 +730,8 @@ type QueryResolver interface {
 	GetLocation(ctx context.Context, input GetLocationInput) (*db.Location, error)
 	ListLocations(ctx context.Context, input ListLocationsInput) ([]ListLocation, error)
 	ListChannels(ctx context.Context) ([]Channel, error)
+	GetPoi(ctx context.Context, input GetPoiInput) (*db.Poi, error)
+	ListPois(ctx context.Context, input ListPoisInput) ([]db.Poi, error)
 	GetRate(ctx context.Context, currency string) (*Rate, error)
 	GetSession(ctx context.Context, input GetSessionInput) (*db.Session, error)
 	ListSessions(ctx context.Context) ([]db.Session, error)
@@ -2222,6 +2266,132 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Party.PublishNullTariff(childComplexity), true
 
+	case "Poi.address":
+		if e.complexity.Poi.Address == nil {
+			break
+		}
+
+		return e.complexity.Poi.Address(childComplexity), true
+
+	case "Poi.city":
+		if e.complexity.Poi.City == nil {
+			break
+		}
+
+		return e.complexity.Poi.City(childComplexity), true
+
+	case "Poi.description":
+		if e.complexity.Poi.Description == nil {
+			break
+		}
+
+		return e.complexity.Poi.Description(childComplexity), true
+
+	case "Poi.geom":
+		if e.complexity.Poi.Geom == nil {
+			break
+		}
+
+		return e.complexity.Poi.Geom(childComplexity), true
+
+	case "Poi.lastUpdated":
+		if e.complexity.Poi.LastUpdated == nil {
+			break
+		}
+
+		return e.complexity.Poi.LastUpdated(childComplexity), true
+
+	case "Poi.name":
+		if e.complexity.Poi.Name == nil {
+			break
+		}
+
+		return e.complexity.Poi.Name(childComplexity), true
+
+	case "Poi.opening_times":
+		if e.complexity.Poi.OpeningTimes == nil {
+			break
+		}
+
+		return e.complexity.Poi.OpeningTimes(childComplexity), true
+
+	case "Poi.paymentLn":
+		if e.complexity.Poi.PaymentLn == nil {
+			break
+		}
+
+		return e.complexity.Poi.PaymentLn(childComplexity), true
+
+	case "Poi.paymentLnTap":
+		if e.complexity.Poi.PaymentLnTap == nil {
+			break
+		}
+
+		return e.complexity.Poi.PaymentLnTap(childComplexity), true
+
+	case "Poi.paymentOnChain":
+		if e.complexity.Poi.PaymentOnChain == nil {
+			break
+		}
+
+		return e.complexity.Poi.PaymentOnChain(childComplexity), true
+
+	case "Poi.phone":
+		if e.complexity.Poi.Phone == nil {
+			break
+		}
+
+		return e.complexity.Poi.Phone(childComplexity), true
+
+	case "Poi.postalCode":
+		if e.complexity.Poi.PostalCode == nil {
+			break
+		}
+
+		return e.complexity.Poi.PostalCode(childComplexity), true
+
+	case "Poi.source":
+		if e.complexity.Poi.Source == nil {
+			break
+		}
+
+		return e.complexity.Poi.Source(childComplexity), true
+
+	case "Poi.tagKey":
+		if e.complexity.Poi.TagKey == nil {
+			break
+		}
+
+		return e.complexity.Poi.TagKey(childComplexity), true
+
+	case "Poi.tagValue":
+		if e.complexity.Poi.TagValue == nil {
+			break
+		}
+
+		return e.complexity.Poi.TagValue(childComplexity), true
+
+	case "Poi.tags":
+		if e.complexity.Poi.Tags == nil {
+			break
+		}
+
+		return e.complexity.Poi.Tags(childComplexity), true
+
+	case "Poi.uid":
+		if e.complexity.Poi.Uid == nil {
+			break
+		}
+
+		return e.complexity.Poi.Uid(childComplexity), true
+
+	case "Poi.website":
+		if e.complexity.Poi.Website == nil {
+			break
+		}
+
+		return e.complexity.Poi.Website(childComplexity), true
+
 	case "PriceComponent.commissionMsat":
 		if e.complexity.PriceComponent.CommissionMsat == nil {
 			break
@@ -2313,6 +2483,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetLocation(childComplexity, args["input"].(GetLocationInput)), true
+
+	case "Query.getPoi":
+		if e.complexity.Query.GetPoi == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getPoi_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetPoi(childComplexity, args["input"].(GetPoiInput)), true
 
 	case "Query.getRate":
 		if e.complexity.Query.GetRate == nil {
@@ -2408,6 +2590,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ListLocations(childComplexity, args["input"].(ListLocationsInput)), true
+
+	case "Query.listPois":
+		if e.complexity.Query.ListPois == nil {
+			break
+		}
+
+		args, err := ec.field_Query_listPois_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ListPois(childComplexity, args["input"].(ListPoisInput)), true
 
 	case "Query.listSessionInvoices":
 		if e.complexity.Query.ListSessionInvoices == nil {
@@ -2886,6 +3080,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StopSession.Status(childComplexity), true
 
+	case "Tag.key":
+		if e.complexity.Tag.Key == nil {
+			break
+		}
+
+		return e.complexity.Tag.Key(childComplexity), true
+
+	case "Tag.value":
+		if e.complexity.Tag.Value == nil {
+			break
+		}
+
+		return e.complexity.Tag.Value(childComplexity), true
+
 	case "Tariff.commissionPercent":
 		if e.complexity.Tariff.CommissionPercent == nil {
 			break
@@ -3130,9 +3338,11 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputGetConnectorInput,
 		ec.unmarshalInputGetEvseInput,
 		ec.unmarshalInputGetLocationInput,
+		ec.unmarshalInputGetPoiInput,
 		ec.unmarshalInputGetSessionInput,
 		ec.unmarshalInputGetTariffInput,
 		ec.unmarshalInputListLocationsInput,
+		ec.unmarshalInputListPoisInput,
 		ec.unmarshalInputListSessionInvoicesInput,
 		ec.unmarshalInputPongUserInput,
 		ec.unmarshalInputPublishLocationInput,
@@ -3206,7 +3416,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
-//go:embed "schema/additionalgeolocation.graphqls" "schema/authentication.graphqls" "schema/businessdetail.graphqls" "schema/channelrequest.graphqls" "schema/command.graphqls" "schema/connector.graphqls" "schema/countryaccount.graphqls" "schema/credential.graphqls" "schema/displaytext.graphqls" "schema/elementrestriction.graphqls" "schema/emailsubscription.graphqls" "schema/energymix.graphqls" "schema/energysource.graphqls" "schema/environmentalimpact.graphqls" "schema/evse.graphqls" "schema/exceptionalperiod.graphqls" "schema/geolocation.graphqls" "schema/image.graphqls" "schema/invoicerequest.graphqls" "schema/location.graphqls" "schema/node.graphqls" "schema/openingtime.graphqls" "schema/party.graphqls" "schema/pricecomponent.graphqls" "schema/promotion.graphqls" "schema/rate.graphqls" "schema/referral.graphqls" "schema/regularhour.graphqls" "schema/result.graphqls" "schema/session.graphqls" "schema/sessioninvoice.graphqls" "schema/sessionupdate.graphqls" "schema/statusschedule.graphqls" "schema/tariff.graphqls" "schema/tariffelement.graphqls" "schema/textdescription.graphqls" "schema/token.graphqls" "schema/tokenauthorization.graphqls" "schema/user.graphqls"
+//go:embed "schema/additionalgeolocation.graphqls" "schema/authentication.graphqls" "schema/businessdetail.graphqls" "schema/channelrequest.graphqls" "schema/command.graphqls" "schema/connector.graphqls" "schema/countryaccount.graphqls" "schema/credential.graphqls" "schema/displaytext.graphqls" "schema/elementrestriction.graphqls" "schema/emailsubscription.graphqls" "schema/energymix.graphqls" "schema/energysource.graphqls" "schema/environmentalimpact.graphqls" "schema/evse.graphqls" "schema/exceptionalperiod.graphqls" "schema/geolocation.graphqls" "schema/image.graphqls" "schema/invoicerequest.graphqls" "schema/location.graphqls" "schema/node.graphqls" "schema/openingtime.graphqls" "schema/party.graphqls" "schema/poi.graphqls" "schema/pricecomponent.graphqls" "schema/promotion.graphqls" "schema/rate.graphqls" "schema/referral.graphqls" "schema/regularhour.graphqls" "schema/result.graphqls" "schema/session.graphqls" "schema/sessioninvoice.graphqls" "schema/sessionupdate.graphqls" "schema/statusschedule.graphqls" "schema/tag.graphqls" "schema/tariff.graphqls" "schema/tariffelement.graphqls" "schema/textdescription.graphqls" "schema/token.graphqls" "schema/tokenauthorization.graphqls" "schema/user.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -3241,6 +3451,7 @@ var sources = []*ast.Source{
 	{Name: "schema/node.graphqls", Input: sourceData("schema/node.graphqls"), BuiltIn: false},
 	{Name: "schema/openingtime.graphqls", Input: sourceData("schema/openingtime.graphqls"), BuiltIn: false},
 	{Name: "schema/party.graphqls", Input: sourceData("schema/party.graphqls"), BuiltIn: false},
+	{Name: "schema/poi.graphqls", Input: sourceData("schema/poi.graphqls"), BuiltIn: false},
 	{Name: "schema/pricecomponent.graphqls", Input: sourceData("schema/pricecomponent.graphqls"), BuiltIn: false},
 	{Name: "schema/promotion.graphqls", Input: sourceData("schema/promotion.graphqls"), BuiltIn: false},
 	{Name: "schema/rate.graphqls", Input: sourceData("schema/rate.graphqls"), BuiltIn: false},
@@ -3251,6 +3462,7 @@ var sources = []*ast.Source{
 	{Name: "schema/sessioninvoice.graphqls", Input: sourceData("schema/sessioninvoice.graphqls"), BuiltIn: false},
 	{Name: "schema/sessionupdate.graphqls", Input: sourceData("schema/sessionupdate.graphqls"), BuiltIn: false},
 	{Name: "schema/statusschedule.graphqls", Input: sourceData("schema/statusschedule.graphqls"), BuiltIn: false},
+	{Name: "schema/tag.graphqls", Input: sourceData("schema/tag.graphqls"), BuiltIn: false},
 	{Name: "schema/tariff.graphqls", Input: sourceData("schema/tariff.graphqls"), BuiltIn: false},
 	{Name: "schema/tariffelement.graphqls", Input: sourceData("schema/tariffelement.graphqls"), BuiltIn: false},
 	{Name: "schema/textdescription.graphqls", Input: sourceData("schema/textdescription.graphqls"), BuiltIn: false},
@@ -3684,6 +3896,21 @@ func (ec *executionContext) field_Query_getLocation_args(ctx context.Context, ra
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_getPoi_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 GetPoiInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNGetPoiInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetPoiInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_getRate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -3751,6 +3978,21 @@ func (ec *executionContext) field_Query_listLocations_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNListLocationsInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListLocationsInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_listPois_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ListPoisInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNListPoisInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListPoisInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -12958,6 +13200,783 @@ func (ec *executionContext) fieldContext_Party_publishNullTariff(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Poi_uid(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_uid(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Uid, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_uid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_source(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_source(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Source, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_source(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_name(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_geom(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_geom(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Geom, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(geom.Geometry4326)
+	fc.Result = res
+	return ec.marshalNGeometry2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋgeomᚐGeometry4326(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_geom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Geometry does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_description(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Poi().Description(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_address(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_address(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Poi().Address(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_address(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_city(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_city(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Poi().City(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_city(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_postalCode(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_postalCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Poi().PostalCode(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_postalCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_tagKey(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_tagKey(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TagKey, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_tagKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_tagValue(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_tagValue(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TagValue, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_tagValue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_tags(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_tags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Poi().Tags(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]db.Tag)
+	fc.Result = res
+	return ec.marshalNTag2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTagᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "key":
+				return ec.fieldContext_Tag_key(ctx, field)
+			case "value":
+				return ec.fieldContext_Tag_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_paymentOnChain(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_paymentOnChain(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PaymentOnChain, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_paymentOnChain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_paymentLn(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_paymentLn(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PaymentLn, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_paymentLn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_paymentLnTap(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_paymentLnTap(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PaymentLnTap, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_paymentLnTap(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_opening_times(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_opening_times(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Poi().OpeningTimes(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_opening_times(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_phone(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_phone(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Poi().Phone(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_phone(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_website(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_website(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Poi().Website(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_website(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Poi_lastUpdated(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_lastUpdated(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Poi().LastUpdated(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_lastUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PriceComponent_type(ctx context.Context, field graphql.CollectedField, obj *db.PriceComponent) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PriceComponent_type(ctx, field)
 	if err != nil {
@@ -13961,6 +14980,189 @@ func (ec *executionContext) fieldContext_Query_listChannels(ctx context.Context,
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Channel", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getPoi(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getPoi(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetPoi(rctx, fc.Args["input"].(GetPoiInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*db.Poi)
+	fc.Result = res
+	return ec.marshalOPoi2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPoi(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getPoi(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "uid":
+				return ec.fieldContext_Poi_uid(ctx, field)
+			case "source":
+				return ec.fieldContext_Poi_source(ctx, field)
+			case "name":
+				return ec.fieldContext_Poi_name(ctx, field)
+			case "geom":
+				return ec.fieldContext_Poi_geom(ctx, field)
+			case "description":
+				return ec.fieldContext_Poi_description(ctx, field)
+			case "address":
+				return ec.fieldContext_Poi_address(ctx, field)
+			case "city":
+				return ec.fieldContext_Poi_city(ctx, field)
+			case "postalCode":
+				return ec.fieldContext_Poi_postalCode(ctx, field)
+			case "tagKey":
+				return ec.fieldContext_Poi_tagKey(ctx, field)
+			case "tagValue":
+				return ec.fieldContext_Poi_tagValue(ctx, field)
+			case "tags":
+				return ec.fieldContext_Poi_tags(ctx, field)
+			case "paymentOnChain":
+				return ec.fieldContext_Poi_paymentOnChain(ctx, field)
+			case "paymentLn":
+				return ec.fieldContext_Poi_paymentLn(ctx, field)
+			case "paymentLnTap":
+				return ec.fieldContext_Poi_paymentLnTap(ctx, field)
+			case "opening_times":
+				return ec.fieldContext_Poi_opening_times(ctx, field)
+			case "phone":
+				return ec.fieldContext_Poi_phone(ctx, field)
+			case "website":
+				return ec.fieldContext_Poi_website(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_Poi_lastUpdated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Poi", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getPoi_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_listPois(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_listPois(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListPois(rctx, fc.Args["input"].(ListPoisInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]db.Poi)
+	fc.Result = res
+	return ec.marshalNPoi2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPoiᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_listPois(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "uid":
+				return ec.fieldContext_Poi_uid(ctx, field)
+			case "source":
+				return ec.fieldContext_Poi_source(ctx, field)
+			case "name":
+				return ec.fieldContext_Poi_name(ctx, field)
+			case "geom":
+				return ec.fieldContext_Poi_geom(ctx, field)
+			case "description":
+				return ec.fieldContext_Poi_description(ctx, field)
+			case "address":
+				return ec.fieldContext_Poi_address(ctx, field)
+			case "city":
+				return ec.fieldContext_Poi_city(ctx, field)
+			case "postalCode":
+				return ec.fieldContext_Poi_postalCode(ctx, field)
+			case "tagKey":
+				return ec.fieldContext_Poi_tagKey(ctx, field)
+			case "tagValue":
+				return ec.fieldContext_Poi_tagValue(ctx, field)
+			case "tags":
+				return ec.fieldContext_Poi_tags(ctx, field)
+			case "paymentOnChain":
+				return ec.fieldContext_Poi_paymentOnChain(ctx, field)
+			case "paymentLn":
+				return ec.fieldContext_Poi_paymentLn(ctx, field)
+			case "paymentLnTap":
+				return ec.fieldContext_Poi_paymentLnTap(ctx, field)
+			case "opening_times":
+				return ec.fieldContext_Poi_opening_times(ctx, field)
+			case "phone":
+				return ec.fieldContext_Poi_phone(ctx, field)
+			case "website":
+				return ec.fieldContext_Poi_website(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_Poi_lastUpdated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Poi", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_listPois_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -17635,6 +18837,94 @@ func (ec *executionContext) _StopSession_sessionUid(ctx context.Context, field g
 func (ec *executionContext) fieldContext_StopSession_sessionUid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "StopSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tag_key(ctx context.Context, field graphql.CollectedField, obj *db.Tag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tag_key(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Key, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tag_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tag_value(ctx context.Context, field graphql.CollectedField, obj *db.Tag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tag_value(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Value, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tag_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tag",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -21508,6 +22798,34 @@ func (ec *executionContext) unmarshalInputGetLocationInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputGetPoiInput(ctx context.Context, obj interface{}) (GetPoiInput, error) {
+	var it GetPoiInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"uid"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "uid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
+			it.UID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputGetSessionInput(ctx context.Context, obj interface{}) (GetSessionInput, error) {
 	var it GetSessionInput
 	asMap := map[string]interface{}{}
@@ -21650,6 +22968,58 @@ func (ec *executionContext) unmarshalInputListLocationsInput(ctx context.Context
 			if err != nil {
 				return it, err
 			}
+		case "xMin":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("xMin"))
+			it.XMin, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "xMax":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("xMax"))
+			it.XMax, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "yMin":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yMin"))
+			it.YMin, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "yMax":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("yMax"))
+			it.YMax, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListPoisInput(ctx context.Context, obj interface{}) (ListPoisInput, error) {
+	var it ListPoisInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"xMin", "xMax", "yMin", "yMax"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
 		case "xMin":
 			var err error
 
@@ -25176,6 +26546,249 @@ func (ec *executionContext) _Party(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var poiImplementors = []string{"Poi"}
+
+func (ec *executionContext) _Poi(ctx context.Context, sel ast.SelectionSet, obj *db.Poi) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, poiImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Poi")
+		case "uid":
+
+			out.Values[i] = ec._Poi_uid(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "source":
+
+			out.Values[i] = ec._Poi_source(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "name":
+
+			out.Values[i] = ec._Poi_name(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "geom":
+
+			out.Values[i] = ec._Poi_geom(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "description":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Poi_description(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "address":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Poi_address(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "city":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Poi_city(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "postalCode":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Poi_postalCode(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "tagKey":
+
+			out.Values[i] = ec._Poi_tagKey(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "tagValue":
+
+			out.Values[i] = ec._Poi_tagValue(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "tags":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Poi_tags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "paymentOnChain":
+
+			out.Values[i] = ec._Poi_paymentOnChain(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "paymentLn":
+
+			out.Values[i] = ec._Poi_paymentLn(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "paymentLnTap":
+
+			out.Values[i] = ec._Poi_paymentLnTap(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "opening_times":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Poi_opening_times(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "phone":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Poi_phone(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "website":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Poi_website(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "lastUpdated":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Poi_lastUpdated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var priceComponentImplementors = []string{"PriceComponent"}
 
 func (ec *executionContext) _PriceComponent(ctx context.Context, sel ast.SelectionSet, obj *db.PriceComponent) graphql.Marshaler {
@@ -25527,6 +27140,49 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_listChannels(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getPoi":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getPoi(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "listPois":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listPois(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -26625,6 +28281,41 @@ func (ec *executionContext) _StopSession(ctx context.Context, sel ast.SelectionS
 		case "sessionUid":
 
 			out.Values[i] = ec._StopSession_sessionUid(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var tagImplementors = []string{"Tag"}
+
+func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj *db.Tag) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tagImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Tag")
+		case "key":
+
+			out.Values[i] = ec._Tag_key(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "value":
+
+			out.Values[i] = ec._Tag_value(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -28190,6 +29881,11 @@ func (ec *executionContext) unmarshalNGetLocationInput2githubᚗcomᚋsatimoto�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNGetPoiInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetPoiInput(ctx context.Context, v interface{}) (GetPoiInput, error) {
+	res, err := ec.unmarshalInputGetPoiInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNGetSessionInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐGetSessionInput(ctx context.Context, v interface{}) (GetSessionInput, error) {
 	res, err := ec.unmarshalInputGetSessionInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -28419,6 +30115,11 @@ func (ec *executionContext) unmarshalNListLocationsInput2githubᚗcomᚋsatimoto
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNListPoisInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListPoisInput(ctx context.Context, v interface{}) (ListPoisInput, error) {
+	res, err := ec.unmarshalInputListPoisInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNListSessionInvoicesInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐListSessionInvoicesInput(ctx context.Context, v interface{}) (ListSessionInvoicesInput, error) {
 	res, err := ec.unmarshalInputListSessionInvoicesInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -28464,6 +30165,54 @@ func (ec *executionContext) marshalNParty2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdata
 		return graphql.Null
 	}
 	return ec._Party(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPoi2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPoi(ctx context.Context, sel ast.SelectionSet, v db.Poi) graphql.Marshaler {
+	return ec._Poi(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPoi2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPoiᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Poi) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPoi2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPoi(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNPongUserInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐPongUserInput(ctx context.Context, v interface{}) (PongUserInput, error) {
@@ -28833,6 +30582,54 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 func (ec *executionContext) unmarshalNSyncCredentialInput2githubᚗcomᚋsatimotoᚋgoᚑapiᚋgraphᚐSyncCredentialInput(ctx context.Context, v interface{}) (SyncCredentialInput, error) {
 	res, err := ec.unmarshalInputSyncCredentialInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTag2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTag(ctx context.Context, sel ast.SelectionSet, v db.Tag) graphql.Marshaler {
+	return ec._Tag(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTag2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Tag) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTag2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTag(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNTariff2githubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐTariff(ctx context.Context, sel ast.SelectionSet, v db.Tariff) graphql.Marshaler {
@@ -29506,6 +31303,13 @@ func (ec *executionContext) marshalOOpeningTime2ᚖgithubᚗcomᚋsatimotoᚋgo�
 		return graphql.Null
 	}
 	return ec._OpeningTime(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPoi2ᚖgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPoi(ctx context.Context, sel ast.SelectionSet, v *db.Poi) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Poi(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOPriceComponent2ᚕgithubᚗcomᚋsatimotoᚋgoᚑdatastoreᚋpkgᚋdbᚐPriceComponentᚄ(ctx context.Context, sel ast.SelectionSet, v []db.PriceComponent) graphql.Marshaler {

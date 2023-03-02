@@ -1,0 +1,36 @@
+type Poi {
+    uid: String!
+    source: String!
+    name: String!
+    geom: Geometry!
+    description: String
+    address: String
+    city: String
+    postalCode: String
+    tagKey: String!
+    tagValue: String!
+    tags: [Tag!]!
+    paymentOnChain: Boolean!
+    paymentLn: Boolean!
+    paymentLnTap: Boolean!
+    opening_times: String
+    phone: String
+    website: String
+    lastUpdated: String!
+}
+
+input GetPoiInput {
+    uid: String
+}
+
+input ListPoisInput {
+    xMin: Float
+    xMax: Float
+    yMin: Float
+    yMax: Float
+}
+
+extend type Query {
+    getPoi(input: GetPoiInput!): Poi
+    listPois(input: ListPoisInput!): [Poi!]!
+}
