@@ -14,6 +14,8 @@ import (
 	"github.com/satimoto/go-api/internal/ferp"
 	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/rest"
+	syncronizer "github.com/satimoto/go-api/internal/sync"
+	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/util"
 )
 
@@ -48,6 +50,8 @@ func main() {
 	log.Printf("Starting up API server")
 	shutdownCtx, cancelFunc := context.WithCancel(context.Background())
 	waitGroup := &sync.WaitGroup{}
+	
+	repositoryService := db.NewRepositoryService(database)
 
 	ferpService := ferp.NewService(os.Getenv("FERP_RPC_ADDRESS"))
 	ferpService.Start(shutdownCtx, waitGroup)
@@ -55,8 +59,11 @@ func main() {
 	metricsService := metrics.NewMetrics()
 	metricsService.StartMetrics(shutdownCtx, waitGroup)
 
-	restService := rest.NewRest(database, ferpService)
+	restService := rest.NewRest(repositoryService, ferpService)
 	restService.StartRest(shutdownCtx, waitGroup)
+
+	syncService := syncronizer.NewService(repositoryService)
+	syncService.StartService(shutdownCtx, waitGroup)
 
 	sigtermChan := make(chan os.Signal)
 	signal.Notify(sigtermChan, syscall.SIGINT, syscall.SIGTERM)

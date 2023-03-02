@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -36,9 +35,7 @@ type RestService struct {
 	Server            *http.Server
 }
 
-func NewRest(d *sql.DB, ferpService ferp.Ferp) Rest {
-	repositoryService := db.NewRepositoryService(d)
-
+func NewRest(repositoryService *db.RepositoryService, ferpService ferp.Ferp) Rest {
 	return &RestService{
 		RepositoryService: repositoryService,
 		UserRepository:    user.NewRepository(repositoryService),
