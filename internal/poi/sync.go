@@ -143,7 +143,7 @@ func (r *PoiResolver) processElement(ctx context.Context, elementDto *ElementDto
 					createPoiParams.OpeningTimes = util.SqlNullString(tagsDto["opening_hours"])
 					createPoiParams.Phone = util.SqlNullString(tagsDto["phone"])
 					createPoiParams.Website = util.SqlNullString(tagsDto["website"])
-					
+
 					poi, err = r.Repository.CreatePoi(ctx, createPoiParams)
 
 					if err != nil {
@@ -196,7 +196,18 @@ func (r *PoiResolver) getTag(tagsDto TagsDto) (string, string) {
 }
 
 func (r *PoiResolver) processTagValue(value string) string {
-	return strings.Trim(strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(value, "-", "_"), " ", "_")), "_")
+	processedValue := strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(value, "-", "_"), " ", "_"), ",", ";"))
+	processedSplitValues := []string{}
+
+	for _, splitValue := range strings.Split(processedValue, ";") {
+		processedSplitValue := strings.Trim(splitValue, "_")
+
+		if len(processedSplitValue) > 0 {
+			processedSplitValues = append(processedSplitValues, processedSplitValue)
+		}
+	}
+
+	return strings.Join(processedSplitValues, ";")
 }
 
 func (r *PoiResolver) processTags(ctx context.Context, poiID int64, tagsDto TagsDto) {
