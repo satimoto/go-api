@@ -195,14 +195,19 @@ func (r *PoiResolver) getTag(tagsDto TagsDto) (string, string) {
 	return "other", "other"
 }
 
+func (r *PoiResolver) processTagValue(value string) string {
+	return strings.Trim(strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(value, "-", "_"), " ", "_")), "_")
+}
+
 func (r *PoiResolver) processTags(ctx context.Context, poiID int64, tagsDto TagsDto) {
 	r.Repository.UnsetPoiTags(ctx, poiID)
 
 	for _, key := range ALL_TAG_KEYS {
 		if value, ok := tagsDto[key]; ok {
+			processedValue := r.processTagValue(value)
 			getTagByKeyValueParams := db.GetTagByKeyValueParams{
 				Key:   key,
-				Value: value,
+				Value: processedValue,
 			}
 
 			tag, err := r.Repository.GetTagByKeyValue(ctx, getTagByKeyValueParams)
@@ -210,7 +215,7 @@ func (r *PoiResolver) processTags(ctx context.Context, poiID int64, tagsDto Tags
 			if err != nil {
 				createTagParams := db.CreateTagParams{
 					Key:   key,
-					Value: value,
+					Value: processedValue,
 				}
 
 				createdTag, err := r.Repository.CreateTag(ctx, createTagParams)
