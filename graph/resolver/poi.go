@@ -40,6 +40,11 @@ func (r *poiResolver) Tags(ctx context.Context, obj *db.Poi) ([]db.Tag, error) {
 	return r.PoiRepository.ListPoiTags(ctx, obj.ID)
 }
 
+// PaymentURI is the resolver for the paymentUri field.
+func (r *poiResolver) PaymentURI(ctx context.Context, obj *db.Poi) (*string, error) {
+	return util.NullString(obj.PaymentUri)
+}
+
 // OpeningTimes is the resolver for the opening_times field.
 func (r *poiResolver) OpeningTimes(ctx context.Context, obj *db.Poi) (*string, error) {
 	return util.NullString(obj.OpeningTimes)
