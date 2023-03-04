@@ -88,35 +88,37 @@ func (r *PoiResolver) syncronizeBtcMapPois(ctx context.Context) {
 
 func (r *PoiResolver) processElement(ctx context.Context, elementDto *ElementDto) {
 	osmJsonDto := elementDto.OsmJson
+	tagsDto := elementDto.Tags
 
-	if osmJsonDto != nil && osmJsonDto.Type == "node" {
-		tagsDto := osmJsonDto.Tags
+	if osmJsonDto != nil && tagsDto != nil && osmJsonDto.Type == "node" {
+		osmTagsDto := osmJsonDto.Tags
 
-		if name, ok := tagsDto["name"]; ok {
-			tagsDto := osmJsonDto.Tags
+		if name, ok := osmTagsDto["name"]; ok {
+			osmTagsDto := osmJsonDto.Tags
 
 			if len(elementDto.DeletedAt) > 0 {
 				r.Repository.DeletePoiByUid(ctx, elementDto.ID)
 			} else {
 				poi, err := r.Repository.GetPoiByUid(ctx, elementDto.ID)
-				tagKey, tagValue := r.getTag(tagsDto)
+				tagKey, tagValue := r.getTag(osmTagsDto)
 
 				if err == nil {
 					updatePoiByUidParams := param.NewUpdatePoiByUidParams(poi)
 					updatePoiByUidParams.Name = name
-					updatePoiByUidParams.Description = util.SqlNullString(tagsDto["description"])
+					updatePoiByUidParams.Description = util.SqlNullString(osmTagsDto["description"])
 					updatePoiByUidParams.Geom = r.getGeom(osmJsonDto)
-					updatePoiByUidParams.Address = util.SqlNullString(r.getAddress(tagsDto))
-					updatePoiByUidParams.City = util.SqlNullString(tagsDto["addr:city"])
-					updatePoiByUidParams.PostalCode = util.SqlNullString(tagsDto["addr:postcode"])
+					updatePoiByUidParams.Address = util.SqlNullString(r.getAddress(osmTagsDto))
+					updatePoiByUidParams.City = util.SqlNullString(osmTagsDto["addr:city"])
+					updatePoiByUidParams.PostalCode = util.SqlNullString(osmTagsDto["addr:postcode"])
 					updatePoiByUidParams.TagKey = tagKey
 					updatePoiByUidParams.TagValue = tagValue
-					updatePoiByUidParams.PaymentOnChain = r.getBool(tagsDto["payment:onchain"]) || r.getBool(tagsDto["payment:bitcoin"])
-					updatePoiByUidParams.PaymentLn = r.getBool(tagsDto["payment:lightning"])
-					updatePoiByUidParams.PaymentLnTap = r.getBool(tagsDto["payment:lightning_contactless"])
-					updatePoiByUidParams.OpeningTimes = util.SqlNullString(tagsDto["opening_hours"])
-					updatePoiByUidParams.Phone = util.SqlNullString(tagsDto["phone"])
-					updatePoiByUidParams.Website = util.SqlNullString(tagsDto["website"])
+					updatePoiByUidParams.PaymentOnChain = r.getBool(osmTagsDto["payment:onchain"]) || r.getBool(osmTagsDto["payment:bitcoin"])
+					updatePoiByUidParams.PaymentLn = r.getBool(osmTagsDto["payment:lightning"])
+					updatePoiByUidParams.PaymentLnTap = r.getBool(osmTagsDto["payment:lightning_contactless"])
+					updatePoiByUidParams.PaymentUri = util.SqlNullString(tagsDto["payment:uri"])
+					updatePoiByUidParams.OpeningTimes = util.SqlNullString(osmTagsDto["opening_hours"])
+					updatePoiByUidParams.Phone = util.SqlNullString(osmTagsDto["phone"])
+					updatePoiByUidParams.Website = util.SqlNullString(osmTagsDto["website"])
 					updatePoiByUidParams.LastUpdated = parseTime(elementDto.UpdatedAt, time.Now())
 
 					updatedPoi, err := r.Repository.UpdatePoiByUid(ctx, updatePoiByUidParams)
@@ -130,19 +132,20 @@ func (r *PoiResolver) processElement(ctx context.Context, elementDto *ElementDto
 				} else {
 					createPoiParams := NewCreatePoiParams(elementDto)
 					createPoiParams.Name = name
-					createPoiParams.Description = util.SqlNullString(tagsDto["description"])
+					createPoiParams.Description = util.SqlNullString(osmTagsDto["description"])
 					createPoiParams.Geom = r.getGeom(osmJsonDto)
-					createPoiParams.Address = util.SqlNullString(r.getAddress(tagsDto))
-					createPoiParams.City = util.SqlNullString(tagsDto["addr:city"])
-					createPoiParams.PostalCode = util.SqlNullString(tagsDto["addr:postcode"])
+					createPoiParams.Address = util.SqlNullString(r.getAddress(osmTagsDto))
+					createPoiParams.City = util.SqlNullString(osmTagsDto["addr:city"])
+					createPoiParams.PostalCode = util.SqlNullString(osmTagsDto["addr:postcode"])
 					createPoiParams.TagKey = tagKey
 					createPoiParams.TagValue = tagValue
-					createPoiParams.PaymentOnChain = r.getBool(tagsDto["payment:onchain"]) || r.getBool(tagsDto["payment:bitcoin"])
-					createPoiParams.PaymentLn = r.getBool(tagsDto["payment:lightning"])
-					createPoiParams.PaymentLnTap = r.getBool(tagsDto["payment:lightning_contactless"])
-					createPoiParams.OpeningTimes = util.SqlNullString(tagsDto["opening_hours"])
-					createPoiParams.Phone = util.SqlNullString(tagsDto["phone"])
-					createPoiParams.Website = util.SqlNullString(tagsDto["website"])
+					createPoiParams.PaymentOnChain = r.getBool(osmTagsDto["payment:onchain"]) || r.getBool(osmTagsDto["payment:bitcoin"])
+					createPoiParams.PaymentLn = r.getBool(osmTagsDto["payment:lightning"])
+					createPoiParams.PaymentLnTap = r.getBool(osmTagsDto["payment:lightning_contactless"])
+					createPoiParams.PaymentUri = util.SqlNullString(tagsDto["payment:uri"])
+					createPoiParams.OpeningTimes = util.SqlNullString(osmTagsDto["opening_hours"])
+					createPoiParams.Phone = util.SqlNullString(osmTagsDto["phone"])
+					createPoiParams.Website = util.SqlNullString(osmTagsDto["website"])
 
 					poi, err = r.Repository.CreatePoi(ctx, createPoiParams)
 
@@ -152,20 +155,20 @@ func (r *PoiResolver) processElement(ctx context.Context, elementDto *ElementDto
 					}
 				}
 
-				r.processTags(ctx, poi.ID, tagsDto)
+				r.processTags(ctx, poi.ID, osmTagsDto)
 			}
 		}
 	}
 }
 
-func (r *PoiResolver) getAddress(tagsDto TagsDto) string {
+func (r *PoiResolver) getAddress(osmTagsDto TagsDto) string {
 	addressParts := []string{}
 
-	if housenumber, ok := tagsDto["addr:housenumber"]; ok {
+	if housenumber, ok := osmTagsDto["addr:housenumber"]; ok {
 		addressParts = append(addressParts, housenumber)
 	}
 
-	if street, ok := tagsDto["addr:street"]; ok {
+	if street, ok := osmTagsDto["addr:street"]; ok {
 		addressParts = append(addressParts, street)
 	}
 
@@ -185,9 +188,9 @@ func (r *PoiResolver) getGeom(osmJson *OsmJsonDto) geom.Geometry4326 {
 	}
 }
 
-func (r *PoiResolver) getTag(tagsDto TagsDto) (string, string) {
+func (r *PoiResolver) getTag(osmTagsDto TagsDto) (string, string) {
 	for _, key := range PHYSICAL_TAG_KEYS {
-		if value, ok := tagsDto[key]; ok {
+		if value, ok := osmTagsDto[key]; ok {
 			return key, value
 		}
 	}
@@ -210,11 +213,11 @@ func (r *PoiResolver) processTagValue(value string) string {
 	return strings.Join(processedSplitValues, ";")
 }
 
-func (r *PoiResolver) processTags(ctx context.Context, poiID int64, tagsDto TagsDto) {
+func (r *PoiResolver) processTags(ctx context.Context, poiID int64, osmTagsDto TagsDto) {
 	r.Repository.UnsetPoiTags(ctx, poiID)
 
 	for _, key := range ALL_TAG_KEYS {
-		if value, ok := tagsDto[key]; ok {
+		if value, ok := osmTagsDto[key]; ok {
 			processedValue := r.processTagValue(value)
 			getTagByKeyValueParams := db.GetTagByKeyValueParams{
 				Key:   key,

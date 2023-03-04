@@ -351,6 +351,7 @@ type ComplexityRoot struct {
 		PaymentLn      func(childComplexity int) int
 		PaymentLnTap   func(childComplexity int) int
 		PaymentOnChain func(childComplexity int) int
+		PaymentURI     func(childComplexity int) int
 		Phone          func(childComplexity int) int
 		PostalCode     func(childComplexity int) int
 		Source         func(childComplexity int) int
@@ -708,6 +709,7 @@ type PoiResolver interface {
 
 	Tags(ctx context.Context, obj *db.Poi) ([]db.Tag, error)
 
+	PaymentURI(ctx context.Context, obj *db.Poi) (*string, error)
 	OpeningTimes(ctx context.Context, obj *db.Poi) (*string, error)
 	Phone(ctx context.Context, obj *db.Poi) (*string, error)
 	Website(ctx context.Context, obj *db.Poi) (*string, error)
@@ -2335,6 +2337,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Poi.PaymentOnChain(childComplexity), true
+
+	case "Poi.paymentUri":
+		if e.complexity.Poi.PaymentURI == nil {
+			break
+		}
+
+		return e.complexity.Poi.PaymentURI(childComplexity), true
 
 	case "Poi.phone":
 		if e.complexity.Poi.Phone == nil {
@@ -13810,6 +13819,47 @@ func (ec *executionContext) fieldContext_Poi_paymentLnTap(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Poi_paymentUri(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Poi_paymentUri(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Poi().PaymentURI(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Poi_paymentUri(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Poi",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Poi_openingTimes(ctx context.Context, field graphql.CollectedField, obj *db.Poi) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Poi_openingTimes(ctx, field)
 	if err != nil {
@@ -15048,6 +15098,8 @@ func (ec *executionContext) fieldContext_Query_getPoi(ctx context.Context, field
 				return ec.fieldContext_Poi_paymentLn(ctx, field)
 			case "paymentLnTap":
 				return ec.fieldContext_Poi_paymentLnTap(ctx, field)
+			case "paymentUri":
+				return ec.fieldContext_Poi_paymentUri(ctx, field)
 			case "openingTimes":
 				return ec.fieldContext_Poi_openingTimes(ctx, field)
 			case "phone":
@@ -15141,6 +15193,8 @@ func (ec *executionContext) fieldContext_Query_listPois(ctx context.Context, fie
 				return ec.fieldContext_Poi_paymentLn(ctx, field)
 			case "paymentLnTap":
 				return ec.fieldContext_Poi_paymentLnTap(ctx, field)
+			case "paymentUri":
+				return ec.fieldContext_Poi_paymentUri(ctx, field)
 			case "openingTimes":
 				return ec.fieldContext_Poi_openingTimes(ctx, field)
 			case "phone":
@@ -26707,6 +26761,23 @@ func (ec *executionContext) _Poi(ctx context.Context, sel ast.SelectionSet, obj 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "paymentUri":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Poi_paymentUri(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "openingTimes":
 			field := field
 
