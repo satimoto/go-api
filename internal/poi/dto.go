@@ -10,10 +10,18 @@ type ElementDto struct {
 }
 
 type OsmJsonDto struct {
-	Lat  float64 `json:"lat"`
-	Lon  float64 `json:"lon"`
-	Tags TagsDto `json:"tags"`
-	Type string  `json:"type"`
+	Lat    *float64   `json:"lat"`
+	Lon    *float64   `json:"lon"`
+	Bounds *BoundsDto `json:"bounds"`
+	Tags   TagsDto    `json:"tags"`
+	Type   string     `json:"type"`
+}
+
+type BoundsDto struct {
+	MaxLat  float64 `json:"maxlat"`
+	MaxLon  float64 `json:"maxlon"`
+	MinLat  float64 `json:"minlat"`
+	MinLon  float64 `json:"minlon"`
 }
 
 type TagsDto map[string]string

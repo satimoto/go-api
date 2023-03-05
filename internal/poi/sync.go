@@ -90,7 +90,7 @@ func (r *PoiResolver) processElement(ctx context.Context, elementDto *ElementDto
 	osmJsonDto := elementDto.OsmJson
 	tagsDto := elementDto.Tags
 
-	if osmJsonDto != nil && tagsDto != nil && osmJsonDto.Type == "node" {
+	if osmJsonDto != nil && tagsDto != nil {
 		osmTagsDto := osmJsonDto.Tags
 
 		if name, ok := osmTagsDto["name"]; ok {
@@ -98,7 +98,7 @@ func (r *PoiResolver) processElement(ctx context.Context, elementDto *ElementDto
 
 			if len(elementDto.DeletedAt) > 0 {
 				r.Repository.DeletePoiByUid(ctx, elementDto.ID)
-			} else {
+			} else if geom := r.getGeom(osmJsonDto); geom != nil {
 				poi, err := r.Repository.GetPoiByUid(ctx, elementDto.ID)
 				tagKey, tagValue := r.getTag(osmTagsDto)
 
@@ -106,7 +106,7 @@ func (r *PoiResolver) processElement(ctx context.Context, elementDto *ElementDto
 					updatePoiByUidParams := param.NewUpdatePoiByUidParams(poi)
 					updatePoiByUidParams.Name = name
 					updatePoiByUidParams.Description = util.SqlNullString(osmTagsDto["description"])
-					updatePoiByUidParams.Geom = r.getGeom(osmJsonDto)
+					updatePoiByUidParams.Geom = *geom
 					updatePoiByUidParams.Address = util.SqlNullString(r.getAddress(osmTagsDto))
 					updatePoiByUidParams.City = util.SqlNullString(osmTagsDto["addr:city"])
 					updatePoiByUidParams.PostalCode = util.SqlNullString(osmTagsDto["addr:postcode"])
@@ -133,7 +133,7 @@ func (r *PoiResolver) processElement(ctx context.Context, elementDto *ElementDto
 					createPoiParams := NewCreatePoiParams(elementDto)
 					createPoiParams.Name = name
 					createPoiParams.Description = util.SqlNullString(osmTagsDto["description"])
-					createPoiParams.Geom = r.getGeom(osmJsonDto)
+					createPoiParams.Geom = *geom
 					createPoiParams.Address = util.SqlNullString(r.getAddress(osmTagsDto))
 					createPoiParams.City = util.SqlNullString(osmTagsDto["addr:city"])
 					createPoiParams.PostalCode = util.SqlNullString(osmTagsDto["addr:postcode"])
@@ -179,13 +179,28 @@ func (r *PoiResolver) getBool(str string) bool {
 	return str == "yes"
 }
 
-func (r *PoiResolver) getGeom(osmJson *OsmJsonDto) geom.Geometry4326 {
-	point := orb.Point{osmJson.Lon, osmJson.Lat}
+func (r *PoiResolver) getGeom(osmJson *OsmJsonDto) *geom.Geometry4326 {
+	if osmJson.Lat != nil && osmJson.Lon != nil {
+		point := orb.Point{*osmJson.Lon, *osmJson.Lat}
 
-	return geom.Geometry4326{
-		Coordinates: point,
-		Type:        point.GeoJSONType(),
+		return &geom.Geometry4326{
+			Coordinates: point,
+			Type:        point.GeoJSONType(),
+		}
+	} else if osmJson.Bounds != nil {
+		bound := orb.Bound{
+			Max: orb.Point{osmJson.Bounds.MaxLon, osmJson.Bounds.MaxLat},
+			Min: orb.Point{osmJson.Bounds.MinLon, osmJson.Bounds.MinLat},
+		}
+		point := bound.Center()
+
+		return &geom.Geometry4326{
+			Coordinates: point,
+			Type:        point.GeoJSONType(),
+		}
 	}
+
+	return nil
 }
 
 func (r *PoiResolver) getTag(osmTagsDto TagsDto) (string, string) {
