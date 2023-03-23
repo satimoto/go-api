@@ -88,7 +88,7 @@ func (r *mutationResolver) UpdateInvoiceRequest(ctx context.Context, input graph
 		}
 
 		// TODO: This request should be a non-blocking goroutine
-		lspService := lsp.NewService(node.LspAddr)
+		lspService := lsp.NewService(node.RpcAddr)
 
 		updateInvoiceRequest := &lsprpc.UpdateInvoiceRequestRequest{
 			Id:             input.ID,

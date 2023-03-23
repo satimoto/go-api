@@ -40,7 +40,7 @@ func (r *mutationResolver) UpdateSessionInvoice(ctx context.Context, id int64) (
 					return nil, gqlerror.Errorf("Error retrieving node")
 				}
 
-				lspService := lsp.NewService(node.LspAddr)
+				lspService := lsp.NewService(node.RpcAddr)
 
 				updateSessionInvoiceRequest := &lsprpc.UpdateSessionInvoiceRequest{
 					Id:     id,

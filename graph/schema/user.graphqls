@@ -10,6 +10,7 @@ input CreateUserInput {
     code: String!
     pubkey: String!
     deviceToken: String
+    lsp: Boolean
 }
 
 input PongUserInput {
