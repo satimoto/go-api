@@ -23,6 +23,9 @@ input UpdateUserInput {
     address: String
     postalCode: String
     city: String
+    batteryCapacity: Float
+    batteryPowerAc: Float
+    batteryPowerDc: Float
 }
 
 extend type Query {

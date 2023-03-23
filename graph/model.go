@@ -282,11 +282,14 @@ type UpdateTokensInput struct {
 }
 
 type UpdateUserInput struct {
-	DeviceToken string  `json:"deviceToken"`
-	Name        *string `json:"name"`
-	Address     *string `json:"address"`
-	PostalCode  *string `json:"postalCode"`
-	City        *string `json:"city"`
+	DeviceToken     string   `json:"deviceToken"`
+	Name            *string  `json:"name"`
+	Address         *string  `json:"address"`
+	PostalCode      *string  `json:"postalCode"`
+	City            *string  `json:"city"`
+	BatteryCapacity *float64 `json:"batteryCapacity"`
+	BatteryPowerAc  *float64 `json:"batteryPowerAc"`
+	BatteryPowerDc  *float64 `json:"batteryPowerDc"`
 }
 
 type VerifyAuthentication struct {
