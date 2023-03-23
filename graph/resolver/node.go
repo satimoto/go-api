@@ -42,7 +42,7 @@ func (r *queryResolver) ListChannels(ctx context.Context) ([]graph.Channel, erro
 		}
 
 		// TODO: This request should be a non-blocking goroutine
-		lspService := lsp.NewService(node.LspAddr)
+		lspService := lsp.NewService(node.RpcAddr)
 		listChannels, err := lspService.ListChannels(backgroundCtx, &lsprpc.ListChannelsRequest{})
 
 		if err != nil {

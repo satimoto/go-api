@@ -87,6 +87,7 @@ type CreateUserInput struct {
 	Code        string  `json:"code"`
 	Pubkey      string  `json:"pubkey"`
 	DeviceToken *string `json:"deviceToken"`
+	Lsp         *bool   `json:"lsp"`
 }
 
 type ExchangeAuthentication struct {
@@ -262,6 +263,11 @@ type UpdatePartyInput struct {
 	IsIntermediateCdrCapable bool   `json:"isIntermediateCdrCapable"`
 	PublishLocation          bool   `json:"publishLocation"`
 	PublishNullTariff        bool   `json:"publishNullTariff"`
+}
+
+type UpdateSessionInput struct {
+	UID         *string `json:"uid"`
+	IsConfirmed *bool   `json:"isConfirmed"`
 }
 
 type UpdateTokenAuthorizationInput struct {
