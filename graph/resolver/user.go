@@ -37,12 +37,21 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
-	var circuitUserID *int64
+	var circuitUserID, nodeId *int64
 	ipAddress := middleware.GetIPAddress(ctx)
 
 	if ipAddress != nil && len(*ipAddress) > 0 {
 		if referral, err := r.ReferralRepository.GetReferralByIpAddress(backgroundCtx, *ipAddress); err == nil {
 			circuitUserID = &referral.UserID
+		}
+	}
+
+	isLsp := dbUtil.DefaultBool(input.Lsp, true)
+
+	if nodes, err := r.NodeRepository.ListActiveNodes(backgroundCtx, isLsp); err == nil && len(nodes) > 0 {
+		for _, n := range nodes {
+			nodeId = &n.ID
+			break
 		}
 	}
 
@@ -54,6 +63,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		Pubkey:            input.Pubkey,
 		ReferralCode:      dbUtil.SqlNullString(referralCode),
 		CircuitUserID:     dbUtil.SqlNullInt64(circuitUserID),
+		NodeID:            dbUtil.SqlNullInt64(nodeId),
 	}
 
 	user, err := r.UserRepository.CreateUser(backgroundCtx, createUserParams)
@@ -132,6 +142,9 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 		updateUserParams.Address = dbUtil.SqlNullString(input.Address)
 		updateUserParams.PostalCode = dbUtil.SqlNullString(input.PostalCode)
 		updateUserParams.City = dbUtil.SqlNullString(input.City)
+		updateUserParams.BatteryCapacity = dbUtil.SqlNullFloat64(input.BatteryCapacity)
+		updateUserParams.BatteryPowerAc = dbUtil.SqlNullFloat64(input.BatteryPowerAc)
+		updateUserParams.BatteryPowerDc = dbUtil.SqlNullFloat64(input.BatteryPowerDc)
 
 		updatedUser, err := r.UserRepository.UpdateUser(backgroundCtx, updateUserParams)
 

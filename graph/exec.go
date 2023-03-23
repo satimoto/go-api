@@ -23869,7 +23869,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"deviceToken", "name", "address", "postalCode", "city"}
+	fieldsInOrder := [...]string{"deviceToken", "name", "address", "postalCode", "city", "batteryCapacity", "batteryPowerAc", "batteryPowerDc"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -23913,6 +23913,30 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("city"))
 			it.City, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "batteryCapacity":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("batteryCapacity"))
+			it.BatteryCapacity, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "batteryPowerAc":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("batteryPowerAc"))
+			it.BatteryPowerAc, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "batteryPowerDc":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("batteryPowerDc"))
+			it.BatteryPowerDc, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
