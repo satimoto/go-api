@@ -205,6 +205,41 @@ func (r *userResolver) Node(ctx context.Context, obj *db.User) (*db.Node, error)
 	return nil, nil
 }
 
+// Name is the resolver for the name field.
+func (r *userResolver) Name(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.Name)
+}
+
+// Address is the resolver for the address field.
+func (r *userResolver) Address(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.Address)
+}
+
+// PostalCode is the resolver for the postalCode field.
+func (r *userResolver) PostalCode(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.PostalCode)
+}
+
+// City is the resolver for the city field.
+func (r *userResolver) City(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.City)
+}
+
+// BatteryCapacity is the resolver for the batteryCapacity field.
+func (r *userResolver) BatteryCapacity(ctx context.Context, obj *db.User) (*float64, error) {
+	return util.NullFloat(obj.BatteryCapacity)
+}
+
+// BatteryPowerAc is the resolver for the batteryPowerAc field.
+func (r *userResolver) BatteryPowerAc(ctx context.Context, obj *db.User) (*float64, error) {
+	return util.NullFloat(obj.BatteryPowerAc)
+}
+
+// BatteryPowerDc is the resolver for the batteryPowerDc field.
+func (r *userResolver) BatteryPowerDc(ctx context.Context, obj *db.User) (*float64, error) {
+	return util.NullFloat(obj.BatteryPowerDc)
+}
+
 // User returns graph.UserResolver implementation.
 func (r *Resolver) User() graph.UserResolver { return &userResolver{r} }
 
