@@ -39,12 +39,12 @@ func (r *mutationResolver) UpdateSession(ctx context.Context, input graph.Update
 
 				sessionUpdateParams := param.NewCreateSessionUpdateParams(updatedSession)
 				_, err = r.SessionRepository.CreateSessionUpdate(ctx, sessionUpdateParams)
-		
+
 				if err != nil {
 					metrics.RecordError("API068", "Error creating session update", err)
 					log.Printf("API068: Params=%#v", sessionUpdateParams)
 				}
-		
+
 				session = updatedSession
 			}
 
