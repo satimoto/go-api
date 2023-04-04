@@ -24272,7 +24272,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deviceToken"))
-			it.DeviceToken, err = ec.unmarshalNString2string(ctx, v)
+			it.DeviceToken, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
