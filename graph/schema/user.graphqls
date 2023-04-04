@@ -25,7 +25,7 @@ input PongUserInput {
 }
 
 input UpdateUserInput {
-    deviceToken: String!
+    deviceToken: String
     name: String
     address: String
     postalCode: String
