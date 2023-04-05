@@ -266,8 +266,8 @@ type UpdatePartyInput struct {
 }
 
 type UpdateSessionInput struct {
-	UID         *string `json:"uid"`
-	IsConfirmed *bool   `json:"isConfirmed"`
+	UID         string `json:"uid"`
+	IsConfirmed bool   `json:"isConfirmed"`
 }
 
 type UpdateTokenAuthorizationInput struct {

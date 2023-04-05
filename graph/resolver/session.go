@@ -23,10 +23,10 @@ func (r *mutationResolver) UpdateSession(ctx context.Context, input graph.Update
 	backgroundCtx := context.Background()
 
 	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
-		if session, err := r.SessionRepository.GetSessionByUid(backgroundCtx, *input.UID); err == nil {
-			if !session.IsConfirmed && session.Status == db.SessionStatusTypePENDING {
+		if session, err := r.SessionRepository.GetSessionByUid(backgroundCtx, input.UID); err == nil {
+			if !session.IsConfirmed && session.Status == db.SessionStatusTypePENDING && input.IsConfirmed {
 				updateSessionByUidParams := param.NewUpdateSessionByUidParams(session)
-				updateSessionByUidParams.IsConfirmed = true
+				updateSessionByUidParams.IsConfirmed = input.IsConfirmed
 				updateSessionByUidParams.Status = db.SessionStatusTypeACTIVE
 
 				updatedSession, err := r.SessionRepository.UpdateSessionByUid(backgroundCtx, updateSessionByUidParams)

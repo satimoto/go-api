@@ -24156,7 +24156,7 @@ func (ec *executionContext) unmarshalInputUpdateSessionInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
-			it.UID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.UID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -24164,7 +24164,7 @@ func (ec *executionContext) unmarshalInputUpdateSessionInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isConfirmed"))
-			it.IsConfirmed, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			it.IsConfirmed, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
