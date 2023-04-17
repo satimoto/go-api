@@ -61,6 +61,7 @@ func (rs *RestService) Handler() *chi.Mux {
 
 	router.Mount("/health", rs.mountHealth())
 	router.Mount("/v1", rs.mountV1())
+	router.Mount("/.well-known", rs.mountWellKnown())
 
 	return router
 }
