@@ -24,11 +24,19 @@ func (r *mutationResolver) UpdateSession(ctx context.Context, input graph.Update
 
 	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
 		if session, err := r.SessionRepository.GetSessionByUid(backgroundCtx, input.UID); err == nil {
-			if !session.IsConfirmed && session.Status == db.SessionStatusTypePENDING && input.IsConfirmed {
-				updateSessionByUidParams := param.NewUpdateSessionByUidParams(session)
-				updateSessionByUidParams.IsConfirmed = input.IsConfirmed
-				updateSessionByUidParams.Status = db.SessionStatusTypeACTIVE
+			isConfirmedStarted := util.DefaultBool(input.IsConfirmedStarted, false)
+			isConfirmedStopped := util.DefaultBool(input.IsConfirmedStopped, false)
+			updateSessionByUidParams := param.NewUpdateSessionByUidParams(session)
 
+			if !session.IsConfirmedStarted && session.Status == db.SessionStatusTypePENDING && isConfirmedStarted {
+				updateSessionByUidParams.IsConfirmedStarted = isConfirmedStarted
+				updateSessionByUidParams.Status = db.SessionStatusTypeACTIVE
+			} else if !session.IsConfirmedStopped && session.Status == db.SessionStatusTypeENDING && isConfirmedStopped {
+				updateSessionByUidParams.IsConfirmedStopped = isConfirmedStopped
+				updateSessionByUidParams.Status = db.SessionStatusTypeCOMPLETED
+			}
+
+			if session.Status != updateSessionByUidParams.Status {
 				updatedSession, err := r.SessionRepository.UpdateSessionByUid(backgroundCtx, updateSessionByUidParams)
 
 				if err != nil {

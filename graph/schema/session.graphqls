@@ -26,7 +26,8 @@ input GetSessionInput {
 
 input UpdateSessionInput {
     uid: String!
-    isConfirmed: Boolean!
+    isConfirmedStarted: Boolean
+    isConfirmedStopped: Boolean
 }
 
 extend type Query {
