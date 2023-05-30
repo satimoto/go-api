@@ -14,7 +14,7 @@ require (
 	github.com/johnfercher/maroto v0.39.0
 	github.com/joho/godotenv v1.4.0
 	github.com/paulmach/orb v0.7.1
-	github.com/satimoto/go-datastore v0.5.1-0.20230406094716-9781dfdddaa5
+	github.com/satimoto/go-datastore v0.5.1-0.20230530193143-94511ef10be1
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.5.1
 )

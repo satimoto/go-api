@@ -24145,7 +24145,7 @@ func (ec *executionContext) unmarshalInputUpdateSessionInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"uid", "isConfirmed"}
+	fieldsInOrder := [...]string{"uid", "isConfirmedStarted", "isConfirmedStopped"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -24160,11 +24160,19 @@ func (ec *executionContext) unmarshalInputUpdateSessionInput(ctx context.Context
 			if err != nil {
 				return it, err
 			}
-		case "isConfirmed":
+		case "isConfirmedStarted":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isConfirmed"))
-			it.IsConfirmed, err = ec.unmarshalNBoolean2bool(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isConfirmedStarted"))
+			it.IsConfirmedStarted, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isConfirmedStopped":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isConfirmedStopped"))
+			it.IsConfirmedStopped, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
