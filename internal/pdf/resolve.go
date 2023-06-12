@@ -10,6 +10,7 @@ import (
 	"github.com/satimoto/go-datastore/pkg/location"
 	"github.com/satimoto/go-datastore/pkg/node"
 	"github.com/satimoto/go-datastore/pkg/session"
+	"github.com/satimoto/go-datastore/pkg/tariff"
 	"github.com/satimoto/go-datastore/pkg/user"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -21,6 +22,7 @@ type PdfResolver struct {
 	LocationRepository       location.LocationRepository
 	NodeRepository           node.NodeRepository
 	SessionRepository        session.SessionRepository
+	TariffRepository         tariff.TariffRepository
 	UserRepository           user.UserRepository
 	blueColor                color.Color
 	grayColor                color.Color
@@ -37,6 +39,7 @@ func NewResolver(repositoryService *db.RepositoryService) *PdfResolver {
 		LocationRepository:       location.NewRepository(repositoryService),
 		NodeRepository:           node.NewRepository(repositoryService),
 		SessionRepository:        session.NewRepository(repositoryService),
+		TariffRepository:         tariff.NewRepository(repositoryService),
 		UserRepository:           user.NewRepository(repositoryService),
 		blueColor:                getBlueColor(),
 		grayColor:                getGrayColor(),

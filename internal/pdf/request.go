@@ -45,33 +45,40 @@ func (r *PdfResolver) GetInvoicePdf(rw http.ResponseWriter, request *http.Reques
 }
 
 func (r *PdfResolver) invoicePdfBytes(ctx context.Context, session db.Session) ([]byte, error) {
+	currency := session.Currency
 	user, err := r.UserRepository.GetUser(ctx, session.UserID)
 
 	if err != nil {
-		metrics.RecordError("API037", "Error getting user", err)
-		log.Printf("API037: Uid=%v, UserID=%v", session.Uid, session.UserID)
+		metrics.RecordError("API069", "Error getting user", err)
+		log.Printf("API069: Uid=%v, UserID=%v", session.Uid, session.UserID)
 		return nil, errors.New("error getting user")
 	}
 
 	location, err := r.LocationRepository.GetLocation(ctx, session.LocationID)
 
 	if err != nil {
-		metrics.RecordError("API037", "Error getting location", err)
-		log.Printf("API037: Uid=%v, LocationID=%#v", session.Uid, session.LocationID)
+		metrics.RecordError("API070", "Error getting location", err)
+		log.Printf("API070: Uid=%v, LocationID=%#v", session.Uid, session.LocationID)
 		return nil, errors.New("error getting location")
 	}
 
 	evse, err := r.LocationRepository.GetEvse(ctx, session.EvseID)
 
 	if err != nil {
-		metrics.RecordError("API037", "Error getting evse", err)
-		log.Printf("API037: Uid=%v, EvseID=%#v", session.Uid, session.EvseID)
+		metrics.RecordError("API071", "Error getting evse", err)
+		log.Printf("API071: Uid=%v, EvseID=%#v", session.Uid, session.EvseID)
 		return nil, errors.New("error getting evse")
+	}
+
+	if connector, err := r.LocationRepository.GetConnector(ctx, session.ConnectorID); err != nil && connector.TariffID.Valid {
+		if tariff, err := r.TariffRepository.GetTariffByUid(ctx, connector.TariffID.String); err != nil {
+			currency = tariff.Currency
+		}
 	}
 
 	var currencyText, currencyDecimalFormat = "Fiat", "%.2f"
 
-	if currency, err := r.AccountResolver.Repository.GetCurrencyByCode(ctx, session.Currency); err == nil {
+	if currency, err := r.AccountResolver.Repository.GetCurrencyByCode(ctx, currency); err == nil {
 		currencyText = currency.Name
 		currencyDecimalFormat = fmt.Sprintf("%%.%df", currency.Decimals)
 	}
@@ -80,16 +87,16 @@ func (r *PdfResolver) invoicePdfBytes(ctx context.Context, session db.Session) (
 	sessionInvoices, err := r.SessionRepository.ListSessionInvoicesBySessionID(ctx, session.ID)
 
 	if err != nil {
-		metrics.RecordError("API037", "Error listing session invoices", err)
-		log.Printf("API037: Uid=%v", session.Uid)
+		metrics.RecordError("API072", "Error listing session invoices", err)
+		log.Printf("API072: Uid=%v", session.Uid)
 		return nil, errors.New("error listing session invoices")
 	}
 
 	logoBytes, err := template.ReadFile("image/logo.png")
 
 	if err != nil {
-		metrics.RecordError("API037", "Error reading image file", err)
-		log.Printf("API037: Uid=%v", session.Uid)
+		metrics.RecordError("API073", "Error reading image file", err)
+		log.Printf("API073: Uid=%v", session.Uid)
 		return nil, errors.New("error reading image file")
 	}
 
