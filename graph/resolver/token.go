@@ -63,6 +63,7 @@ func (r *mutationResolver) UpdateTokens(ctx context.Context, input graph.UpdateT
 		updateTokensRequest := &ocpirpc.UpdateTokensRequest{
 			UserId:  input.UserID,
 			Allowed: input.Allowed,
+			Valid: input.Valid,
 		}
 
 		if input.UID != nil {
