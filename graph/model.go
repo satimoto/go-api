@@ -78,7 +78,8 @@ type CreateReferralInput struct {
 }
 
 type CreateTokenInput struct {
-	UID     string  `json:"uid"`
+	UserID  *int64  `json:"userId"`
+	UID     *string `json:"uid"`
 	Type    *string `json:"type"`
 	Allowed *string `json:"allowed"`
 }
