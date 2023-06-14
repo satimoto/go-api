@@ -16,6 +16,7 @@ input UpdateTokensInput {
     userId: ID!
     uid: String
     allowed: String!
+    valid: Boolean!
 }
 
 extend type Query {

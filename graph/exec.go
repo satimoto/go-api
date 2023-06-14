@@ -24225,7 +24225,7 @@ func (ec *executionContext) unmarshalInputUpdateTokensInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"userId", "uid", "allowed"}
+	fieldsInOrder := [...]string{"userId", "uid", "allowed", "valid"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -24253,6 +24253,14 @@ func (ec *executionContext) unmarshalInputUpdateTokensInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("allowed"))
 			it.Allowed, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "valid":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("valid"))
+			it.Valid, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}

@@ -280,6 +280,7 @@ type UpdateTokensInput struct {
 	UserID  int64   `json:"userId"`
 	UID     *string `json:"uid"`
 	Allowed string  `json:"allowed"`
+	Valid   bool    `json:"valid"`
 }
 
 type UpdateUserInput struct {

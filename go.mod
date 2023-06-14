@@ -14,7 +14,7 @@ require (
 	github.com/johnfercher/maroto v0.39.0
 	github.com/joho/godotenv v1.4.0
 	github.com/paulmach/orb v0.7.1
-	github.com/satimoto/go-datastore v0.5.1-0.20230530193143-94511ef10be1
+	github.com/satimoto/go-datastore v0.5.1-0.20230614083216-22baf3148885
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.5.1
 )
@@ -73,7 +73,7 @@ require (
 	github.com/prometheus/client_golang v1.13.1
 	github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f
 	github.com/satimoto/go-lsp v0.3.1-0.20230102080541-d6a2636034ed
-	github.com/satimoto/go-ocpi v0.3.2-0.20230102200516-0c83f6d9f88e
+	github.com/satimoto/go-ocpi v0.4.2-0.20230614083622-fc5eaad9cbf3
 	golang.org/x/text v0.6.0
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect
 	google.golang.org/grpc v1.47.0
