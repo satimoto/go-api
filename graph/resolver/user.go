@@ -37,6 +37,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
+	var user db.User
 	var circuitUserID, nodeId *int64
 	ipAddress := middleware.GetIPAddress(ctx)
 
@@ -55,29 +56,44 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		}
 	}
 
-	referralCode := r.generateReferralCode(backgroundCtx)
-	createUserParams := db.CreateUserParams{
-		CommissionPercent: dbUtil.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
-		DeviceToken:       dbUtil.SqlNullString(input.DeviceToken),
-		LinkingPubkey:     auth.LinkingPubkey.String,
-		Pubkey:            input.Pubkey,
-		ReferralCode:      dbUtil.SqlNullString(referralCode),
-		CircuitUserID:     dbUtil.SqlNullInt64(circuitUserID),
-		NodeID:            dbUtil.SqlNullInt64(nodeId),
-	}
+	if existingUser, err := r.UserRepository.GetUserByPubkey(backgroundCtx, input.Pubkey); err == nil {
+		updateUserParams := param.NewUpdateUserParams(existingUser)
+		updateUserParams.DeviceToken = dbUtil.SqlNullString(input.DeviceToken)
+		updateUserParams.LinkingPubkey = auth.LinkingPubkey.String
+		updateUserParams.NodeID = dbUtil.SqlNullInt64(nodeId)
 
-	user, err := r.UserRepository.CreateUser(backgroundCtx, createUserParams)
+		user, err = r.UserRepository.UpdateUser(backgroundCtx, updateUserParams)
 
-	if err != nil {
-		metrics.RecordError("API018", "User already exists", err)
-		log.Printf("API018: Params=%#v", createUserParams)
-		return nil, gqlerror.Errorf("User already exists")
-	}
+		if err != nil {
+			metrics.RecordError("API074", "Error updating user", err)
+			log.Printf("API074: Params=%#v", updateUserParams)
+			return nil, gqlerror.Errorf("Error updating user")	
+		}
+	} else {
+		referralCode := r.generateReferralCode(backgroundCtx)
+		createUserParams := db.CreateUserParams{
+			CommissionPercent: dbUtil.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
+			DeviceToken:       dbUtil.SqlNullString(input.DeviceToken),
+			LinkingPubkey:     auth.LinkingPubkey.String,
+			Pubkey:            input.Pubkey,
+			ReferralCode:      dbUtil.SqlNullString(referralCode),
+			CircuitUserID:     dbUtil.SqlNullInt64(circuitUserID),
+			NodeID:            dbUtil.SqlNullInt64(nodeId),
+		}
 
-	_, err = r.TokenResolver.CreateToken(backgroundCtx, user.ID)
+		user, err = r.UserRepository.CreateUser(backgroundCtx, createUserParams)
 
-	if err != nil {
-		return nil, err
+		if err != nil {
+			metrics.RecordError("API018", "User already exists", err)
+			log.Printf("API018: Params=%#v", createUserParams)
+			return nil, gqlerror.Errorf("User already exists")
+		}
+
+		_, err = r.TokenResolver.CreateToken(backgroundCtx, user.ID)
+
+		if err != nil {
+			return nil, err
+		}	
 	}
 
 	return &user, nil
