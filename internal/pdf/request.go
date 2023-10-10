@@ -215,7 +215,7 @@ func (r *PdfResolver) invoicePdfBytes(ctx context.Context, session db.Session) (
 	var commissionMsat, taxMsat, totalMsat = int64(0), int64(0), int64(0)
 
 	for _, sessionInvoice := range sessionInvoices {
-		title := fmt.Sprintf("%s...", sessionInvoice.PaymentRequest[:32])
+		title := shortenInvoice(sessionInvoice.PaymentRequest, 32)
 		amountFiat := fmt.Sprintf(currencyDecimalFormat, sessionInvoice.PriceFiat)
 		amountMsat := formatSatoshis(sessionInvoice.PriceMsat)
 
@@ -242,7 +242,12 @@ func (r *PdfResolver) invoicePdfBytes(ctx context.Context, session db.Session) (
 		r.renderTableHeader(m, "Rebates", currencyText, "Satoshis")
 
 		for _, invoiceRequest := range invoiceRequests {
-			title := fmt.Sprintf("%s...", invoiceRequest.PaymentRequest.String[:32])
+			title := fmt.Sprintf("%s (Pending)", invoiceRequest.Memo)
+
+			if invoiceRequest.PaymentRequest.Valid {
+				title = shortenInvoice(invoiceRequest.PaymentRequest.String, 32)
+			}
+
 			amountFiat := fmt.Sprintf("- "+currencyDecimalFormat, invoiceRequest.PriceFiat.Float64)
 			amountMsat := fmt.Sprintf("- %s", formatSatoshis(invoiceRequest.PriceMsat.Int64))
 	
@@ -450,4 +455,9 @@ func (r *PdfResolver) renderSubtotal(m pdf.Maroto, title, amountFiat, amountMsat
 			})
 		})
 	})
+}
+
+func shortenInvoice(str string, max int) string {
+	partLen := int((max - 5) / 2)
+	return fmt.Sprintf("%s[...]%s", str[:partLen], str[len(str)-partLen:])
 }
