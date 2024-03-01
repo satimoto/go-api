@@ -17,6 +17,7 @@ import (
 	"github.com/satimoto/go-api/internal/ferp"
 	metrics "github.com/satimoto/go-api/internal/metric"
 	apiMiddleware "github.com/satimoto/go-api/internal/middleware"
+	syncronizer "github.com/satimoto/go-api/internal/sync"
 	"github.com/satimoto/go-datastore/pkg/db"
 	"github.com/satimoto/go-datastore/pkg/user"
 
@@ -32,14 +33,16 @@ type RestService struct {
 	RepositoryService *db.RepositoryService
 	UserRepository    user.UserRepository
 	FerpService       ferp.Ferp
+	SyncService       syncronizer.Sync
 	Server            *http.Server
 }
 
-func NewRest(repositoryService *db.RepositoryService, ferpService ferp.Ferp) Rest {
+func NewRest(repositoryService *db.RepositoryService, ferpService ferp.Ferp, syncService syncronizer.Sync) Rest {
 	return &RestService{
 		RepositoryService: repositoryService,
 		UserRepository:    user.NewRepository(repositoryService),
 		FerpService:       ferpService,
+		SyncService:       syncService,
 	}
 }
 
@@ -60,6 +63,7 @@ func (rs *RestService) Handler() *chi.Mux {
 	}))
 
 	router.Mount("/health", rs.mountHealth())
+	router.Mount("/sync", rs.mountSync())
 	router.Mount("/v1", rs.mountV1())
 	router.Mount("/.well-known", rs.mountWellKnown())
 

@@ -8,20 +8,21 @@ import (
 	"github.com/satimoto/go-datastore/pkg/db"
 )
 
-type SyncRepository interface{}
+type Sync interface {
+	Start(shutdownCtx context.Context, waitGroup *sync.WaitGroup)
+	Sync()
+}
 
 type SyncService struct {
-	Repository  SyncRepository
 	PoiResolver *poi.PoiResolver
 	shutdownCtx context.Context
+	mutex       *sync.Mutex
 	waitGroup   *sync.WaitGroup
 }
 
-func NewService(repositoryService *db.RepositoryService) *SyncService {
-	repo := SyncRepository(repositoryService)
-
+func NewService(repositoryService *db.RepositoryService) Sync {
 	return &SyncService{
-		Repository:  repo,
 		PoiResolver: poi.NewResolver(repositoryService),
+		mutex:       &sync.Mutex{},
 	}
 }
