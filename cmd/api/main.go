@@ -56,14 +56,14 @@ func main() {
 	ferpService := ferp.NewService(os.Getenv("FERP_RPC_ADDRESS"))
 	ferpService.Start(shutdownCtx, waitGroup)
 
+	syncService := syncronizer.NewService(repositoryService)
+	syncService.Start(shutdownCtx, waitGroup)
+
 	metricsService := metrics.NewMetrics()
 	metricsService.StartMetrics(shutdownCtx, waitGroup)
 
-	restService := rest.NewRest(repositoryService, ferpService)
+	restService := rest.NewRest(repositoryService, ferpService, syncService)
 	restService.StartRest(shutdownCtx, waitGroup)
-
-	syncService := syncronizer.NewService(repositoryService)
-	syncService.StartService(shutdownCtx, waitGroup)
 
 	sigtermChan := make(chan os.Signal)
 	signal.Notify(sigtermChan, syscall.SIGINT, syscall.SIGTERM)

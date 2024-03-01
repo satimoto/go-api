@@ -7,12 +7,24 @@ import (
 	"time"
 )
 
-func (r *SyncService) StartService(shutdownCtx context.Context, waitGroup *sync.WaitGroup) {
+func (r *SyncService) Start(shutdownCtx context.Context, waitGroup *sync.WaitGroup) {
 	log.Printf("Starting Sync Service")
 	r.shutdownCtx = shutdownCtx
 	r.waitGroup = waitGroup
 
 	go r.startLoop()
+}
+
+func (r *SyncService) Sync() {
+	r.waitGroup.Add(1)
+	r.mutex.Lock()
+	log.Printf("Start Poi sync")
+
+	r.PoiResolver.SyncronizePois()
+
+	log.Printf("End Poi sync")
+	r.waitGroup.Done()
+	r.mutex.Unlock()
 }
 
 func (r *SyncService) startLoop() {
@@ -30,7 +42,6 @@ func (r *SyncService) startLoop() {
 
 	if lastUpdated.After(timeNow) {
 		startTime = lastUpdated
-		lastUpdated = startTime.Add(time.Hour * -24)
 	}
 
 	waitDuration := startTime.Sub(timeNow)
@@ -44,13 +55,6 @@ func (r *SyncService) startLoop() {
 		}
 
 		waitDuration = time.Hour * 24
-
-		r.waitGroup.Add(1)
-		log.Printf("Start Poi sync")
-
-		r.PoiResolver.SyncronizePois()
-		
-		log.Printf("End Poi sync")
-		r.waitGroup.Done()
+		r.Sync()
 	}
 }
