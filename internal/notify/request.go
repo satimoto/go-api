@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/appleboy/go-fcm"
 	"github.com/satimoto/go-datastore/pkg/util"
@@ -16,7 +17,7 @@ type Notifier interface {
 
 func (r *NotifyResolver) PostNotify(rw http.ResponseWriter, request *http.Request) {
 	token := request.URL.Query().Get("token")
-	platform :=  request.URL.Query().Get("platform")
+	platform := request.URL.Query().Get("platform")
 	appData := util.NilString(request.URL.Query().Get("app_data"))
 
 	notifyRequest, err := r.getNotifyRequest(request)
@@ -94,16 +95,21 @@ func (r *NotifyResolver) getMessage(notification *Notification) *fcm.Message {
 			data["app_data"] = *notification.AppData
 		}
 
-		return &fcm.Message{
-			To: notification.TargetIdentifier,
-			Notification: &fcm.Notification{
-				Title: notification.DisplayMessage,
-			},
+		message := fcm.Message{
+			To:               notification.TargetIdentifier,
 			ContentAvailable: false,
 			MutableContent:   true,
 			Priority:         "high",
 			Data:             data,
 		}
+
+		if strings.EqualFold(notification.Type, "ios") {
+			message.Notification = &fcm.Notification{
+				Title: notification.DisplayMessage,
+			}
+		}
+
+		return &message 
 	}
 	return nil
 }
