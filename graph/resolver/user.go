@@ -67,7 +67,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		if err != nil {
 			metrics.RecordError("API074", "Error updating user", err)
 			log.Printf("API074: Params=%#v", updateUserParams)
-			return nil, gqlerror.Errorf("Error updating user")	
+			return nil, gqlerror.Errorf("Error updating user")
 		}
 	} else {
 		referralCode := r.generateReferralCode(backgroundCtx)
@@ -93,7 +93,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 
 		if err != nil {
 			return nil, err
-		}	
+		}
 	}
 
 	return &user, nil

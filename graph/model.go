@@ -252,6 +252,11 @@ type UnregisterCredentialInput struct {
 	ID int64 `json:"id"`
 }
 
+type UpdateCredentialInput struct {
+	ID          int64 `json:"id"`
+	IsAvailable bool  `json:"isAvailable"`
+}
+
 type UpdateInvoiceRequestInput struct {
 	ID             int64  `json:"id"`
 	PaymentRequest string `json:"paymentRequest"`
