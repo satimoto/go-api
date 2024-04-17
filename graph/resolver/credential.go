@@ -12,6 +12,7 @@ import (
 	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/param"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -90,6 +91,30 @@ func (r *mutationResolver) UnregisterCredential(ctx context.Context, input graph
 		}
 
 		return &graph.ResultID{ID: credentialResponse.Id}, nil
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
+
+// UpdateCredential is the resolver for the updateCredential field.
+func (r *mutationResolver) UpdateCredential(ctx context.Context, input graph.UpdateCredentialInput) (*graph.ResultID, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
+		if credential, err := r.CredentialRepository.GetCredential(backgroundCtx, input.ID); err == nil {
+			updateCredentialParams := param.NewUpdateCredentialParams(credential)
+			updateCredentialParams.IsAvailable = input.IsAvailable
+
+			updatedCredential, err := r.CredentialRepository.UpdateCredential(backgroundCtx, updateCredentialParams)
+
+			if err != nil {
+				metrics.RecordError("API078", "Error updating credential", err)
+				log.Printf("API078: Params=%#v", updateCredentialParams)
+				return nil, gqlerror.Errorf("Error updating credential")
+			}
+
+			return &graph.ResultID{ID: updatedCredential.ID}, nil
+		}
 	}
 
 	return nil, gqlerror.Errorf("Not authenticated")
