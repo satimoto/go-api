@@ -45,33 +45,40 @@ func (r *PdfResolver) GetInvoicePdf(rw http.ResponseWriter, request *http.Reques
 }
 
 func (r *PdfResolver) invoicePdfBytes(ctx context.Context, session db.Session) ([]byte, error) {
+	currency := session.Currency
 	user, err := r.UserRepository.GetUser(ctx, session.UserID)
 
 	if err != nil {
-		metrics.RecordError("API037", "Error getting user", err)
-		log.Printf("API037: Uid=%v, UserID=%v", session.Uid, session.UserID)
-		return nil, errors.New("Error getting user")
+		metrics.RecordError("API069", "Error getting user", err)
+		log.Printf("API069: Uid=%v, UserID=%v", session.Uid, session.UserID)
+		return nil, errors.New("error getting user")
 	}
 
 	location, err := r.LocationRepository.GetLocation(ctx, session.LocationID)
 
 	if err != nil {
-		metrics.RecordError("API037", "Error getting location", err)
-		log.Printf("API037: Uid=%v, LocationID=%#v", session.Uid, session.LocationID)
-		return nil, errors.New("Error getting location")
+		metrics.RecordError("API070", "Error getting location", err)
+		log.Printf("API070: Uid=%v, LocationID=%#v", session.Uid, session.LocationID)
+		return nil, errors.New("error getting location")
 	}
 
 	evse, err := r.LocationRepository.GetEvse(ctx, session.EvseID)
 
 	if err != nil {
-		metrics.RecordError("API037", "Error getting evse", err)
-		log.Printf("API037: Uid=%v, EvseID=%#v", session.Uid, session.EvseID)
-		return nil, errors.New("Error getting evse")
+		metrics.RecordError("API071", "Error getting evse", err)
+		log.Printf("API071: Uid=%v, EvseID=%#v", session.Uid, session.EvseID)
+		return nil, errors.New("error getting evse")
+	}
+
+	if connector, err := r.LocationRepository.GetConnector(ctx, session.ConnectorID); err != nil && connector.TariffID.Valid {
+		if tariff, err := r.TariffRepository.GetTariffByUid(ctx, connector.TariffID.String); err != nil {
+			currency = tariff.Currency
+		}
 	}
 
 	var currencyText, currencyDecimalFormat = "Fiat", "%.2f"
 
-	if currency, err := r.AccountResolver.Repository.GetCurrencyByCode(ctx, session.Currency); err == nil {
+	if currency, err := r.AccountResolver.Repository.GetCurrencyByCode(ctx, currency); err == nil {
 		currencyText = currency.Name
 		currencyDecimalFormat = fmt.Sprintf("%%.%df", currency.Decimals)
 	}
@@ -80,17 +87,17 @@ func (r *PdfResolver) invoicePdfBytes(ctx context.Context, session db.Session) (
 	sessionInvoices, err := r.SessionRepository.ListSessionInvoicesBySessionID(ctx, session.ID)
 
 	if err != nil {
-		metrics.RecordError("API037", "Error listing session invoices", err)
-		log.Printf("API037: Uid=%v", session.Uid)
-		return nil, errors.New("Error listing session invoices")
+		metrics.RecordError("API072", "Error listing session invoices", err)
+		log.Printf("API072: Uid=%v", session.Uid)
+		return nil, errors.New("error listing session invoices")
 	}
 
 	logoBytes, err := template.ReadFile("image/logo.png")
 
 	if err != nil {
-		metrics.RecordError("API037", "Error reading image file", err)
-		log.Printf("API037: Uid=%v", session.Uid)
-		return nil, errors.New("Error reading image file")
+		metrics.RecordError("API073", "Error reading image file", err)
+		log.Printf("API073: Uid=%v", session.Uid)
+		return nil, errors.New("error reading image file")
 	}
 
 	logoBase64 := base64.StdEncoding.EncodeToString(logoBytes)
@@ -208,7 +215,7 @@ func (r *PdfResolver) invoicePdfBytes(ctx context.Context, session db.Session) (
 	var commissionMsat, taxMsat, totalMsat = int64(0), int64(0), int64(0)
 
 	for _, sessionInvoice := range sessionInvoices {
-		title := fmt.Sprintf("%s...", sessionInvoice.PaymentRequest[:32])
+		title := shortenInvoice(sessionInvoice.PaymentRequest, 32)
 		amountFiat := fmt.Sprintf(currencyDecimalFormat, sessionInvoice.PriceFiat)
 		amountMsat := formatSatoshis(sessionInvoice.PriceMsat)
 
@@ -222,16 +229,30 @@ func (r *PdfResolver) invoicePdfBytes(ctx context.Context, session db.Session) (
 		totalMsat += sessionInvoice.TotalMsat
 	}
 
-	if session.InvoiceRequestID.Valid {
-		if invoiceRequest, err := r.InvoiceRequestRepository.GetInvoiceRequest(ctx, session.InvoiceRequestID.Int64); err == nil {
-			r.renderTableHeader(m, "Rebates", currencyText, "Satoshis")
+	invoiceRequests, err := r.InvoiceRequestRepository.ListInvoiceRequestsBySessionID(ctx, dbUtil.SqlNullInt64(session.ID))
 
-			title := fmt.Sprintf("%s...", invoiceRequest.PaymentRequest.String[:32])
+	if err != nil {
+		metrics.RecordError("API067", "Error listing invoice requests", err)
+		log.Printf("API067: Uid=%v", session.Uid)
+		return nil, errors.New("error listing invoice requests")
+	}
+
+
+	if len(invoiceRequests) > 0 {
+		r.renderTableHeader(m, "Rebates", currencyText, "Satoshis")
+
+		for _, invoiceRequest := range invoiceRequests {
+			title := fmt.Sprintf("%s (Pending)", invoiceRequest.Memo)
+
+			if invoiceRequest.PaymentRequest.Valid {
+				title = shortenInvoice(invoiceRequest.PaymentRequest.String, 32)
+			}
+
 			amountFiat := fmt.Sprintf("- "+currencyDecimalFormat, invoiceRequest.PriceFiat.Float64)
 			amountMsat := fmt.Sprintf("- %s", formatSatoshis(invoiceRequest.PriceMsat.Int64))
-
+	
 			r.renderTableRow(m, title, amountFiat, amountMsat)
-
+	
 			commissionFiat -= invoiceRequest.CommissionFiat.Float64
 			commissionMsat -= invoiceRequest.CommissionMsat.Int64
 			taxFiat -= invoiceRequest.TaxFiat.Float64
@@ -254,7 +275,7 @@ func (r *PdfResolver) invoicePdfBytes(ctx context.Context, session db.Session) (
 	if err != nil {
 		metrics.RecordError("API040", "Error encoding pdf", err)
 		log.Printf("API040: Uid=%v", session.Uid)
-		return nil, errors.New("Error encoding pdf")
+		return nil, errors.New("error encoding pdf")
 	}
 
 	return outputBuffer.Bytes(), nil
@@ -434,4 +455,9 @@ func (r *PdfResolver) renderSubtotal(m pdf.Maroto, title, amountFiat, amountMsat
 			})
 		})
 	})
+}
+
+func shortenInvoice(str string, max int) string {
+	partLen := int((max - 5) / 2)
+	return fmt.Sprintf("%s[...]%s", str[:partLen], str[len(str)-partLen:])
 }

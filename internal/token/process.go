@@ -14,6 +14,7 @@ func (r *TokenResolver) CreateToken(ctx context.Context, userID int64) (*ocpirpc
 	createTokenRequest := &ocpirpc.CreateTokenRequest{
 		UserId:    userID,
 		Type:      string(db.TokenTypeOTHER),
+		Allowed:   string(db.TokenAllowedTypeALLOWED),
 		Whitelist: string(db.TokenWhitelistTypeNEVER),
 	}
 

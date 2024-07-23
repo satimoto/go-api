@@ -13,7 +13,8 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/johnfercher/maroto v0.39.0
 	github.com/joho/godotenv v1.4.0
-	github.com/satimoto/go-datastore v0.3.1-0.20230223215809-138fec7fa023
+	github.com/paulmach/orb v0.7.1
+	github.com/satimoto/go-datastore v0.5.1-0.20240417113453-1f2eba5ecf42
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/vektah/gqlparser/v2 v2.5.1
 )
@@ -53,7 +54,6 @@ require (
 	github.com/lightningnetwork/lnd/ticker v1.1.0 // indirect
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
-	github.com/paulmach/orb v0.7.1 // indirect
 	github.com/ruudk/golang-pdf417 v0.0.0-20201230142125-a7e3863a1245 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	github.com/tidwall/gjson v1.6.1 // indirect
@@ -73,7 +73,7 @@ require (
 	github.com/prometheus/client_golang v1.13.1
 	github.com/satimoto/go-ferp v0.1.1-0.20220908195810-ff288d2a2a2f
 	github.com/satimoto/go-lsp v0.3.1-0.20230102080541-d6a2636034ed
-	github.com/satimoto/go-ocpi v0.3.2-0.20230102200516-0c83f6d9f88e
+	github.com/satimoto/go-ocpi v0.4.2-0.20230614083622-fc5eaad9cbf3
 	golang.org/x/text v0.6.0
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect
 	google.golang.org/grpc v1.47.0

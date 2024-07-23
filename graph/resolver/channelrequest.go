@@ -101,12 +101,10 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 			if n, err := r.NodeRepository.GetNode(backgroundCtx, user.NodeID.Int64); err == nil {
 				node = &n
 			}
-		} else {
-			if nodes, err := r.NodeRepository.ListActiveNodes(backgroundCtx); err == nil && len(nodes) > 0 {
-				for _, n := range nodes {
-					node = &n
-					break
-				}
+		} else if nodes, err := r.NodeRepository.ListActiveNodes(backgroundCtx, true); err == nil && len(nodes) > 0 {
+			for _, n := range nodes {
+				node = &n
+				break
 			}
 		}
 
@@ -120,7 +118,7 @@ func (r *mutationResolver) CreateChannelRequest(ctx context.Context, input graph
 		}
 
 		// TODO: This request should be a non-blocking goroutine
-		lspService := lsp.NewService(node.LspAddr)
+		lspService := lsp.NewService(node.RpcAddr)
 
 		openChannelRequest := &lsprpc.OpenChannelRequest{
 			Pubkey:     user.Pubkey,

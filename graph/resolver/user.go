@@ -37,7 +37,8 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		return nil, gqlerror.Errorf("Authentication not yet verified")
 	}
 
-	var circuitUserID *int64
+	var user db.User
+	var circuitUserID, nodeId *int64
 	ipAddress := middleware.GetIPAddress(ctx)
 
 	if ipAddress != nil && len(*ipAddress) > 0 {
@@ -46,28 +47,53 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input graph.CreateUse
 		}
 	}
 
-	referralCode := r.generateReferralCode(backgroundCtx)
-	createUserParams := db.CreateUserParams{
-		CommissionPercent: dbUtil.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
-		DeviceToken:       dbUtil.SqlNullString(input.DeviceToken),
-		LinkingPubkey:     auth.LinkingPubkey.String,
-		Pubkey:            input.Pubkey,
-		ReferralCode:      dbUtil.SqlNullString(referralCode),
-		CircuitUserID:     dbUtil.SqlNullInt64(circuitUserID),
+	isLsp := dbUtil.DefaultBool(input.Lsp, true)
+
+	if nodes, err := r.NodeRepository.ListActiveNodes(backgroundCtx, isLsp); err == nil && len(nodes) > 0 {
+		for _, n := range nodes {
+			nodeId = &n.ID
+			break
+		}
 	}
 
-	user, err := r.UserRepository.CreateUser(backgroundCtx, createUserParams)
+	if existingUser, err := r.UserRepository.GetUserByPubkey(backgroundCtx, input.Pubkey); err == nil {
+		updateUserParams := param.NewUpdateUserParams(existingUser)
+		updateUserParams.DeviceToken = dbUtil.SqlNullString(input.DeviceToken)
+		updateUserParams.LinkingPubkey = auth.LinkingPubkey.String
+		updateUserParams.NodeID = dbUtil.SqlNullInt64(nodeId)
 
-	if err != nil {
-		metrics.RecordError("API018", "User already exists", err)
-		log.Printf("API018: Params=%#v", createUserParams)
-		return nil, gqlerror.Errorf("User already exists")
-	}
+		user, err = r.UserRepository.UpdateUser(backgroundCtx, updateUserParams)
 
-	_, err = r.TokenResolver.CreateToken(backgroundCtx, user.ID)
+		if err != nil {
+			metrics.RecordError("API074", "Error updating user", err)
+			log.Printf("API074: Params=%#v", updateUserParams)
+			return nil, gqlerror.Errorf("Error updating user")
+		}
+	} else {
+		referralCode := r.generateReferralCode(backgroundCtx)
+		createUserParams := db.CreateUserParams{
+			CommissionPercent: dbUtil.GetEnvFloat64("DEFAULT_COMMISSION_PERCENT", 7),
+			DeviceToken:       dbUtil.SqlNullString(input.DeviceToken),
+			LinkingPubkey:     auth.LinkingPubkey.String,
+			Pubkey:            input.Pubkey,
+			ReferralCode:      dbUtil.SqlNullString(referralCode),
+			CircuitUserID:     dbUtil.SqlNullInt64(circuitUserID),
+			NodeID:            dbUtil.SqlNullInt64(nodeId),
+		}
 
-	if err != nil {
-		return nil, err
+		user, err = r.UserRepository.CreateUser(backgroundCtx, createUserParams)
+
+		if err != nil {
+			metrics.RecordError("API018", "User already exists", err)
+			log.Printf("API018: Params=%#v", createUserParams)
+			return nil, gqlerror.Errorf("User already exists")
+		}
+
+		_, err = r.TokenResolver.CreateToken(backgroundCtx, user.ID)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &user, nil
@@ -132,6 +158,9 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input graph.UpdateUse
 		updateUserParams.Address = dbUtil.SqlNullString(input.Address)
 		updateUserParams.PostalCode = dbUtil.SqlNullString(input.PostalCode)
 		updateUserParams.City = dbUtil.SqlNullString(input.City)
+		updateUserParams.BatteryCapacity = dbUtil.SqlNullFloat64(input.BatteryCapacity)
+		updateUserParams.BatteryPowerAc = dbUtil.SqlNullFloat64(input.BatteryPowerAc)
+		updateUserParams.BatteryPowerDc = dbUtil.SqlNullFloat64(input.BatteryPowerDc)
 
 		updatedUser, err := r.UserRepository.UpdateUser(backgroundCtx, updateUserParams)
 
@@ -190,6 +219,41 @@ func (r *userResolver) Node(ctx context.Context, obj *db.User) (*db.Node, error)
 	}
 
 	return nil, nil
+}
+
+// Name is the resolver for the name field.
+func (r *userResolver) Name(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.Name)
+}
+
+// Address is the resolver for the address field.
+func (r *userResolver) Address(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.Address)
+}
+
+// PostalCode is the resolver for the postalCode field.
+func (r *userResolver) PostalCode(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.PostalCode)
+}
+
+// City is the resolver for the city field.
+func (r *userResolver) City(ctx context.Context, obj *db.User) (*string, error) {
+	return util.NullString(obj.City)
+}
+
+// BatteryCapacity is the resolver for the batteryCapacity field.
+func (r *userResolver) BatteryCapacity(ctx context.Context, obj *db.User) (*float64, error) {
+	return util.NullFloat(obj.BatteryCapacity)
+}
+
+// BatteryPowerAc is the resolver for the batteryPowerAc field.
+func (r *userResolver) BatteryPowerAc(ctx context.Context, obj *db.User) (*float64, error) {
+	return util.NullFloat(obj.BatteryPowerAc)
+}
+
+// BatteryPowerDc is the resolver for the batteryPowerDc field.
+func (r *userResolver) BatteryPowerDc(ctx context.Context, obj *db.User) (*float64, error) {
+	return util.NullFloat(obj.BatteryPowerDc)
 }
 
 // User returns graph.UserResolver implementation.

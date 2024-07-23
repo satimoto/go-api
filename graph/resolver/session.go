@@ -5,14 +5,63 @@ package resolver
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/satimoto/go-api/graph"
+	metrics "github.com/satimoto/go-api/internal/metric"
 	"github.com/satimoto/go-api/internal/middleware"
 	"github.com/satimoto/go-api/internal/util"
 	"github.com/satimoto/go-datastore/pkg/db"
+	"github.com/satimoto/go-datastore/pkg/param"
+	dbUtil "github.com/satimoto/go-datastore/pkg/util"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
+
+// UpdateSession is the resolver for the updateSession field.
+func (r *mutationResolver) UpdateSession(ctx context.Context, input graph.UpdateSessionInput) (*db.Session, error) {
+	backgroundCtx := context.Background()
+
+	if user := middleware.GetCtxUser(ctx, r.UserRepository); user != nil {
+		if session, err := r.SessionRepository.GetSessionByUid(backgroundCtx, input.UID); err == nil {
+			isConfirmedStarted := util.DefaultBool(input.IsConfirmedStarted, false)
+			isConfirmedStopped := util.DefaultBool(input.IsConfirmedStopped, false)
+			updateSessionByUidParams := param.NewUpdateSessionByUidParams(session)
+
+			if !session.IsConfirmedStarted && session.Status == db.SessionStatusTypePENDING && isConfirmedStarted {
+				updateSessionByUidParams.IsConfirmedStarted = isConfirmedStarted
+				updateSessionByUidParams.Status = db.SessionStatusTypeACTIVE
+			} else if !session.IsConfirmedStopped && session.Status == db.SessionStatusTypeENDING && isConfirmedStopped {
+				updateSessionByUidParams.IsConfirmedStopped = isConfirmedStopped
+				updateSessionByUidParams.Status = db.SessionStatusTypeCOMPLETED
+			}
+
+			if session.Status != updateSessionByUidParams.Status {
+				updatedSession, err := r.SessionRepository.UpdateSessionByUid(backgroundCtx, updateSessionByUidParams)
+
+				if err != nil {
+					metrics.RecordError("API066", "Error updating session", err)
+					log.Printf("API066: Params=%#v", updateSessionByUidParams)
+					return nil, gqlerror.Errorf("Error updating session")
+				}
+
+				sessionUpdateParams := param.NewCreateSessionUpdateParams(updatedSession)
+				_, err = r.SessionRepository.CreateSessionUpdate(ctx, sessionUpdateParams)
+
+				if err != nil {
+					metrics.RecordError("API068", "Error creating session update", err)
+					log.Printf("API068: Params=%#v", sessionUpdateParams)
+				}
+
+				session = updatedSession
+			}
+
+			return &session, nil
+		}
+	}
+
+	return nil, gqlerror.Errorf("Not authenticated")
+}
 
 // GetSession is the resolver for the getSession field.
 func (r *queryResolver) GetSession(ctx context.Context, input graph.GetSessionInput) (*db.Session, error) {
@@ -106,16 +155,6 @@ func (r *sessionResolver) MeterID(ctx context.Context, obj *db.Session) (*string
 	return util.NullString(obj.MeterID)
 }
 
-// SessionInvoices is the resolver for the sessionInvoices field.
-func (r *sessionResolver) SessionInvoices(ctx context.Context, obj *db.Session) ([]db.SessionInvoice, error) {
-	return r.SessionRepository.ListSessionInvoicesBySessionID(ctx, obj.ID)
-}
-
-// SessionUpdates is the resolver for the sessionUpdates field.
-func (r *sessionResolver) SessionUpdates(ctx context.Context, obj *db.Session) ([]db.SessionUpdate, error) {
-	return r.SessionRepository.ListSessionUpdatesBySessionID(ctx, obj.ID)
-}
-
 // InvoiceRequest is the resolver for the invoiceRequest field.
 func (r *sessionResolver) InvoiceRequest(ctx context.Context, obj *db.Session) (*db.InvoiceRequest, error) {
 	if obj.InvoiceRequestID.Valid {
@@ -127,6 +166,21 @@ func (r *sessionResolver) InvoiceRequest(ctx context.Context, obj *db.Session) (
 	}
 
 	return nil, nil
+}
+
+// InvoiceRequests is the resolver for the invoiceRequests field.
+func (r *sessionResolver) InvoiceRequests(ctx context.Context, obj *db.Session) ([]db.InvoiceRequest, error) {
+	return r.InvoiceRequestRepository.ListInvoiceRequestsBySessionID(ctx, dbUtil.SqlNullInt64(obj.ID))
+}
+
+// SessionInvoices is the resolver for the sessionInvoices field.
+func (r *sessionResolver) SessionInvoices(ctx context.Context, obj *db.Session) ([]db.SessionInvoice, error) {
+	return r.SessionRepository.ListSessionInvoicesBySessionID(ctx, obj.ID)
+}
+
+// SessionUpdates is the resolver for the sessionUpdates field.
+func (r *sessionResolver) SessionUpdates(ctx context.Context, obj *db.Session) ([]db.SessionUpdate, error) {
+	return r.SessionRepository.ListSessionUpdatesBySessionID(ctx, obj.ID)
 }
 
 // Status is the resolver for the status field.

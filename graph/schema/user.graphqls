@@ -4,12 +4,20 @@ type User {
     deviceToken: String
     referralCode: String
     node: Node
+    name: String
+    address: String
+    postalCode: String
+    city: String
+    batteryCapacity: Float
+    batteryPowerAc: Float
+    batteryPowerDc: Float
 }
 
 input CreateUserInput {
     code: String!
     pubkey: String!
     deviceToken: String
+    lsp: Boolean
 }
 
 input PongUserInput {
@@ -17,11 +25,14 @@ input PongUserInput {
 }
 
 input UpdateUserInput {
-    deviceToken: String!
+    deviceToken: String
     name: String
     address: String
     postalCode: String
     city: String
+    batteryCapacity: Float
+    batteryPowerAc: Float
+    batteryPowerDc: Float
 }
 
 extend type Query {

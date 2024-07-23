@@ -78,7 +78,8 @@ type CreateReferralInput struct {
 }
 
 type CreateTokenInput struct {
-	UID     string  `json:"uid"`
+	UserID  *int64  `json:"userId"`
+	UID     *string `json:"uid"`
 	Type    *string `json:"type"`
 	Allowed *string `json:"allowed"`
 }
@@ -87,6 +88,7 @@ type CreateUserInput struct {
 	Code        string  `json:"code"`
 	Pubkey      string  `json:"pubkey"`
 	DeviceToken *string `json:"deviceToken"`
+	Lsp         *bool   `json:"lsp"`
 }
 
 type ExchangeAuthentication struct {
@@ -115,6 +117,10 @@ type GetLocationInput struct {
 	ID      *int64  `json:"id"`
 	UID     *string `json:"uid"`
 	Country *string `json:"country"`
+}
+
+type GetPoiInput struct {
+	UID *string `json:"uid"`
 }
 
 type GetSessionInput struct {
@@ -155,6 +161,13 @@ type ListLocationsInput struct {
 	XMax            *float64 `json:"xMax"`
 	YMin            *float64 `json:"yMin"`
 	YMax            *float64 `json:"yMax"`
+}
+
+type ListPoisInput struct {
+	XMin *float64 `json:"xMin"`
+	XMax *float64 `json:"xMax"`
+	YMin *float64 `json:"yMin"`
+	YMax *float64 `json:"yMax"`
 }
 
 type ListSessionInvoicesInput struct {
@@ -239,6 +252,11 @@ type UnregisterCredentialInput struct {
 	ID int64 `json:"id"`
 }
 
+type UpdateCredentialInput struct {
+	ID          int64 `json:"id"`
+	IsAvailable bool  `json:"isAvailable"`
+}
+
 type UpdateInvoiceRequestInput struct {
 	ID             int64  `json:"id"`
 	PaymentRequest string `json:"paymentRequest"`
@@ -253,6 +271,12 @@ type UpdatePartyInput struct {
 	PublishNullTariff        bool   `json:"publishNullTariff"`
 }
 
+type UpdateSessionInput struct {
+	UID                string `json:"uid"`
+	IsConfirmedStarted *bool  `json:"isConfirmedStarted"`
+	IsConfirmedStopped *bool  `json:"isConfirmedStopped"`
+}
+
 type UpdateTokenAuthorizationInput struct {
 	AuthorizationID string `json:"authorizationId"`
 	Authorized      bool   `json:"authorized"`
@@ -262,14 +286,18 @@ type UpdateTokensInput struct {
 	UserID  int64   `json:"userId"`
 	UID     *string `json:"uid"`
 	Allowed string  `json:"allowed"`
+	Valid   bool    `json:"valid"`
 }
 
 type UpdateUserInput struct {
-	DeviceToken string  `json:"deviceToken"`
-	Name        *string `json:"name"`
-	Address     *string `json:"address"`
-	PostalCode  *string `json:"postalCode"`
-	City        *string `json:"city"`
+	DeviceToken     *string  `json:"deviceToken"`
+	Name            *string  `json:"name"`
+	Address         *string  `json:"address"`
+	PostalCode      *string  `json:"postalCode"`
+	City            *string  `json:"city"`
+	BatteryCapacity *float64 `json:"batteryCapacity"`
+	BatteryPowerAc  *float64 `json:"batteryPowerAc"`
+	BatteryPowerDc  *float64 `json:"batteryPowerDc"`
 }
 
 type VerifyAuthentication struct {

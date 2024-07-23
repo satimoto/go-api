@@ -10,9 +10,10 @@ type Session {
     evse: Evse!
     connector: Connector!
     meterId: String
+    invoiceRequest: InvoiceRequest @deprecated(reason: "Use invoiceRequests")
+    invoiceRequests: [InvoiceRequest!]!
     sessionInvoices: [SessionInvoice!]!
     sessionUpdates: [SessionUpdate!]!
-    invoiceRequest: InvoiceRequest
     status: String!
     lastUpdated: String!
 }
@@ -23,7 +24,17 @@ input GetSessionInput {
     authorizationId: String
 }
 
+input UpdateSessionInput {
+    uid: String!
+    isConfirmedStarted: Boolean
+    isConfirmedStopped: Boolean
+}
+
 extend type Query {
     getSession(input: GetSessionInput!): Session!
     listSessions: [Session!]!
+}
+
+extend type Mutation {
+    updateSession(input: UpdateSessionInput!): Session!
 }

@@ -21,14 +21,27 @@ import (
 func (r *mutationResolver) CreateToken(ctx context.Context, input graph.CreateTokenInput) (*db.Token, error) {
 	backgroundCtx := context.Background()
 
-	if userID := middleware.GetUserID(ctx); userID != nil {
-		if _, err := r.TokenResolver.Repository.GetTokenByUid(backgroundCtx, input.UID); err == nil {
-			return nil, gqlerror.Errorf("Error creating token")
+	if user := middleware.GetUser(ctx, r.UserRepository); user != nil {
+		uid := util.DefaultString(input.UID, "")
+		userID := user.ID
+
+		if input.UserID != nil {
+			if user.IsAdmin {
+				userID = *input.UserID
+			} else {
+				return nil, gqlerror.Errorf("Not authenticated")
+			}
+		}
+
+		if input.UID != nil {
+			if _, err := r.TokenResolver.Repository.GetTokenByUid(backgroundCtx, uid); err == nil {
+				return nil, gqlerror.Errorf("Error creating token")
+			}
 		}
 
 		createTokenRequest := &ocpirpc.CreateTokenRequest{
-			UserId:    *userID,
-			Uid:       input.UID,
+			UserId:    userID,
+			Uid:       uid,
 			Type:      string(db.TokenTypeRFID),
 			Whitelist: string(db.TokenWhitelistTypeNEVER),
 		}
@@ -63,6 +76,7 @@ func (r *mutationResolver) UpdateTokens(ctx context.Context, input graph.UpdateT
 		updateTokensRequest := &ocpirpc.UpdateTokensRequest{
 			UserId:  input.UserID,
 			Allowed: input.Allowed,
+			Valid:   input.Valid,
 		}
 
 		if input.UID != nil {
